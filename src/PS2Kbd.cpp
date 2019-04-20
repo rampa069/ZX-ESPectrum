@@ -26,12 +26,12 @@ void kb_interruptHandler(void)
         static uint32_t prev_ms=0;
         uint32_t now_ms;
         uint8_t n, val;
-        
-        
+
+
         int clock = digitalRead(KEYBOARD_CLK);
-        if (clock== 1) 
+        if (clock== 1)
            return;
-           
+
         val = digitalRead(KEYBOARD_DATA);
         now_ms = millis();
         if (now_ms - prev_ms > 250) {
@@ -45,7 +45,7 @@ void kb_interruptHandler(void)
         }
         bitcount++;
         if (bitcount == 11) {
-                
+
                 if (1) {
                         if (keyup == true){
                           if(keymap[incoming] == 0) {
@@ -58,21 +58,20 @@ void kb_interruptHandler(void)
                         }
                              else
                                keymap[incoming]=0;
-                               
+
                         if (incoming==240)
                           keyup=true;
                            else keyup=false;
-                          
-                        Serial.printf("Incoming: %d\n",incoming);
-                        
 
-                        
+                        //Serial.printf("Incoming: %d\n",incoming);
+
+
+
                 }
                 bitcount = 0;
                 incoming = 0;
         }
-        //keymap[incoming]=0;
-        //Serial.printf("Incoming: %d\n",incoming);
+
 }
 
 
@@ -87,5 +86,5 @@ void kb_begin()
       keymap[gg] = 1;
       oldKeymap[gg] =1;
     }
-    
+
 }
