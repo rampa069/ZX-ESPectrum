@@ -1,7 +1,8 @@
 
 // ____________________________________________________
-// Pase Spectrum Emulator (KOGEL esp32)
+// ESP32 Spectrum Emulator (KOGEL esp32)
 // Pete Todd 2017
+// Ramón Martínez & Jorge fuertes 2019
 //     You are not allowed to distribute this software commercially
 //     Please, notify me, if you make any changes to this file
 // ____________________________________________________
@@ -12,23 +13,14 @@
 #include "PS2Kbd.h"
 #include "SPIFFS.h"
 #include "FS.h"
-
-//#include "SD.h
 #include "paledefs.h"
 
 // ________________________________________________
 // SWITCHES
 //
-//#define SD_ENABLED
-//#define DEBUG
+
 bool run_snapshot = true;
 bool run_debug = false;
-
-
-
-// ____________________________________________________________________
-// INSTANTS
-//
 
 //VGA Device
 VGA3Bit vga;
@@ -58,22 +50,18 @@ void Z80_WRMEM(uint16_t A,byte V);
 // GLOBALS
 //
 byte *bank0;
-byte *bank1;
-byte *bank2;
 byte z80ports_in[32];
 byte borderTemp =7;
 byte soundTemp = 0;
 byte flashing = 0;
 byte lastAudio=0;
 
-// SETUP *************************************
 SemaphoreHandle_t xMutex;
 
+// SETUP *************************************
 
 void setup()
 {
-
-
   // Turn off peripherals to gain memory (?do they release properly)
   esp_bt_controller_deinit();
   esp_bt_controller_mem_release(ESP_BT_MODE_BTDM);
@@ -81,25 +69,17 @@ void setup()
   Serial.begin(115200);
   Serial.println("CHIP setup.");
   Serial.println("VGA framebufer");
-
   //we need double buffering for smooth animations
   vga.setFrameBufferCount(2);
-
   Serial.println("VGA init");
-
   vga.init(vga.MODE360x200 , redPin, greenPin, bluePin, hsyncPin, vsyncPin);
   Serial.println("VGA initialized");
-
 
   pinMode(SOUND_PIN,OUTPUT);
   digitalWrite(SOUND_PIN,LOW);
 
-  pinMode(DEBUG_PIN,OUTPUT);
-  digitalWrite(DEBUG_PIN,LOW);
-  pinMode(DEBUG_PIN2,OUTPUT);
-  digitalWrite(DEBUG_PIN2,LOW);
-
   start_im1_irq=1;
+
   kb_begin();
 
   // ALLOCATE MEMORY
@@ -108,16 +88,7 @@ void setup()
   if(bank0 == NULL)Serial.println("Failed to allocate Bank 1 memory");
   Serial.printf("Free Heap after bank0: %d\n",system_get_free_heap_size());
 
-
-
-  //bank1 = (byte *)malloc(49152);
-  //if(bank1 == NULL)Serial.println("Failed to allocate Bank 1 memory");
-  //Serial.printf("Free Heap after bank0: %d\n",system_get_free_heap_size());
-
   setup_cpuspeed();
-
-
-  measure_clock();
 
   // START Z80
 
@@ -130,8 +101,7 @@ void setup()
     z80ports_in[t] = 0xff;
   }
 
-  Serial.print("Setup: MAIN Executing on core ");
-  Serial.println(xPortGetCoreID());
+  Serial.printf("Setup: MAIN Executing on core %x ",xPortGetCoreID());
   Serial.printf("Free Heap after Z80 Reset: %d\n",system_get_free_heap_size());
 
   xMutex = xSemaphoreCreateMutex();
@@ -148,10 +118,6 @@ void setup()
 
   if (run_snapshot)
      load_speccy();
-
-
-
-
 }
 
 
@@ -165,11 +131,9 @@ void videoTask( void * parameter )
    unsigned int zx_vidcalc;
    unsigned int tmpColour;
 
-
    while(1)
    {
-        //xSemaphoreTake( xMutex, portMAX_DELAY );
-        //digitalWrite(DEBUG_PIN,HIGH);
+        xSemaphoreTake( xMutex, portMAX_DELAY );
 
         if (flashing++ > 20)
             flashing=0;
@@ -214,9 +178,8 @@ void videoTask( void * parameter )
           }
         }
          vga.show();
-        //digitalWrite(DEBUG_PIN,LOW);
 
-        //xSemaphoreGive( xMutex );
+        xSemaphoreGive( xMutex );
         vTaskDelay(1) ;
      }
 }
@@ -274,14 +237,7 @@ void loop()
 {
   while (1)
   {
-        //do_keyboard();
-        //xSemaphoreTake( xMutex, portMAX_DELAY );
-        //digitalWrite(DEBUG_PIN2,HIGH);
-             //Z80_Execute();
-
-         Z80();
-        //digitalWrite(DEBUG_PIN2,LOW);
-        //xSemaphoreGive( xMutex );
+        Z80();
         start_im1_irq=1;    // keyboard scan is run in IM1 interrupt
         vTaskDelay(1) ;  //important to avoid task watchdog timeouts - change this to slow down emu
   }
@@ -342,6 +298,5 @@ void do_keyboard()
       bitWrite(z80ports_in[7], 4, keymap[0x32]);
     }
     strcpy(oldKeymap,keymap);
-
 
 }
