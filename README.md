@@ -1,3 +1,3 @@
 # ZX-ESPectrum
-A ZX spectrum emulator in progress running on ESP32.
+A ZX-Spectrum emulator in progress running on ESP32.
 Work in progress.
