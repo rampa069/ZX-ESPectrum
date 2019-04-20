@@ -1,4 +1,4 @@
-# ZX-Espectrum
+# ZX-ESPectrum
 
 An emulation of the ZX Spectrum computer on an ESP32 and VGA Screen using the
 bitluni VGA card. based on the works of Charles Peter Debenham Todd
