@@ -19,7 +19,7 @@
 // SWITCHES
 //
 
-bool run_snapshot = true;
+bool run_snapshot = false;
 bool run_debug = false;
 
 //VGA Device
@@ -39,7 +39,6 @@ void pump_key(char k);
 extern byte bank_latch;
 extern int start_im1_irq;
 void load_speccy();
-void measure_clock();
 void setup_cpuspeed();
 byte Z80_RDMEM(uint16_t A);
 void Z80_WRMEM(uint16_t A,byte V);
@@ -66,9 +65,11 @@ void setup()
   esp_bt_controller_deinit();
   esp_bt_controller_mem_release(ESP_BT_MODE_BTDM);
   //esp_wifi_set_mode(WIFI_MODE_NULL);
+
   Serial.begin(115200);
   Serial.println("CHIP setup.");
   Serial.println("VGA framebufer");
+
   //we need double buffering for smooth animations
   vga.setFrameBufferCount(2);
   Serial.println("VGA init");
