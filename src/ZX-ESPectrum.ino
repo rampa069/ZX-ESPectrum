@@ -10,6 +10,7 @@
 
 #include <ESP32Lib.h>  // Bitluni VGA driver library
 #include <bt.h>
+#include <esp_task_wdt.h>
 #include "PS2Kbd.h"
 #include "SPIFFS.h"
 #include "FS.h"
@@ -19,7 +20,7 @@
 // SWITCHES
 //
 
-bool run_snapshot = true;
+bool run_snapshot = false;
 bool run_debug = false;
 
 //VGA Device
@@ -134,7 +135,7 @@ void videoTask( void * parameter )
 
         while(1)
         {
-                xSemaphoreTake( xMutex, portMAX_DELAY );
+                //xSemaphoreTake( xMutex, portMAX_DELAY );
 
                 if (flashing++ > 20)
                         flashing=0;
@@ -156,13 +157,12 @@ void videoTask( void * parameter )
                                 flash=bitRead(color_attrib,7);
                                 bright=bitRead(color_attrib,6);
 
-                                if (flash) {
-                                        if (flashing > 10) {
+                                if (flash && (flashing > 10)) {
                                                 tmpColour=zx_fore_color;
                                                 zx_fore_color=zx_back_color;
                                                 zx_back_color=tmpColour;
-                                        }
-                                }
+                              }
+
 
 
 
@@ -180,8 +180,11 @@ void videoTask( void * parameter )
                 }
                 vga.show();
 
-                xSemaphoreGive( xMutex );
-                vTaskDelay(1);
+                TIMERG0.wdt_wprotect=TIMG_WDT_WKEY_VALUE;
+                TIMERG0.wdt_feed=1;
+                TIMERG0.wdt_wprotect=0;
+                //xSemaphoreGive( xMutex );
+                //vTaskDelay(0);
         }
 }
 
