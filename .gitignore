@@ -4,6 +4,7 @@ data/**
 !data/fantasy.sna
 !data/sppong.sna
 !data/beep.sna
+!data/diag.sna
 .pioenvs/
 platformio.ini
 .clang_complete

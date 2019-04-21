@@ -32,15 +32,15 @@ void load_speccy()
         return;
     }
 
-// open a file for input
-//  lhandle = SPIFFS.open("/beep.sna", FILE_READ);
-//    lhandle = SPIFFS.open("/fantasy.sna", FILE_READ);
-    lhandle = SPIFFS.open("/sppong.sna", FILE_READ);
-//
-//  lhandle = SPIFFS.open("/manic.sna", FILE_READ);
-//  lhandle = SPIFFS.open("/jetpac.sna", FILE_READ);
-//  lhandle = SPIFFS.open("/jsw1.sna", FILE_READ);
-//  lhandle = SPIFFS.open("/skooldz.sna", FILE_READ);
+  // open a file for input
+  // lhandle = SPIFFS.open("/beep.sna", FILE_READ);
+  // lhandle = SPIFFS.open("/fantasy.sna", FILE_READ);
+  // lhandle = SPIFFS.open("/sppong.sna", FILE_READ);
+  // lhandle = SPIFFS.open("/manic.sna", FILE_READ);
+  // lhandle = SPIFFS.open("/jetpac.sna", FILE_READ);
+  // lhandle = SPIFFS.open("/jsw1.sna", FILE_READ);
+  // lhandle = SPIFFS.open("/skooldz.sna", FILE_READ);
+  lhandle = SPIFFS.open("/diag.sna", FILE_READ);
 
   size_read=0;
   if(lhandle!=NULL)
