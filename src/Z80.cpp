@@ -2473,7 +2473,7 @@ int Z80_Execute (void)
  unsigned opcode;
  Z80_Running=1;
  InitTables ();
- 
+
  do
  {
 #ifdef TRACE
@@ -2504,14 +2504,14 @@ if(run_debug)
   Serial.printf("T-States: %d\n",cycles_main[opcode]);
   Serial.printf("R-Register: %d\n",cycles_main[opcode]);
 }
- 
+
   R.PC.W.l++;
 
   Z80_ICount-=cycles_main[opcode];
   (*(opcode_main[opcode]))();
   int retardo= cycles_main[opcode]*0.27 *2 ;
-  
-  delayMicroseconds(4);
+
+  delayMicroseconds(3);
  }
  while (Z80_ICount>0);
  Z80_ICount+=Z80_IPeriod;
@@ -2524,7 +2524,7 @@ if(run_debug)
 /****************************************************************************/
 word Z80 (void)
 {
- while 
+ while
  (Z80_Execute())
  {
   do_keyboard();
@@ -2542,7 +2542,7 @@ void Z80_RegisterDump (void)
  (
    "AF:%04X HL:%04X DE:%04X BC:%04X PC:%04X SP:%04X IX:%04X IY:%04X\n",
    R.AF.W.l,R.HL.W.l,R.DE.W.l,R.BC.W.l,R.PC.W.l,R.SP.W.l,R.IX.W.l,R.IY.W.l
- ); 
+ );
  printf ("STACK: ");
  for (i=0;i<10;++i) printf ("%04X ",M_RDMEM_WORD((R.SP.D+i*2)&0xFFFF));
  puts ("");

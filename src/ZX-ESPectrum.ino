@@ -19,7 +19,7 @@
 // SWITCHES
 //
 
-bool run_snapshot = false;
+bool run_snapshot = true;
 bool run_debug = false;
 
 //VGA Device
@@ -28,16 +28,16 @@ VGA3Bit vga;
 // ________________________________________________________________________
 // EXTERNS + GLOBALS
 //
-unsigned Z80_GetPC (void);         /* Get program counter                   */
+
 void Z80_Reset (void);             /* Reset registers to the initial values */
 unsigned int  Z80_Execute ();           /* Execute IPeriod T-States              */
 unsigned int  Z80 ();           /* Execute IPeriod T-States              */
 
-void pump_key(char k);
 
 
 extern byte bank_latch;
 extern int start_im1_irq;
+
 void load_speccy();
 void setup_cpuspeed();
 byte Z80_RDMEM(uint16_t A);
