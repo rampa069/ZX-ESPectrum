@@ -3,10 +3,6 @@
 
 
 
-#define BUFFER_SIZE 100
-static volatile uint8_t buffer[BUFFER_SIZE];
-static volatile uint8_t head, tail;
-
 
 unsigned int shift = 0;
 byte lastcode  = 0;
@@ -19,7 +15,7 @@ byte oldKeymap[256];
 extern bool debug_keyboard;
 
 
-void kb_interruptHandler(void)
+void IRAM_ATTR kb_interruptHandler(void)
 {
         static uint8_t bitcount=0;
         static uint8_t incoming=0;

@@ -14,13 +14,12 @@
 #include "FS.h"
 #include "paledefs.h"
 
+
 // SWITCHES
 
 bool run_snapshot = true;
 bool run_debug = false;
 
-// VGA Device
-VGA3Bit vga;
 
 // EXTERNS + GLOBALS
 void Z80_Reset (void);        /* Reset registers to the initial values */
@@ -44,10 +43,13 @@ byte borderTemp =7;
 byte soundTemp = 0;
 byte flashing = 0;
 byte lastAudio=0;
-
+int frameNumber=0;
 SemaphoreHandle_t xMutex;
 
 // SETUP *************************************
+
+
+VGA3Bit vga;
 
 void setup()
 {
@@ -97,6 +99,7 @@ void setup()
 
 		xMutex = xSemaphoreCreateMutex();
 
+
 		xTaskCreatePinnedToCore(
 				videoTask,         /* Function to implement the task */
 				"videoTask",       /* Name of the task */
@@ -115,12 +118,14 @@ void setup()
 
 // VIDEO core 0 *************************************
 
-void videoTask( void * parameter )
+void  videoTask( void * parameter )
 {
         unsigned int ff,i,byte_offset;
         unsigned char color_attrib,pixel_map,zx_fore_color,zx_back_color,flash,bright;
         unsigned int zx_vidcalc;
         unsigned int tmpColour;
+
+
 
         while(1)
         {
@@ -130,6 +135,7 @@ void videoTask( void * parameter )
                         flashing=0;
 
                 vga.clear(zxcolor(borderTemp,0));
+
                 for(unsigned int lin = 0; lin < 192; lin++)
                 {
                         for(ff=0; ff<32; ff++) //foreach byte in line
@@ -161,14 +167,13 @@ void videoTask( void * parameter )
                                         byte bitpos = (0x80 >> i);
 
                                         if((pixel_map & bitpos)!=0)
-                                                vga.dotFast(zx_vidcalc+52, calcY(byte_offset)+5,zxcolor(zx_fore_color,bright));
+                                                vga.dotMix(zx_vidcalc+52, calcY(byte_offset)+5,zxcolor(zx_fore_color,bright));
                                         else
-                                                vga.dotFast(zx_vidcalc+52, calcY(byte_offset)+5,zxcolor(zx_back_color,bright));
+                                                vga.dotMix(zx_vidcalc+52, calcY(byte_offset)+5,zxcolor(zx_back_color,bright));
 
                                 }
                         }
                 }
-                do {} while (writeScreen);
                 vga.show();
 
                 TIMERG0.wdt_wprotect=TIMG_WDT_WKEY_VALUE;
