@@ -23,6 +23,7 @@ extern byte z80ports_in[32];
 extern byte *bank0;
 extern byte borderTemp;
 extern byte soundTemp;
+boolean writeScreen=false;
 int start_im1_irq=0;
 int start_ss_nmi=0;
 int break_nmi=0;
@@ -93,8 +94,9 @@ void Z80_Out (uint16_t Port,byte Value)
       bitWrite(borderTemp,1,bitRead(Value,1));
       bitWrite(borderTemp,2,bitRead(Value,2));
 
-      //digitalWrite(SOUND_PIN,bitRead(Value,4));
-      fastWrite(SOUND_PIN,testbit(Value,4));
+      digitalWrite(SOUND_PIN,bitRead(Value,4));
+      //delayMicroseconds(2);
+      //fastWrite(SOUND_PIN,testbit(Value,4));
       break;
     }
   }
@@ -113,10 +115,14 @@ byte Z80_RDMEM(uint16_t A)
 
 void Z80_WRMEM(uint16_t A,byte V)
 {
+      if (A > 0x4000 && A < 0x57ff )
+          writeScreen=true;
+
       if(A >= 0x4000)
       {
          bank0[A - 0x4000]=V;
       }
+      writeScreen=false;
 }
 
 /****************************************************************************/
@@ -160,7 +166,7 @@ int Z80_Interrupt(void)
 //   return(0xff);
 //return(0xff);
 
-
+//delayMicroseconds(1);
 //  static int ii=0,jj=0;
 
   if ((start_ss_nmi==1))// || (break_nmi==1)) //not corrrect EMU

@@ -9,7 +9,7 @@ board_build.mcu = esp32
 ; change MCU frequency
 board_build.f_cpu = 240000000L
 
-upload_port = /dev/ttyUSB1
+upload_port = /dev/ttyUSB0
 upload_protocol = esptool
 
 monitor_speed = 115200

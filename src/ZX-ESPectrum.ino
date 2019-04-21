@@ -28,6 +28,8 @@ unsigned int  Z80_Execute (); /* Execute IPeriod T-States              */
 unsigned int  Z80 ();         /* Execute IPeriod T-States              */
 extern byte bank_latch;
 extern int start_im1_irq;
+extern int Z80_IPeriod;
+extern boolean writeScreen ;
 void load_speccy();
 void setup_cpuspeed();
 byte Z80_RDMEM(uint16_t A);
@@ -124,7 +126,7 @@ void videoTask( void * parameter )
         {
                 //xSemaphoreTake( xMutex, portMAX_DELAY );
 
-                if (flashing++ > 20)
+                if (flashing++ > 32)
                         flashing=0;
 
                 vga.clear(zxcolor(borderTemp,0));
@@ -144,7 +146,7 @@ void videoTask( void * parameter )
                                 flash=bitRead(color_attrib,7);
                                 bright=bitRead(color_attrib,6);
 
-                                if (flash && (flashing > 10)) {
+                                if (flash && (flashing > 16)) {
                                                 tmpColour=zx_fore_color;
                                                 zx_fore_color=zx_back_color;
                                                 zx_back_color=tmpColour;
@@ -157,6 +159,7 @@ void videoTask( void * parameter )
                                 {
                                         zx_vidcalc=ff*8+i;
                                         byte bitpos = (0x80 >> i);
+
                                         if((pixel_map & bitpos)!=0)
                                                 vga.dotFast(zx_vidcalc+52, calcY(byte_offset)+5,zxcolor(zx_fore_color,bright));
                                         else
@@ -165,6 +168,7 @@ void videoTask( void * parameter )
                                 }
                         }
                 }
+                do {} while (writeScreen);
                 vga.show();
 
                 TIMERG0.wdt_wprotect=TIMG_WDT_WKEY_VALUE;
@@ -228,9 +232,13 @@ void loop()
 {
 		while (1)
 		{
-				Z80();
-				start_im1_irq=1; // keyboard scan is run in IM1 interrupt
-				vTaskDelay(1); //important to avoid task watchdog timeouts - change this to slow down emu
+        start_im1_irq=1;
+        do_keyboard();
+        Z80_Execute();
+        TIMERG0.wdt_wprotect=TIMG_WDT_WKEY_VALUE;
+        TIMERG0.wdt_feed=1;
+        TIMERG0.wdt_wprotect=0;
+				vTaskDelay(0); //important to avoid task watchdog timeouts - change this to slow down emu
 		}
 }
 

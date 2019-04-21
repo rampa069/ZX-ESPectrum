@@ -2509,9 +2509,10 @@ if(run_debug)
 
   Z80_ICount-=cycles_main[opcode];
   (*(opcode_main[opcode]))();
-  int retardo= cycles_main[opcode]*0.27 *2 ;
+  int retardo= cycles_main[opcode] /4;
 
-  delayMicroseconds(3);
+  if (opcode != 0xd3)
+      delayMicroseconds(3);
  }
  while (Z80_ICount>0);
  Z80_ICount+=Z80_IPeriod;
