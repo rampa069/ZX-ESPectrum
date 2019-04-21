@@ -5,4 +5,4 @@ PASEVGA/data/**
 !PASEVGA/data/sppong.sna
 !PASEVGA/data/beep.sna
 .pioenvs/
-
+platformio.ini
