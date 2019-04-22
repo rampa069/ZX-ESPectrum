@@ -36,16 +36,19 @@ void load_speccy() {
     // lhandle = SPIFFS.open("/sppong.sna", FILE_READ);
     // lhandle = SPIFFS.open("/ramiro1.sna", FILE_READ);
     // lhandle = SPIFFS.open("/ramiro2016.sna", FILE_READ);
-    //
     // lhandle = SPIFFS.open("/manic.sna", FILE_READ);
     // lhandle = SPIFFS.open("/jetpac.sna", FILE_READ);
     // lhandle = SPIFFS.open("/jsw1.sna", FILE_READ);
     // lhandle = SPIFFS.open("/skooldz.sna", FILE_READ);
     // lhandle = SPIFFS.open("/sirababol.sna", FILE_READ);
-    // lhandle = SPIFFS.open("/ramiro1.sna", FILE_READ);
-    // lhandle = SPIFFS.open("/ramiro2016.sna", FILE_READ);
     // lhandle = SPIFFS.open("/joust.sna", FILE_READ);
-    lhandle = SPIFFS.open("/diag.sna", FILE_READ);
+    // lhandle = SPIFFS.open("/diag.sna", FILE_READ);
+    lhandle = SPIFFS.open("/pheenix.sna", FILE_READ);
+    // lhandle = SPIFFS.open("/rocman.sna", FILE_READ);
+    // lhandle = SPIFFS.open("/3dchess.sna", FILE_READ);
+    // lhandle = SPIFFS.open("/3dcombat.sna", FILE_READ);
+    // lhandle = SPIFFS.open("/sintetiza.sna", FILE_READ);
+    // lhandle = SPIFFS.open("/deathchase.sna", FILE_READ);
 
     size_read = 0;
     if (lhandle != NULL) {
@@ -114,7 +117,7 @@ void load_speccy() {
         Serial.printf("SP after: %x\n", i.SP.D);
 
         i.PC.D = retaddr;
-        // i.PC.D=0x8400;
+        // i.PC.D = 0x8400;
         start_im1_irq = i.IM;
         Serial.printf("ret address: %x\n", retaddr);
 

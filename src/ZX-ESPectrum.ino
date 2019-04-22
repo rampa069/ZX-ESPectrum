@@ -15,26 +15,24 @@
 #include <esp_task_wdt.h>
 
 // SWITCHES
-
 bool run_snapshot = true;
 bool run_debug = false;
 
 // EXTERNS + GLOBALS
-void Z80_Reset(void);       /* Reset registers to the initial values */
-unsigned int Z80_Execute(); /* Execute IPeriod T-States              */
-unsigned int Z80();         /* Execute IPeriod T-States              */
 extern byte bank_latch;
 extern int start_im1_irq;
 extern int Z80_IPeriod;
 extern boolean writeScreen;
+void Z80_Reset(void);       /* Reset registers to the initial values */
+unsigned int Z80_Execute(); /* Execute IPeriod T-States              */
+unsigned int Z80();         /* Execute IPeriod T-States              */
 void load_speccy();
 void setup_cpuspeed();
 byte Z80_RDMEM(uint16_t A);
 void Z80_WRMEM(uint16_t A, byte V);
+void do_OSD();
 
-// ________________________________________________________________________
 // GLOBALS
-//
 byte *bank0;
 byte z80ports_in[32];
 byte borderTemp = 7;
@@ -42,7 +40,7 @@ byte soundTemp = 0;
 byte flashing = 0;
 byte lastAudio = 0;
 
-SemaphoreHandle_t xMutex;
+SemaphoreHandle_t xULAMutex = xSemaphoreCreateMutex();
 
 // SETUP *************************************
 VGA3Bit vga;
@@ -113,8 +111,7 @@ void videoTask(void *parameter) {
     unsigned int tmpColour;
 
     while (1) {
-        // xSemaphoreTake( xMutex, portMAX_DELAY );
-
+        xSemaphoreTake(xULAMutex, 0);
         if (flashing++ > 32)
             flashing = 0;
 
@@ -158,7 +155,7 @@ void videoTask(void *parameter) {
         TIMERG0.wdt_wprotect = TIMG_WDT_WKEY_VALUE;
         TIMERG0.wdt_feed = 1;
         TIMERG0.wdt_wprotect = 0;
-        // xSemaphoreGive( xMutex );
+        xSemaphoreGive(xULAMutex);
         // vTaskDelay(0);
     }
 }
@@ -201,20 +198,7 @@ unsigned int zxcolor(byte c, byte f) {
     return 0;
 }
 
-// LOOP core 1 *************************************
-
-void loop() {
-    while (1) {
-        start_im1_irq = 1;
-        do_keyboard();
-        Z80_Execute();
-        TIMERG0.wdt_wprotect = TIMG_WDT_WKEY_VALUE;
-        TIMERG0.wdt_feed = 1;
-        TIMERG0.wdt_wprotect = 0;
-        vTaskDelay(0); // important to avoid task watchdog timeouts - change this to slow down emu
-    }
-}
-
+/* Load zx keyboard lines from PS/2 */
 void do_keyboard() {
     if (keymap != oldKeymap) {
         bitWrite(z80ports_in[0], 0, keymap[0x12]);
@@ -266,4 +250,21 @@ void do_keyboard() {
         bitWrite(z80ports_in[7], 4, keymap[0x32]);
     }
     strcpy(oldKeymap, keymap);
+}
+
+/* +-------------+
+   | LOOP core 1 |
+   +-------------+
+*/
+void loop() {
+    while (1) {
+        start_im1_irq = 1;
+        do_OSD();
+        do_keyboard();
+        Z80_Execute();
+        TIMERG0.wdt_wprotect = TIMG_WDT_WKEY_VALUE;
+        TIMERG0.wdt_feed = 1;
+        TIMERG0.wdt_wprotect = 0;
+        vTaskDelay(0); // important to avoid task watchdog timeouts - change this to slow down emu
+    }
 }
