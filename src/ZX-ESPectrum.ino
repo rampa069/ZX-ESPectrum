@@ -95,14 +95,7 @@ void setup() {
   Serial.printf("Free Heap after Z80 Reset: %d\n", system_get_free_heap_size());
 
 
-		xTaskCreatePinnedToCore(
-				videoTask,         /* Function to implement the task */
-				"videoTask",       /* Name of the task */
-				2048,            /* Stack size in words */
-				NULL,             /* Task input parameter */
-				20,                /* Priority of the task */
-				NULL,             /* Task handle. */
-				0);        /* Core where the task should run */
+	
 
   xTaskCreatePinnedToCore(videoTask,   /* Function to implement the task */
                           "videoTask", /* Name of the task */
@@ -164,8 +157,7 @@ void videoTask(void *parameter) {
         }
       }
     }
-    do {
-    } while (writeScreen);
+
     vga.show();
 
     TIMERG0.wdt_wprotect = TIMG_WDT_WKEY_VALUE;
