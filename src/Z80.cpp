@@ -79,53 +79,53 @@ typedef void (*opcode_fn)(void);
 
 /* Get next opcode argument and increment program counter */
 INLINE unsigned M_RDMEM_OPCODE(void) {
-  unsigned retval;
-  retval = M_RDOP_ARG(R.PC.D);
-  R.PC.W.l++;
-  return retval;
+    unsigned retval;
+    retval = M_RDOP_ARG(R.PC.D);
+    R.PC.W.l++;
+    return retval;
 }
 
 INLINE unsigned M_RDMEM_WORD(dword A) {
-  int i;
-  i = M_RDMEM(A);
-  i += M_RDMEM(((A) + 1) & 0xFFFF) << 8;
-  return i;
+    int i;
+    i = M_RDMEM(A);
+    i += M_RDMEM(((A) + 1) & 0xFFFF) << 8;
+    return i;
 }
 
 INLINE void M_WRMEM_WORD(dword A, word V) {
-  M_WRMEM(A, V & 255);
-  M_WRMEM(((A) + 1) & 0xFFFF, V >> 8);
+    M_WRMEM(A, V & 255);
+    M_WRMEM(((A) + 1) & 0xFFFF, V >> 8);
 }
 
 INLINE unsigned M_RDMEM_OPCODE_WORD(void) {
-  int i;
-  i = M_RDMEM_OPCODE();
-  i += M_RDMEM_OPCODE() << 8;
-  return i;
+    int i;
+    i = M_RDMEM_OPCODE();
+    i += M_RDMEM_OPCODE() << 8;
+    return i;
 }
 
 #define M_XIX ((R.IX.D + (offset)M_RDMEM_OPCODE()) & 0xFFFF)
 #define M_XIY ((R.IY.D + (offset)M_RDMEM_OPCODE()) & 0xFFFF)
 #define M_RD_XHL M_RDMEM(R.HL.D)
 INLINE unsigned M_RD_XIX(void) {
-  int i;
-  i = M_XIX;
-  return M_RDMEM(i);
+    int i;
+    i = M_XIX;
+    return M_RDMEM(i);
 }
 INLINE unsigned M_RD_XIY(void) {
-  int i;
-  i = M_XIY;
-  return M_RDMEM(i);
+    int i;
+    i = M_XIY;
+    return M_RDMEM(i);
 }
 INLINE void M_WR_XIX(byte a) {
-  int i;
-  i = M_XIX;
-  M_WRMEM(i, a);
+    int i;
+    i = M_XIX;
+    M_WRMEM(i, a);
 }
 INLINE void M_WR_XIY(byte a) {
-  int i;
-  i = M_XIY;
-  M_WRMEM(i, a);
+    int i;
+    i = M_XIY;
+    M_WRMEM(i, a);
 }
 
 #ifdef X86_ASM
@@ -135,16 +135,16 @@ INLINE void M_WR_XIY(byte a) {
 #endif
 
 static void adc_a_xhl(void) {
-  byte i = M_RD_XHL;
-  M_ADC(i);
+    byte i = M_RD_XHL;
+    M_ADC(i);
 }
 static void adc_a_xix(void) {
-  byte i = M_RD_XIX();
-  M_ADC(i);
+    byte i = M_RD_XIX();
+    M_ADC(i);
 }
 static void adc_a_xiy(void) {
-  byte i = M_RD_XIY();
-  M_ADC(i);
+    byte i = M_RD_XIY();
+    M_ADC(i);
 }
 static void adc_a_a(void) { M_ADC(R.AF.B.h); }
 static void adc_a_b(void) { M_ADC(R.BC.B.h); }
@@ -158,8 +158,8 @@ static void adc_a_ixh(void) { M_ADC(R.IX.B.h); }
 static void adc_a_iyl(void) { M_ADC(R.IY.B.l); }
 static void adc_a_iyh(void) { M_ADC(R.IY.B.h); }
 static void adc_a_byte(void) {
-  byte i = M_RDMEM_OPCODE();
-  M_ADC(i);
+    byte i = M_RDMEM_OPCODE();
+    M_ADC(i);
 }
 
 static void adc_hl_bc(void) { M_ADCW(BC); }
@@ -168,16 +168,16 @@ static void adc_hl_hl(void) { M_ADCW(HL); }
 static void adc_hl_sp(void) { M_ADCW(SP); }
 
 static void add_a_xhl(void) {
-  byte i = M_RD_XHL;
-  M_ADD(i);
+    byte i = M_RD_XHL;
+    M_ADD(i);
 }
 static void add_a_xix(void) {
-  byte i = M_RD_XIX();
-  M_ADD(i);
+    byte i = M_RD_XIX();
+    M_ADD(i);
 }
 static void add_a_xiy(void) {
-  byte i = M_RD_XIY();
-  M_ADD(i);
+    byte i = M_RD_XIY();
+    M_ADD(i);
 }
 static void add_a_a(void) { M_ADD(R.AF.B.h); }
 static void add_a_b(void) { M_ADD(R.BC.B.h); }
@@ -191,8 +191,8 @@ static void add_a_ixh(void) { M_ADD(R.IX.B.h); }
 static void add_a_iyl(void) { M_ADD(R.IY.B.l); }
 static void add_a_iyh(void) { M_ADD(R.IY.B.h); }
 static void add_a_byte(void) {
-  byte i = M_RDMEM_OPCODE();
-  M_ADD(i);
+    byte i = M_RDMEM_OPCODE();
+    M_ADD(i);
 }
 
 static void add_hl_bc(void) { M_ADDW(HL, BC); }
@@ -209,16 +209,16 @@ static void add_iy_iy(void) { M_ADDW(IY, IY); }
 static void add_iy_sp(void) { M_ADDW(IY, SP); }
 
 static void and_xhl(void) {
-  byte i = M_RD_XHL;
-  M_AND(i);
+    byte i = M_RD_XHL;
+    M_AND(i);
 }
 static void and_xix(void) {
-  byte i = M_RD_XIX();
-  M_AND(i);
+    byte i = M_RD_XIX();
+    M_AND(i);
 }
 static void and_xiy(void) {
-  byte i = M_RD_XIY();
-  M_AND(i);
+    byte i = M_RD_XIY();
+    M_AND(i);
 }
 static void and_a(void) { R.AF.B.l = ZSPTable[R.AF.B.h] | H_FLAG; }
 static void and_b(void) { M_AND(R.BC.B.h); }
@@ -232,21 +232,21 @@ static void and_ixl(void) { M_AND(R.IX.B.l); }
 static void and_iyh(void) { M_AND(R.IY.B.h); }
 static void and_iyl(void) { M_AND(R.IY.B.l); }
 static void and_byte(void) {
-  byte i = M_RDMEM_OPCODE();
-  M_AND(i);
+    byte i = M_RDMEM_OPCODE();
+    M_AND(i);
 }
 
 static void bit_0_xhl(void) {
-  byte i = M_RD_XHL;
-  M_BIT(0, i);
+    byte i = M_RD_XHL;
+    M_BIT(0, i);
 }
 static void bit_0_xix(void) {
-  byte i = M_RD_XIX();
-  M_BIT(0, i);
+    byte i = M_RD_XIX();
+    M_BIT(0, i);
 }
 static void bit_0_xiy(void) {
-  byte i = M_RD_XIY();
-  M_BIT(0, i);
+    byte i = M_RD_XIY();
+    M_BIT(0, i);
 }
 static void bit_0_a(void) { M_BIT(0, R.AF.B.h); }
 static void bit_0_b(void) { M_BIT(0, R.BC.B.h); }
@@ -257,16 +257,16 @@ static void bit_0_h(void) { M_BIT(0, R.HL.B.h); }
 static void bit_0_l(void) { M_BIT(0, R.HL.B.l); }
 
 static void bit_1_xhl(void) {
-  byte i = M_RD_XHL;
-  M_BIT(1, i);
+    byte i = M_RD_XHL;
+    M_BIT(1, i);
 }
 static void bit_1_xix(void) {
-  byte i = M_RD_XIX();
-  M_BIT(1, i);
+    byte i = M_RD_XIX();
+    M_BIT(1, i);
 }
 static void bit_1_xiy(void) {
-  byte i = M_RD_XIY();
-  M_BIT(1, i);
+    byte i = M_RD_XIY();
+    M_BIT(1, i);
 }
 static void bit_1_a(void) { M_BIT(1, R.AF.B.h); }
 static void bit_1_b(void) { M_BIT(1, R.BC.B.h); }
@@ -277,16 +277,16 @@ static void bit_1_h(void) { M_BIT(1, R.HL.B.h); }
 static void bit_1_l(void) { M_BIT(1, R.HL.B.l); }
 
 static void bit_2_xhl(void) {
-  byte i = M_RD_XHL;
-  M_BIT(2, i);
+    byte i = M_RD_XHL;
+    M_BIT(2, i);
 }
 static void bit_2_xix(void) {
-  byte i = M_RD_XIX();
-  M_BIT(2, i);
+    byte i = M_RD_XIX();
+    M_BIT(2, i);
 }
 static void bit_2_xiy(void) {
-  byte i = M_RD_XIY();
-  M_BIT(2, i);
+    byte i = M_RD_XIY();
+    M_BIT(2, i);
 }
 static void bit_2_a(void) { M_BIT(2, R.AF.B.h); }
 static void bit_2_b(void) { M_BIT(2, R.BC.B.h); }
@@ -297,16 +297,16 @@ static void bit_2_h(void) { M_BIT(2, R.HL.B.h); }
 static void bit_2_l(void) { M_BIT(2, R.HL.B.l); }
 
 static void bit_3_xhl(void) {
-  byte i = M_RD_XHL;
-  M_BIT(3, i);
+    byte i = M_RD_XHL;
+    M_BIT(3, i);
 }
 static void bit_3_xix(void) {
-  byte i = M_RD_XIX();
-  M_BIT(3, i);
+    byte i = M_RD_XIX();
+    M_BIT(3, i);
 }
 static void bit_3_xiy(void) {
-  byte i = M_RD_XIY();
-  M_BIT(3, i);
+    byte i = M_RD_XIY();
+    M_BIT(3, i);
 }
 static void bit_3_a(void) { M_BIT(3, R.AF.B.h); }
 static void bit_3_b(void) { M_BIT(3, R.BC.B.h); }
@@ -317,16 +317,16 @@ static void bit_3_h(void) { M_BIT(3, R.HL.B.h); }
 static void bit_3_l(void) { M_BIT(3, R.HL.B.l); }
 
 static void bit_4_xhl(void) {
-  byte i = M_RD_XHL;
-  M_BIT(4, i);
+    byte i = M_RD_XHL;
+    M_BIT(4, i);
 }
 static void bit_4_xix(void) {
-  byte i = M_RD_XIX();
-  M_BIT(4, i);
+    byte i = M_RD_XIX();
+    M_BIT(4, i);
 }
 static void bit_4_xiy(void) {
-  byte i = M_RD_XIY();
-  M_BIT(4, i);
+    byte i = M_RD_XIY();
+    M_BIT(4, i);
 }
 static void bit_4_a(void) { M_BIT(4, R.AF.B.h); }
 static void bit_4_b(void) { M_BIT(4, R.BC.B.h); }
@@ -337,16 +337,16 @@ static void bit_4_h(void) { M_BIT(4, R.HL.B.h); }
 static void bit_4_l(void) { M_BIT(4, R.HL.B.l); }
 
 static void bit_5_xhl(void) {
-  byte i = M_RD_XHL;
-  M_BIT(5, i);
+    byte i = M_RD_XHL;
+    M_BIT(5, i);
 }
 static void bit_5_xix(void) {
-  byte i = M_RD_XIX();
-  M_BIT(5, i);
+    byte i = M_RD_XIX();
+    M_BIT(5, i);
 }
 static void bit_5_xiy(void) {
-  byte i = M_RD_XIY();
-  M_BIT(5, i);
+    byte i = M_RD_XIY();
+    M_BIT(5, i);
 }
 static void bit_5_a(void) { M_BIT(5, R.AF.B.h); }
 static void bit_5_b(void) { M_BIT(5, R.BC.B.h); }
@@ -357,16 +357,16 @@ static void bit_5_h(void) { M_BIT(5, R.HL.B.h); }
 static void bit_5_l(void) { M_BIT(5, R.HL.B.l); }
 
 static void bit_6_xhl(void) {
-  byte i = M_RD_XHL;
-  M_BIT(6, i);
+    byte i = M_RD_XHL;
+    M_BIT(6, i);
 }
 static void bit_6_xix(void) {
-  byte i = M_RD_XIX();
-  M_BIT(6, i);
+    byte i = M_RD_XIX();
+    M_BIT(6, i);
 }
 static void bit_6_xiy(void) {
-  byte i = M_RD_XIY();
-  M_BIT(6, i);
+    byte i = M_RD_XIY();
+    M_BIT(6, i);
 }
 static void bit_6_a(void) { M_BIT(6, R.AF.B.h); }
 static void bit_6_b(void) { M_BIT(6, R.BC.B.h); }
@@ -377,16 +377,16 @@ static void bit_6_h(void) { M_BIT(6, R.HL.B.h); }
 static void bit_6_l(void) { M_BIT(6, R.HL.B.l); }
 
 static void bit_7_xhl(void) {
-  byte i = M_RD_XHL;
-  M_BIT(7, i);
+    byte i = M_RD_XHL;
+    M_BIT(7, i);
 }
 static void bit_7_xix(void) {
-  byte i = M_RD_XIX();
-  M_BIT(7, i);
+    byte i = M_RD_XIX();
+    M_BIT(7, i);
 }
 static void bit_7_xiy(void) {
-  byte i = M_RD_XIY();
-  M_BIT(7, i);
+    byte i = M_RD_XIY();
+    M_BIT(7, i);
 }
 static void bit_7_a(void) { M_BIT(7, R.AF.B.h); }
 static void bit_7_b(void) { M_BIT(7, R.BC.B.h); }
@@ -397,76 +397,76 @@ static void bit_7_h(void) { M_BIT(7, R.HL.B.h); }
 static void bit_7_l(void) { M_BIT(7, R.HL.B.l); }
 
 static void call_c(void) {
-  if (M_C) {
-    M_CALL;
-  } else {
-    M_SKIP_CALL;
-  }
+    if (M_C) {
+        M_CALL;
+    } else {
+        M_SKIP_CALL;
+    }
 }
 static void call_m(void) {
-  if (M_M) {
-    M_CALL;
-  } else {
-    M_SKIP_CALL;
-  }
+    if (M_M) {
+        M_CALL;
+    } else {
+        M_SKIP_CALL;
+    }
 }
 static void call_nc(void) {
-  if (M_NC) {
-    M_CALL;
-  } else {
-    M_SKIP_CALL;
-  }
+    if (M_NC) {
+        M_CALL;
+    } else {
+        M_SKIP_CALL;
+    }
 }
 static void call_nz(void) {
-  if (M_NZ) {
-    M_CALL;
-  } else {
-    M_SKIP_CALL;
-  }
+    if (M_NZ) {
+        M_CALL;
+    } else {
+        M_SKIP_CALL;
+    }
 }
 static void call_p(void) {
-  if (M_P) {
-    M_CALL;
-  } else {
-    M_SKIP_CALL;
-  }
+    if (M_P) {
+        M_CALL;
+    } else {
+        M_SKIP_CALL;
+    }
 }
 static void call_pe(void) {
-  if (M_PE) {
-    M_CALL;
-  } else {
-    M_SKIP_CALL;
-  }
+    if (M_PE) {
+        M_CALL;
+    } else {
+        M_SKIP_CALL;
+    }
 }
 static void call_po(void) {
-  if (M_PO) {
-    M_CALL;
-  } else {
-    M_SKIP_CALL;
-  }
+    if (M_PO) {
+        M_CALL;
+    } else {
+        M_SKIP_CALL;
+    }
 }
 static void call_z(void) {
-  if (M_Z) {
-    M_CALL;
-  } else {
-    M_SKIP_CALL;
-  }
+    if (M_Z) {
+        M_CALL;
+    } else {
+        M_SKIP_CALL;
+    }
 }
 static void call(void) { M_CALL; }
 
 static void ccf(void) { R.AF.B.l = ((R.AF.B.l & 0xED) | ((R.AF.B.l & 1) << 4)) ^ 1; }
 
 static void cp_xhl(void) {
-  byte i = M_RD_XHL;
-  M_CP(i);
+    byte i = M_RD_XHL;
+    M_CP(i);
 }
 static void cp_xix(void) {
-  byte i = M_RD_XIX();
-  M_CP(i);
+    byte i = M_RD_XIX();
+    M_CP(i);
 }
 static void cp_xiy(void) {
-  byte i = M_RD_XIY();
-  M_CP(i);
+    byte i = M_RD_XIY();
+    M_CP(i);
 }
 static void cp_a(void) { M_CP(R.AF.B.h); }
 static void cp_b(void) { M_CP(R.BC.B.h); }
@@ -480,82 +480,82 @@ static void cp_ixl(void) { M_CP(R.IX.B.l); }
 static void cp_iyh(void) { M_CP(R.IY.B.h); }
 static void cp_iyl(void) { M_CP(R.IY.B.l); }
 static void cp_byte(void) {
-  byte i = M_RDMEM_OPCODE();
-  M_CP(i);
+    byte i = M_RDMEM_OPCODE();
+    M_CP(i);
 }
 
 static void cpd(void) {
-  byte i, j;
-  i = M_RDMEM(R.HL.D);
-  j = R.AF.B.h - i;
-  --R.HL.W.l;
-  --R.BC.W.l;
-  R.AF.B.l = (R.AF.B.l & C_FLAG) | ZSTable[j] | ((R.AF.B.h ^ i ^ j) & H_FLAG) | (R.BC.D ? V_FLAG : 0) | N_FLAG;
+    byte i, j;
+    i = M_RDMEM(R.HL.D);
+    j = R.AF.B.h - i;
+    --R.HL.W.l;
+    --R.BC.W.l;
+    R.AF.B.l = (R.AF.B.l & C_FLAG) | ZSTable[j] | ((R.AF.B.h ^ i ^ j) & H_FLAG) | (R.BC.D ? V_FLAG : 0) | N_FLAG;
 }
 
 static void cpdr(void) {
-  cpd();
-  if (R.BC.D && !(R.AF.B.l & Z_FLAG)) {
-    Z80_ICount -= 5;
-    R.PC.W.l -= 2;
-  }
+    cpd();
+    if (R.BC.D && !(R.AF.B.l & Z_FLAG)) {
+        Z80_ICount -= 5;
+        R.PC.W.l -= 2;
+    }
 }
 
 static void cpi(void) {
-  byte i, j;
-  i = M_RDMEM(R.HL.D);
-  j = R.AF.B.h - i;
-  ++R.HL.W.l;
-  --R.BC.W.l;
-  R.AF.B.l = (R.AF.B.l & C_FLAG) | ZSTable[j] | ((R.AF.B.h ^ i ^ j) & H_FLAG) | (R.BC.D ? V_FLAG : 0) | N_FLAG;
+    byte i, j;
+    i = M_RDMEM(R.HL.D);
+    j = R.AF.B.h - i;
+    ++R.HL.W.l;
+    --R.BC.W.l;
+    R.AF.B.l = (R.AF.B.l & C_FLAG) | ZSTable[j] | ((R.AF.B.h ^ i ^ j) & H_FLAG) | (R.BC.D ? V_FLAG : 0) | N_FLAG;
 }
 
 static void cpir(void) {
-  cpi();
-  if (R.BC.D && !(R.AF.B.l & Z_FLAG)) {
-    Z80_ICount -= 5;
-    R.PC.W.l -= 2;
-  }
+    cpi();
+    if (R.BC.D && !(R.AF.B.l & Z_FLAG)) {
+        Z80_ICount -= 5;
+        R.PC.W.l -= 2;
+    }
 }
 
 static void cpl(void) {
-  R.AF.B.h ^= 0xFF;
-  R.AF.B.l |= (H_FLAG | N_FLAG);
+    R.AF.B.h ^= 0xFF;
+    R.AF.B.l |= (H_FLAG | N_FLAG);
 }
 
 static void daa(void) {
-  int i;
-  i = R.AF.B.h;
-  if (R.AF.B.l & C_FLAG)
-    i |= 256;
-  if (R.AF.B.l & H_FLAG)
-    i |= 512;
-  if (R.AF.B.l & N_FLAG)
-    i |= 1024;
-  R.AF.W.l = DAATable[i];
+    int i;
+    i = R.AF.B.h;
+    if (R.AF.B.l & C_FLAG)
+        i |= 256;
+    if (R.AF.B.l & H_FLAG)
+        i |= 512;
+    if (R.AF.B.l & N_FLAG)
+        i |= 1024;
+    R.AF.W.l = DAATable[i];
 };
 
 static void dec_xhl(void) {
-  byte i;
-  i = M_RDMEM(R.HL.D);
-  M_DEC(i);
-  M_WRMEM(R.HL.D, i);
+    byte i;
+    i = M_RDMEM(R.HL.D);
+    M_DEC(i);
+    M_WRMEM(R.HL.D, i);
 }
 static void dec_xix(void) {
-  byte i;
-  int j;
-  j = M_XIX;
-  i = M_RDMEM(j);
-  M_DEC(i);
-  M_WRMEM(j, i);
+    byte i;
+    int j;
+    j = M_XIX;
+    i = M_RDMEM(j);
+    M_DEC(i);
+    M_WRMEM(j, i);
 }
 static void dec_xiy(void) {
-  byte i;
-  int j;
-  j = M_XIY;
-  i = M_RDMEM(j);
-  M_DEC(i);
-  M_WRMEM(j, i);
+    byte i;
+    int j;
+    j = M_XIY;
+    i = M_RDMEM(j);
+    M_DEC(i);
+    M_WRMEM(j, i);
 }
 static void dec_a(void) { M_DEC(R.AF.B.h); }
 static void dec_b(void) { M_DEC(R.BC.B.h); }
@@ -579,66 +579,66 @@ static void dec_sp(void) { --R.SP.W.l; }
 static void di(void) { R.IFF1 = R.IFF2 = 0; }
 
 static void djnz(void) {
-  if (--R.BC.B.h) {
-    M_JR;
-  } else {
-    M_SKIP_JR;
-  }
+    if (--R.BC.B.h) {
+        M_JR;
+    } else {
+        M_SKIP_JR;
+    }
 }
 
 static void ex_xsp_hl(void) {
-  int i;
-  i = M_RDMEM_WORD(R.SP.D);
-  M_WRMEM_WORD(R.SP.D, R.HL.D);
-  R.HL.D = i;
+    int i;
+    i = M_RDMEM_WORD(R.SP.D);
+    M_WRMEM_WORD(R.SP.D, R.HL.D);
+    R.HL.D = i;
 }
 
 static void ex_xsp_ix(void) {
-  int i;
-  i = M_RDMEM_WORD(R.SP.D);
-  M_WRMEM_WORD(R.SP.D, R.IX.D);
-  R.IX.D = i;
+    int i;
+    i = M_RDMEM_WORD(R.SP.D);
+    M_WRMEM_WORD(R.SP.D, R.IX.D);
+    R.IX.D = i;
 }
 
 static void ex_xsp_iy(void) {
-  int i;
-  i = M_RDMEM_WORD(R.SP.D);
-  M_WRMEM_WORD(R.SP.D, R.IY.D);
-  R.IY.D = i;
+    int i;
+    i = M_RDMEM_WORD(R.SP.D);
+    M_WRMEM_WORD(R.SP.D, R.IY.D);
+    R.IY.D = i;
 }
 
 static void ex_af_af(void) {
-  int i;
-  i = R.AF.D;
-  R.AF.D = R.AF2.D;
-  R.AF2.D = i;
+    int i;
+    i = R.AF.D;
+    R.AF.D = R.AF2.D;
+    R.AF2.D = i;
 }
 
 static void ex_de_hl(void) {
-  int i;
-  i = R.DE.D;
-  R.DE.D = R.HL.D;
-  R.HL.D = i;
+    int i;
+    i = R.DE.D;
+    R.DE.D = R.HL.D;
+    R.HL.D = i;
 }
 
 static void exx(void) {
-  int i;
-  i = R.BC.D;
-  R.BC.D = R.BC2.D;
-  R.BC2.D = i;
-  i = R.DE.D;
-  R.DE.D = R.DE2.D;
-  R.DE2.D = i;
-  i = R.HL.D;
-  R.HL.D = R.HL2.D;
-  R.HL2.D = i;
+    int i;
+    i = R.BC.D;
+    R.BC.D = R.BC2.D;
+    R.BC2.D = i;
+    i = R.DE.D;
+    R.DE.D = R.DE2.D;
+    R.DE2.D = i;
+    i = R.HL.D;
+    R.HL.D = R.HL2.D;
+    R.HL2.D = i;
 }
 
 static void halt(void) {
-  --R.PC.W.l;
-  R.HALT = 1;
-  if (Z80_ICount > 0)
-    Z80_ICount = 0;
+    --R.PC.W.l;
+    R.HALT = 1;
+    if (Z80_ICount > 0)
+        Z80_ICount = 0;
 }
 
 static void im_0(void) { R.IM = 0; }
@@ -653,36 +653,36 @@ static void in_e_c(void) { M_IN(R.DE.B.l); }
 static void in_h_c(void) { M_IN(R.HL.B.h); }
 static void in_l_c(void) { M_IN(R.HL.B.l); }
 static void in_0_c(void) {
-  byte i;
-  M_IN(i);
+    byte i;
+    M_IN(i);
 }
 
 static void in_a_byte(void) {
-  byte i = M_RDMEM_OPCODE();
-  R.AF.B.h = DoIn(i, R.AF.B.h);
+    byte i = M_RDMEM_OPCODE();
+    R.AF.B.h = DoIn(i, R.AF.B.h);
 }
 
 static void inc_xhl(void) {
-  byte i;
-  i = M_RDMEM(R.HL.D);
-  M_INC(i);
-  M_WRMEM(R.HL.D, i);
+    byte i;
+    i = M_RDMEM(R.HL.D);
+    M_INC(i);
+    M_WRMEM(R.HL.D, i);
 }
 static void inc_xix(void) {
-  byte i;
-  int j;
-  j = M_XIX;
-  i = M_RDMEM(j);
-  M_INC(i);
-  M_WRMEM(j, i);
+    byte i;
+    int j;
+    j = M_XIX;
+    i = M_RDMEM(j);
+    M_INC(i);
+    M_WRMEM(j, i);
 }
 static void inc_xiy(void) {
-  byte i;
-  int j;
-  j = M_XIY;
-  i = M_RDMEM(j);
-  M_INC(i);
-  M_WRMEM(j, i);
+    byte i;
+    int j;
+    j = M_XIY;
+    i = M_RDMEM(j);
+    M_INC(i);
+    M_WRMEM(j, i);
 }
 static void inc_a(void) { M_INC(R.AF.B.h); }
 static void inc_b(void) { M_INC(R.BC.B.h); }
@@ -704,33 +704,33 @@ static void inc_iy(void) { ++R.IY.W.l; }
 static void inc_sp(void) { ++R.SP.W.l; }
 
 static void ind(void) {
-  --R.BC.B.h;
-  M_WRMEM(R.HL.D, DoIn(R.BC.B.l, R.BC.B.h));
-  --R.HL.W.l;
-  R.AF.B.l = (R.BC.B.h) ? N_FLAG : (N_FLAG | Z_FLAG);
+    --R.BC.B.h;
+    M_WRMEM(R.HL.D, DoIn(R.BC.B.l, R.BC.B.h));
+    --R.HL.W.l;
+    R.AF.B.l = (R.BC.B.h) ? N_FLAG : (N_FLAG | Z_FLAG);
 }
 
 static void indr(void) {
-  ind();
-  if (R.BC.B.h) {
-    Z80_ICount -= 5;
-    R.PC.W.l -= 2;
-  }
+    ind();
+    if (R.BC.B.h) {
+        Z80_ICount -= 5;
+        R.PC.W.l -= 2;
+    }
 }
 
 static void ini(void) {
-  --R.BC.B.h;
-  M_WRMEM(R.HL.D, DoIn(R.BC.B.l, R.BC.B.h));
-  ++R.HL.W.l;
-  R.AF.B.l = (R.BC.B.h) ? N_FLAG : (N_FLAG | Z_FLAG);
+    --R.BC.B.h;
+    M_WRMEM(R.HL.D, DoIn(R.BC.B.l, R.BC.B.h));
+    ++R.HL.W.l;
+    R.AF.B.l = (R.BC.B.h) ? N_FLAG : (N_FLAG | Z_FLAG);
 }
 
 static void inir(void) {
-  ini();
-  if (R.BC.B.h) {
-    Z80_ICount -= 5;
-    R.PC.W.l -= 2;
-  }
+    ini();
+    if (R.BC.B.h) {
+        Z80_ICount -= 5;
+        R.PC.W.l -= 2;
+    }
 }
 
 static void jp(void) { M_JP; }
@@ -738,90 +738,90 @@ static void jp_hl(void) { R.PC.D = R.HL.D; }
 static void jp_ix(void) { R.PC.D = R.IX.D; }
 static void jp_iy(void) { R.PC.D = R.IY.D; }
 static void jp_c(void) {
-  if (M_C) {
-    M_JP;
-  } else {
-    M_SKIP_JP;
-  }
+    if (M_C) {
+        M_JP;
+    } else {
+        M_SKIP_JP;
+    }
 }
 static void jp_m(void) {
-  if (M_M) {
-    M_JP;
-  } else {
-    M_SKIP_JP;
-  }
+    if (M_M) {
+        M_JP;
+    } else {
+        M_SKIP_JP;
+    }
 }
 static void jp_nc(void) {
-  if (M_NC) {
-    M_JP;
-  } else {
-    M_SKIP_JP;
-  }
+    if (M_NC) {
+        M_JP;
+    } else {
+        M_SKIP_JP;
+    }
 }
 static void jp_nz(void) {
-  if (M_NZ) {
-    M_JP;
-  } else {
-    M_SKIP_JP;
-  }
+    if (M_NZ) {
+        M_JP;
+    } else {
+        M_SKIP_JP;
+    }
 }
 static void jp_p(void) {
-  if (M_P) {
-    M_JP;
-  } else {
-    M_SKIP_JP;
-  }
+    if (M_P) {
+        M_JP;
+    } else {
+        M_SKIP_JP;
+    }
 }
 static void jp_pe(void) {
-  if (M_PE) {
-    M_JP;
-  } else {
-    M_SKIP_JP;
-  }
+    if (M_PE) {
+        M_JP;
+    } else {
+        M_SKIP_JP;
+    }
 }
 static void jp_po(void) {
-  if (M_PO) {
-    M_JP;
-  } else {
-    M_SKIP_JP;
-  }
+    if (M_PO) {
+        M_JP;
+    } else {
+        M_SKIP_JP;
+    }
 }
 static void jp_z(void) {
-  if (M_Z) {
-    M_JP;
-  } else {
-    M_SKIP_JP;
-  }
+    if (M_Z) {
+        M_JP;
+    } else {
+        M_SKIP_JP;
+    }
 }
 
 static void jr(void) { M_JR; }
 static void jr_c(void) {
-  if (M_C) {
-    M_JR;
-  } else {
-    M_SKIP_JR;
-  }
+    if (M_C) {
+        M_JR;
+    } else {
+        M_SKIP_JR;
+    }
 }
 static void jr_nc(void) {
-  if (M_NC) {
-    M_JR;
-  } else {
-    M_SKIP_JR;
-  }
+    if (M_NC) {
+        M_JR;
+    } else {
+        M_SKIP_JR;
+    }
 }
 static void jr_nz(void) {
-  if (M_NZ) {
-    M_JR;
-  } else {
-    M_SKIP_JR;
-  }
+    if (M_NZ) {
+        M_JR;
+    } else {
+        M_SKIP_JR;
+    }
 }
 static void jr_z(void) {
-  if (M_Z) {
-    M_JR;
-  } else {
-    M_SKIP_JR;
-  }
+    if (M_Z) {
+        M_JR;
+    } else {
+        M_SKIP_JR;
+    }
 }
 
 static void ld_xbc_a(void) { M_WRMEM(R.BC.D, R.AF.B.h); }
@@ -834,8 +834,8 @@ static void ld_xhl_e(void) { M_WRMEM(R.HL.D, R.DE.B.l); }
 static void ld_xhl_h(void) { M_WRMEM(R.HL.D, R.HL.B.h); }
 static void ld_xhl_l(void) { M_WRMEM(R.HL.D, R.HL.B.l); }
 static void ld_xhl_byte(void) {
-  byte i = M_RDMEM_OPCODE();
-  M_WRMEM(R.HL.D, i);
+    byte i = M_RDMEM_OPCODE();
+    M_WRMEM(R.HL.D, i);
 }
 static void ld_xix_a(void) { M_WR_XIX(R.AF.B.h); }
 static void ld_xix_b(void) { M_WR_XIX(R.BC.B.h); }
@@ -845,10 +845,10 @@ static void ld_xix_e(void) { M_WR_XIX(R.DE.B.l); }
 static void ld_xix_h(void) { M_WR_XIX(R.HL.B.h); }
 static void ld_xix_l(void) { M_WR_XIX(R.HL.B.l); }
 static void ld_xix_byte(void) {
-  int i, j;
-  i = M_XIX;
-  j = M_RDMEM_OPCODE();
-  M_WRMEM(i, j);
+    int i, j;
+    i = M_XIX;
+    j = M_RDMEM_OPCODE();
+    M_WRMEM(i, j);
 }
 static void ld_xiy_a(void) { M_WR_XIY(R.AF.B.h); }
 static void ld_xiy_b(void) { M_WR_XIY(R.BC.B.h); }
@@ -858,14 +858,14 @@ static void ld_xiy_e(void) { M_WR_XIY(R.DE.B.l); }
 static void ld_xiy_h(void) { M_WR_XIY(R.HL.B.h); }
 static void ld_xiy_l(void) { M_WR_XIY(R.HL.B.l); }
 static void ld_xiy_byte(void) {
-  int i, j;
-  i = M_XIY;
-  j = M_RDMEM_OPCODE();
-  M_WRMEM(i, j);
+    int i, j;
+    i = M_XIY;
+    j = M_RDMEM_OPCODE();
+    M_WRMEM(i, j);
 }
 static void ld_xbyte_a(void) {
-  int i = M_RDMEM_OPCODE_WORD();
-  M_WRMEM(i, R.AF.B.h);
+    int i = M_RDMEM_OPCODE_WORD();
+    M_WRMEM(i, R.AF.B.h);
 }
 static void ld_xword_bc(void) { M_WRMEM_WORD(M_RDMEM_OPCODE_WORD(), R.BC.D); }
 static void ld_xword_de(void) { M_WRMEM_WORD(M_RDMEM_OPCODE_WORD(), R.DE.D); }
@@ -879,8 +879,8 @@ static void ld_a_xhl(void) { R.AF.B.h = M_RD_XHL; }
 static void ld_a_xix(void) { R.AF.B.h = M_RD_XIX(); }
 static void ld_a_xiy(void) { R.AF.B.h = M_RD_XIY(); }
 static void ld_a_xbyte(void) {
-  int i = M_RDMEM_OPCODE_WORD();
-  R.AF.B.h = M_RDMEM(i);
+    int i = M_RDMEM_OPCODE_WORD();
+    R.AF.B.h = M_RDMEM(i);
 }
 
 static void ld_a_byte(void) { R.AF.B.h = M_RDMEM_OPCODE(); }
@@ -1026,65 +1026,65 @@ static void ld_sp_hl(void) { R.SP.D = R.HL.D; }
 static void ld_sp_ix(void) { R.SP.D = R.IX.D; }
 static void ld_sp_iy(void) { R.SP.D = R.IY.D; }
 static void ld_a_i(void) {
-  R.AF.B.h = R.I;
-  R.AF.B.l = (R.AF.B.l & C_FLAG) | ZSTable[R.I] | (R.IFF2 << 2);
+    R.AF.B.h = R.I;
+    R.AF.B.l = (R.AF.B.l & C_FLAG) | ZSTable[R.I] | (R.IFF2 << 2);
 }
 static void ld_i_a(void) { R.I = R.AF.B.h; }
 static void ld_a_r(void) {
-  R.AF.B.h = (R.R & 127) | (R.R2 & 128);
-  R.AF.B.l = (R.AF.B.l & C_FLAG) | ZSTable[R.AF.B.h] | (R.IFF2 << 2);
+    R.AF.B.h = (R.R & 127) | (R.R2 & 128);
+    R.AF.B.l = (R.AF.B.l & C_FLAG) | ZSTable[R.AF.B.h] | (R.IFF2 << 2);
 }
 static void ld_r_a(void) { R.R = R.R2 = R.AF.B.h; }
 
 static void ldd(void) {
-  M_WRMEM(R.DE.D, M_RDMEM(R.HL.D));
-  --R.DE.W.l;
-  --R.HL.W.l;
-  --R.BC.W.l;
-  R.AF.B.l = (R.AF.B.l & 0xE9) | (R.BC.D ? V_FLAG : 0);
+    M_WRMEM(R.DE.D, M_RDMEM(R.HL.D));
+    --R.DE.W.l;
+    --R.HL.W.l;
+    --R.BC.W.l;
+    R.AF.B.l = (R.AF.B.l & 0xE9) | (R.BC.D ? V_FLAG : 0);
 }
 static void lddr(void) {
-  ldd();
-  if (R.BC.D) {
-    Z80_ICount -= 5;
-    R.PC.W.l -= 2;
-  }
+    ldd();
+    if (R.BC.D) {
+        Z80_ICount -= 5;
+        R.PC.W.l -= 2;
+    }
 }
 static void ldi(void) {
-  M_WRMEM(R.DE.D, M_RDMEM(R.HL.D));
-  ++R.DE.W.l;
-  ++R.HL.W.l;
-  --R.BC.W.l;
-  R.AF.B.l = (R.AF.B.l & 0xE9) | (R.BC.D ? V_FLAG : 0);
+    M_WRMEM(R.DE.D, M_RDMEM(R.HL.D));
+    ++R.DE.W.l;
+    ++R.HL.W.l;
+    --R.BC.W.l;
+    R.AF.B.l = (R.AF.B.l & 0xE9) | (R.BC.D ? V_FLAG : 0);
 }
 static void ldir(void) {
-  ldi();
-  if (R.BC.D) {
-    Z80_ICount -= 5;
-    R.PC.W.l -= 2;
-  }
+    ldi();
+    if (R.BC.D) {
+        Z80_ICount -= 5;
+        R.PC.W.l -= 2;
+    }
 }
 
 static void neg(void) {
-  byte i;
-  i = R.AF.B.h;
-  R.AF.B.h = 0;
-  M_SUB(i);
+    byte i;
+    i = R.AF.B.h;
+    R.AF.B.h = 0;
+    M_SUB(i);
 }
 
 static void nop(void){};
 
 static void or_xhl(void) {
-  byte i = M_RD_XHL;
-  M_OR(i);
+    byte i = M_RD_XHL;
+    M_OR(i);
 }
 static void or_xix(void) {
-  byte i = M_RD_XIX();
-  M_OR(i);
+    byte i = M_RD_XIX();
+    M_OR(i);
 }
 static void or_xiy(void) {
-  byte i = M_RD_XIY();
-  M_OR(i);
+    byte i = M_RD_XIY();
+    M_OR(i);
 }
 static void or_a(void) { R.AF.B.l = ZSPTable[R.AF.B.h]; }
 static void or_b(void) { M_OR(R.BC.B.h); }
@@ -1098,35 +1098,35 @@ static void or_ixl(void) { M_OR(R.IX.B.l); }
 static void or_iyh(void) { M_OR(R.IY.B.h); }
 static void or_iyl(void) { M_OR(R.IY.B.l); }
 static void or_byte(void) {
-  byte i = M_RDMEM_OPCODE();
-  M_OR(i);
+    byte i = M_RDMEM_OPCODE();
+    M_OR(i);
 }
 
 static void outd(void) {
-  --R.BC.B.h;
-  DoOut(R.BC.B.l, R.BC.B.h, M_RDMEM(R.HL.D));
-  --R.HL.W.l;
-  R.AF.B.l = (R.BC.B.h) ? N_FLAG : (Z_FLAG | N_FLAG);
+    --R.BC.B.h;
+    DoOut(R.BC.B.l, R.BC.B.h, M_RDMEM(R.HL.D));
+    --R.HL.W.l;
+    R.AF.B.l = (R.BC.B.h) ? N_FLAG : (Z_FLAG | N_FLAG);
 }
 static void otdr(void) {
-  outd();
-  if (R.BC.B.h) {
-    Z80_ICount -= 5;
-    R.PC.W.l -= 2;
-  }
+    outd();
+    if (R.BC.B.h) {
+        Z80_ICount -= 5;
+        R.PC.W.l -= 2;
+    }
 }
 static void outi(void) {
-  --R.BC.B.h;
-  DoOut(R.BC.B.l, R.BC.B.h, M_RDMEM(R.HL.D));
-  ++R.HL.W.l;
-  R.AF.B.l = (R.BC.B.h) ? N_FLAG : (Z_FLAG | N_FLAG);
+    --R.BC.B.h;
+    DoOut(R.BC.B.l, R.BC.B.h, M_RDMEM(R.HL.D));
+    ++R.HL.W.l;
+    R.AF.B.l = (R.BC.B.h) ? N_FLAG : (Z_FLAG | N_FLAG);
 }
 static void otir(void) {
-  outi();
-  if (R.BC.B.h) {
-    Z80_ICount -= 5;
-    R.PC.W.l -= 2;
-  }
+    outi();
+    if (R.BC.B.h) {
+        Z80_ICount -= 5;
+        R.PC.W.l -= 2;
+    }
 }
 
 static void out_c_a(void) { DoOut(R.BC.B.l, R.BC.B.h, R.AF.B.h); }
@@ -1138,8 +1138,8 @@ static void out_c_h(void) { DoOut(R.BC.B.l, R.BC.B.h, R.HL.B.h); }
 static void out_c_l(void) { DoOut(R.BC.B.l, R.BC.B.h, R.HL.B.l); }
 static void out_c_0(void) { DoOut(R.BC.B.l, R.BC.B.h, 0); }
 static void out_byte_a(void) {
-  byte i = M_RDMEM_OPCODE();
-  DoOut(i, R.AF.B.h, R.AF.B.h);
+    byte i = M_RDMEM_OPCODE();
+    DoOut(i, R.AF.B.h, R.AF.B.h);
 }
 
 static void pop_af(void) { M_POP(AF); }
@@ -1157,26 +1157,26 @@ static void push_ix(void) { M_PUSH(IX); }
 static void push_iy(void) { M_PUSH(IY); }
 
 static void res_0_xhl(void) {
-  byte i;
-  i = M_RDMEM(R.HL.D);
-  M_RES(0, i);
-  M_WRMEM(R.HL.D, i);
+    byte i;
+    i = M_RDMEM(R.HL.D);
+    M_RES(0, i);
+    M_WRMEM(R.HL.D, i);
 };
 static void res_0_xix(void) {
-  byte i;
-  int j;
-  j = M_XIX;
-  i = M_RDMEM(j);
-  M_RES(0, i);
-  M_WRMEM(j, i);
+    byte i;
+    int j;
+    j = M_XIX;
+    i = M_RDMEM(j);
+    M_RES(0, i);
+    M_WRMEM(j, i);
 };
 static void res_0_xiy(void) {
-  byte i;
-  int j;
-  j = M_XIY;
-  i = M_RDMEM(j);
-  M_RES(0, i);
-  M_WRMEM(j, i);
+    byte i;
+    int j;
+    j = M_XIY;
+    i = M_RDMEM(j);
+    M_RES(0, i);
+    M_WRMEM(j, i);
 };
 static void res_0_a(void) { M_RES(0, R.AF.B.h); };
 static void res_0_b(void) { M_RES(0, R.BC.B.h); };
@@ -1187,26 +1187,26 @@ static void res_0_h(void) { M_RES(0, R.HL.B.h); };
 static void res_0_l(void) { M_RES(0, R.HL.B.l); };
 
 static void res_1_xhl(void) {
-  byte i;
-  i = M_RDMEM(R.HL.D);
-  M_RES(1, i);
-  M_WRMEM(R.HL.D, i);
+    byte i;
+    i = M_RDMEM(R.HL.D);
+    M_RES(1, i);
+    M_WRMEM(R.HL.D, i);
 };
 static void res_1_xix(void) {
-  byte i;
-  int j;
-  j = M_XIX;
-  i = M_RDMEM(j);
-  M_RES(1, i);
-  M_WRMEM(j, i);
+    byte i;
+    int j;
+    j = M_XIX;
+    i = M_RDMEM(j);
+    M_RES(1, i);
+    M_WRMEM(j, i);
 };
 static void res_1_xiy(void) {
-  byte i;
-  int j;
-  j = M_XIY;
-  i = M_RDMEM(j);
-  M_RES(1, i);
-  M_WRMEM(j, i);
+    byte i;
+    int j;
+    j = M_XIY;
+    i = M_RDMEM(j);
+    M_RES(1, i);
+    M_WRMEM(j, i);
 };
 static void res_1_a(void) { M_RES(1, R.AF.B.h); };
 static void res_1_b(void) { M_RES(1, R.BC.B.h); };
@@ -1217,26 +1217,26 @@ static void res_1_h(void) { M_RES(1, R.HL.B.h); };
 static void res_1_l(void) { M_RES(1, R.HL.B.l); };
 
 static void res_2_xhl(void) {
-  byte i;
-  i = M_RDMEM(R.HL.D);
-  M_RES(2, i);
-  M_WRMEM(R.HL.D, i);
+    byte i;
+    i = M_RDMEM(R.HL.D);
+    M_RES(2, i);
+    M_WRMEM(R.HL.D, i);
 };
 static void res_2_xix(void) {
-  byte i;
-  int j;
-  j = M_XIX;
-  i = M_RDMEM(j);
-  M_RES(2, i);
-  M_WRMEM(j, i);
+    byte i;
+    int j;
+    j = M_XIX;
+    i = M_RDMEM(j);
+    M_RES(2, i);
+    M_WRMEM(j, i);
 };
 static void res_2_xiy(void) {
-  byte i;
-  int j;
-  j = M_XIY;
-  i = M_RDMEM(j);
-  M_RES(2, i);
-  M_WRMEM(j, i);
+    byte i;
+    int j;
+    j = M_XIY;
+    i = M_RDMEM(j);
+    M_RES(2, i);
+    M_WRMEM(j, i);
 };
 static void res_2_a(void) { M_RES(2, R.AF.B.h); };
 static void res_2_b(void) { M_RES(2, R.BC.B.h); };
@@ -1247,26 +1247,26 @@ static void res_2_h(void) { M_RES(2, R.HL.B.h); };
 static void res_2_l(void) { M_RES(2, R.HL.B.l); };
 
 static void res_3_xhl(void) {
-  byte i;
-  i = M_RDMEM(R.HL.D);
-  M_RES(3, i);
-  M_WRMEM(R.HL.D, i);
+    byte i;
+    i = M_RDMEM(R.HL.D);
+    M_RES(3, i);
+    M_WRMEM(R.HL.D, i);
 };
 static void res_3_xix(void) {
-  byte i;
-  int j;
-  j = M_XIX;
-  i = M_RDMEM(j);
-  M_RES(3, i);
-  M_WRMEM(j, i);
+    byte i;
+    int j;
+    j = M_XIX;
+    i = M_RDMEM(j);
+    M_RES(3, i);
+    M_WRMEM(j, i);
 };
 static void res_3_xiy(void) {
-  byte i;
-  int j;
-  j = M_XIY;
-  i = M_RDMEM(j);
-  M_RES(3, i);
-  M_WRMEM(j, i);
+    byte i;
+    int j;
+    j = M_XIY;
+    i = M_RDMEM(j);
+    M_RES(3, i);
+    M_WRMEM(j, i);
 };
 static void res_3_a(void) { M_RES(3, R.AF.B.h); };
 static void res_3_b(void) { M_RES(3, R.BC.B.h); };
@@ -1277,26 +1277,26 @@ static void res_3_h(void) { M_RES(3, R.HL.B.h); };
 static void res_3_l(void) { M_RES(3, R.HL.B.l); };
 
 static void res_4_xhl(void) {
-  byte i;
-  i = M_RDMEM(R.HL.D);
-  M_RES(4, i);
-  M_WRMEM(R.HL.D, i);
+    byte i;
+    i = M_RDMEM(R.HL.D);
+    M_RES(4, i);
+    M_WRMEM(R.HL.D, i);
 };
 static void res_4_xix(void) {
-  byte i;
-  int j;
-  j = M_XIX;
-  i = M_RDMEM(j);
-  M_RES(4, i);
-  M_WRMEM(j, i);
+    byte i;
+    int j;
+    j = M_XIX;
+    i = M_RDMEM(j);
+    M_RES(4, i);
+    M_WRMEM(j, i);
 };
 static void res_4_xiy(void) {
-  byte i;
-  int j;
-  j = M_XIY;
-  i = M_RDMEM(j);
-  M_RES(4, i);
-  M_WRMEM(j, i);
+    byte i;
+    int j;
+    j = M_XIY;
+    i = M_RDMEM(j);
+    M_RES(4, i);
+    M_WRMEM(j, i);
 };
 static void res_4_a(void) { M_RES(4, R.AF.B.h); };
 static void res_4_b(void) { M_RES(4, R.BC.B.h); };
@@ -1307,26 +1307,26 @@ static void res_4_h(void) { M_RES(4, R.HL.B.h); };
 static void res_4_l(void) { M_RES(4, R.HL.B.l); };
 
 static void res_5_xhl(void) {
-  byte i;
-  i = M_RDMEM(R.HL.D);
-  M_RES(5, i);
-  M_WRMEM(R.HL.D, i);
+    byte i;
+    i = M_RDMEM(R.HL.D);
+    M_RES(5, i);
+    M_WRMEM(R.HL.D, i);
 };
 static void res_5_xix(void) {
-  byte i;
-  int j;
-  j = M_XIX;
-  i = M_RDMEM(j);
-  M_RES(5, i);
-  M_WRMEM(j, i);
+    byte i;
+    int j;
+    j = M_XIX;
+    i = M_RDMEM(j);
+    M_RES(5, i);
+    M_WRMEM(j, i);
 };
 static void res_5_xiy(void) {
-  byte i;
-  int j;
-  j = M_XIY;
-  i = M_RDMEM(j);
-  M_RES(5, i);
-  M_WRMEM(j, i);
+    byte i;
+    int j;
+    j = M_XIY;
+    i = M_RDMEM(j);
+    M_RES(5, i);
+    M_WRMEM(j, i);
 };
 static void res_5_a(void) { M_RES(5, R.AF.B.h); };
 static void res_5_b(void) { M_RES(5, R.BC.B.h); };
@@ -1337,26 +1337,26 @@ static void res_5_h(void) { M_RES(5, R.HL.B.h); };
 static void res_5_l(void) { M_RES(5, R.HL.B.l); };
 
 static void res_6_xhl(void) {
-  byte i;
-  i = M_RDMEM(R.HL.D);
-  M_RES(6, i);
-  M_WRMEM(R.HL.D, i);
+    byte i;
+    i = M_RDMEM(R.HL.D);
+    M_RES(6, i);
+    M_WRMEM(R.HL.D, i);
 };
 static void res_6_xix(void) {
-  byte i;
-  int j;
-  j = M_XIX;
-  i = M_RDMEM(j);
-  M_RES(6, i);
-  M_WRMEM(j, i);
+    byte i;
+    int j;
+    j = M_XIX;
+    i = M_RDMEM(j);
+    M_RES(6, i);
+    M_WRMEM(j, i);
 };
 static void res_6_xiy(void) {
-  byte i;
-  int j;
-  j = M_XIY;
-  i = M_RDMEM(j);
-  M_RES(6, i);
-  M_WRMEM(j, i);
+    byte i;
+    int j;
+    j = M_XIY;
+    i = M_RDMEM(j);
+    M_RES(6, i);
+    M_WRMEM(j, i);
 };
 static void res_6_a(void) { M_RES(6, R.AF.B.h); };
 static void res_6_b(void) { M_RES(6, R.BC.B.h); };
@@ -1367,26 +1367,26 @@ static void res_6_h(void) { M_RES(6, R.HL.B.h); };
 static void res_6_l(void) { M_RES(6, R.HL.B.l); };
 
 static void res_7_xhl(void) {
-  byte i;
-  i = M_RDMEM(R.HL.D);
-  M_RES(7, i);
-  M_WRMEM(R.HL.D, i);
+    byte i;
+    i = M_RDMEM(R.HL.D);
+    M_RES(7, i);
+    M_WRMEM(R.HL.D, i);
 };
 static void res_7_xix(void) {
-  byte i;
-  int j;
-  j = M_XIX;
-  i = M_RDMEM(j);
-  M_RES(7, i);
-  M_WRMEM(j, i);
+    byte i;
+    int j;
+    j = M_XIX;
+    i = M_RDMEM(j);
+    M_RES(7, i);
+    M_WRMEM(j, i);
 };
 static void res_7_xiy(void) {
-  byte i;
-  int j;
-  j = M_XIY;
-  i = M_RDMEM(j);
-  M_RES(7, i);
-  M_WRMEM(j, i);
+    byte i;
+    int j;
+    j = M_XIY;
+    i = M_RDMEM(j);
+    M_RES(7, i);
+    M_WRMEM(j, i);
 };
 static void res_7_a(void) { M_RES(7, R.AF.B.h); };
 static void res_7_b(void) { M_RES(7, R.BC.B.h); };
@@ -1398,93 +1398,93 @@ static void res_7_l(void) { M_RES(7, R.HL.B.l); };
 
 static void ret(void) { M_RET; }
 static void ret_c(void) {
-  if (M_C) {
-    M_RET;
-  } else {
-    M_SKIP_RET;
-  }
+    if (M_C) {
+        M_RET;
+    } else {
+        M_SKIP_RET;
+    }
 }
 static void ret_m(void) {
-  if (M_M) {
-    M_RET;
-  } else {
-    M_SKIP_RET;
-  }
+    if (M_M) {
+        M_RET;
+    } else {
+        M_SKIP_RET;
+    }
 }
 static void ret_nc(void) {
-  if (M_NC) {
-    M_RET;
-  } else {
-    M_SKIP_RET;
-  }
+    if (M_NC) {
+        M_RET;
+    } else {
+        M_SKIP_RET;
+    }
 }
 static void ret_nz(void) {
-  if (M_NZ) {
-    M_RET;
-  } else {
-    M_SKIP_RET;
-  }
+    if (M_NZ) {
+        M_RET;
+    } else {
+        M_SKIP_RET;
+    }
 }
 static void ret_p(void) {
-  if (M_P) {
-    M_RET;
-  } else {
-    M_SKIP_RET;
-  }
+    if (M_P) {
+        M_RET;
+    } else {
+        M_SKIP_RET;
+    }
 }
 static void ret_pe(void) {
-  if (M_PE) {
-    M_RET;
-  } else {
-    M_SKIP_RET;
-  }
+    if (M_PE) {
+        M_RET;
+    } else {
+        M_SKIP_RET;
+    }
 }
 static void ret_po(void) {
-  if (M_PO) {
-    M_RET;
-  } else {
-    M_SKIP_RET;
-  }
+    if (M_PO) {
+        M_RET;
+    } else {
+        M_SKIP_RET;
+    }
 }
 static void ret_z(void) {
-  if (M_Z) {
-    M_RET;
-  } else {
-    M_SKIP_RET;
-  }
+    if (M_Z) {
+        M_RET;
+    } else {
+        M_SKIP_RET;
+    }
 }
 
 static void reti(void) {
-  Z80_Reti();
-  M_RET;
+    Z80_Reti();
+    M_RET;
 }
 static void retn(void) {
-  R.IFF1 = R.IFF2;
-  Z80_Retn();
-  M_RET;
+    R.IFF1 = R.IFF2;
+    Z80_Retn();
+    M_RET;
 }
 
 static void rl_xhl(void) {
-  byte i;
-  i = M_RDMEM(R.HL.D);
-  M_RL(i);
-  M_WRMEM(R.HL.D, i);
+    byte i;
+    i = M_RDMEM(R.HL.D);
+    M_RL(i);
+    M_WRMEM(R.HL.D, i);
 }
 static void rl_xix(void) {
-  byte i;
-  int j;
-  j = M_XIX;
-  i = M_RDMEM(j);
-  M_RL(i);
-  M_WRMEM(j, i);
+    byte i;
+    int j;
+    j = M_XIX;
+    i = M_RDMEM(j);
+    M_RL(i);
+    M_WRMEM(j, i);
 }
 static void rl_xiy(void) {
-  byte i;
-  int j;
-  j = M_XIY;
-  i = M_RDMEM(j);
-  M_RL(i);
-  M_WRMEM(j, i);
+    byte i;
+    int j;
+    j = M_XIY;
+    i = M_RDMEM(j);
+    M_RL(i);
+    M_WRMEM(j, i);
 }
 static void rl_a(void) { M_RL(R.AF.B.h); }
 static void rl_b(void) { M_RL(R.BC.B.h); }
@@ -1496,26 +1496,26 @@ static void rl_l(void) { M_RL(R.HL.B.l); }
 static void rla(void) { M_RLA; }
 
 static void rlc_xhl(void) {
-  byte i;
-  i = M_RDMEM(R.HL.D);
-  M_RLC(i);
-  M_WRMEM(R.HL.D, i);
+    byte i;
+    i = M_RDMEM(R.HL.D);
+    M_RLC(i);
+    M_WRMEM(R.HL.D, i);
 }
 static void rlc_xix(void) {
-  byte i;
-  int j;
-  j = M_XIX;
-  i = M_RDMEM(j);
-  M_RLC(i);
-  M_WRMEM(j, i);
+    byte i;
+    int j;
+    j = M_XIX;
+    i = M_RDMEM(j);
+    M_RLC(i);
+    M_WRMEM(j, i);
 }
 static void rlc_xiy(void) {
-  byte i;
-  int j;
-  j = M_XIY;
-  i = M_RDMEM(j);
-  M_RLC(i);
-  M_WRMEM(j, i);
+    byte i;
+    int j;
+    j = M_XIY;
+    i = M_RDMEM(j);
+    M_RLC(i);
+    M_WRMEM(j, i);
 }
 static void rlc_a(void) { M_RLC(R.AF.B.h); }
 static void rlc_b(void) { M_RLC(R.BC.B.h); }
@@ -1527,34 +1527,34 @@ static void rlc_l(void) { M_RLC(R.HL.B.l); }
 static void rlca(void) { M_RLCA; }
 
 static void rld(void) {
-  byte i;
-  i = M_RDMEM(R.HL.D);
-  M_WRMEM(R.HL.D, (i << 4) | (R.AF.B.h & 0x0F));
-  R.AF.B.h = (R.AF.B.h & 0xF0) | (i >> 4);
-  R.AF.B.l = (R.AF.B.l & C_FLAG) | ZSPTable[R.AF.B.h];
+    byte i;
+    i = M_RDMEM(R.HL.D);
+    M_WRMEM(R.HL.D, (i << 4) | (R.AF.B.h & 0x0F));
+    R.AF.B.h = (R.AF.B.h & 0xF0) | (i >> 4);
+    R.AF.B.l = (R.AF.B.l & C_FLAG) | ZSPTable[R.AF.B.h];
 }
 
 static void rr_xhl(void) {
-  byte i;
-  i = M_RDMEM(R.HL.D);
-  M_RR(i);
-  M_WRMEM(R.HL.D, i);
+    byte i;
+    i = M_RDMEM(R.HL.D);
+    M_RR(i);
+    M_WRMEM(R.HL.D, i);
 }
 static void rr_xix(void) {
-  byte i;
-  int j;
-  j = M_XIX;
-  i = M_RDMEM(j);
-  M_RR(i);
-  M_WRMEM(j, i);
+    byte i;
+    int j;
+    j = M_XIX;
+    i = M_RDMEM(j);
+    M_RR(i);
+    M_WRMEM(j, i);
 }
 static void rr_xiy(void) {
-  byte i;
-  int j;
-  j = M_XIY;
-  i = M_RDMEM(j);
-  M_RR(i);
-  M_WRMEM(j, i);
+    byte i;
+    int j;
+    j = M_XIY;
+    i = M_RDMEM(j);
+    M_RR(i);
+    M_WRMEM(j, i);
 }
 static void rr_a(void) { M_RR(R.AF.B.h); }
 static void rr_b(void) { M_RR(R.BC.B.h); }
@@ -1566,26 +1566,26 @@ static void rr_l(void) { M_RR(R.HL.B.l); }
 static void rra(void) { M_RRA; }
 
 static void rrc_xhl(void) {
-  byte i;
-  i = M_RDMEM(R.HL.D);
-  M_RRC(i);
-  M_WRMEM(R.HL.D, i);
+    byte i;
+    i = M_RDMEM(R.HL.D);
+    M_RRC(i);
+    M_WRMEM(R.HL.D, i);
 }
 static void rrc_xix(void) {
-  byte i;
-  int j;
-  j = M_XIX;
-  i = M_RDMEM(j);
-  M_RRC(i);
-  M_WRMEM(j, i);
+    byte i;
+    int j;
+    j = M_XIX;
+    i = M_RDMEM(j);
+    M_RRC(i);
+    M_WRMEM(j, i);
 }
 static void rrc_xiy(void) {
-  byte i;
-  int j;
-  j = M_XIY;
-  i = M_RDMEM(j);
-  M_RRC(i);
-  M_WRMEM(j, i);
+    byte i;
+    int j;
+    j = M_XIY;
+    i = M_RDMEM(j);
+    M_RRC(i);
+    M_WRMEM(j, i);
 }
 static void rrc_a(void) { M_RRC(R.AF.B.h); }
 static void rrc_b(void) { M_RRC(R.BC.B.h); }
@@ -1597,11 +1597,11 @@ static void rrc_l(void) { M_RRC(R.HL.B.l); }
 static void rrca(void) { M_RRCA; }
 
 static void rrd(void) {
-  byte i;
-  i = M_RDMEM(R.HL.D);
-  M_WRMEM(R.HL.D, (i >> 4) | (R.AF.B.h << 4));
-  R.AF.B.h = (R.AF.B.h & 0xF0) | (i & 0x0F);
-  R.AF.B.l = (R.AF.B.l & C_FLAG) | ZSPTable[R.AF.B.h];
+    byte i;
+    i = M_RDMEM(R.HL.D);
+    M_WRMEM(R.HL.D, (i >> 4) | (R.AF.B.h << 4));
+    R.AF.B.h = (R.AF.B.h & 0xF0) | (i & 0x0F);
+    R.AF.B.l = (R.AF.B.l & C_FLAG) | ZSPTable[R.AF.B.h];
 }
 
 static void rst_00(void) { M_RST(0x00); }
@@ -1614,20 +1614,20 @@ static void rst_30(void) { M_RST(0x30); }
 static void rst_38(void) { M_RST(0x38); }
 
 static void sbc_a_byte(void) {
-  byte i = M_RDMEM_OPCODE();
-  M_SBC(i);
+    byte i = M_RDMEM_OPCODE();
+    M_SBC(i);
 }
 static void sbc_a_xhl(void) {
-  byte i = M_RD_XHL;
-  M_SBC(i);
+    byte i = M_RD_XHL;
+    M_SBC(i);
 }
 static void sbc_a_xix(void) {
-  byte i = M_RD_XIX();
-  M_SBC(i);
+    byte i = M_RD_XIX();
+    M_SBC(i);
 }
 static void sbc_a_xiy(void) {
-  byte i = M_RD_XIY();
-  M_SBC(i);
+    byte i = M_RD_XIY();
+    M_SBC(i);
 }
 static void sbc_a_a(void) { M_SBC(R.AF.B.h); }
 static void sbc_a_b(void) { M_SBC(R.BC.B.h); }
@@ -1649,26 +1649,26 @@ static void sbc_hl_sp(void) { M_SBCW(SP); }
 static void scf(void) { R.AF.B.l = (R.AF.B.l & 0xEC) | C_FLAG; }
 
 static void set_0_xhl(void) {
-  byte i;
-  i = M_RDMEM(R.HL.D);
-  M_SET(0, i);
-  M_WRMEM(R.HL.D, i);
+    byte i;
+    i = M_RDMEM(R.HL.D);
+    M_SET(0, i);
+    M_WRMEM(R.HL.D, i);
 };
 static void set_0_xix(void) {
-  byte i;
-  int j;
-  j = M_XIX;
-  i = M_RDMEM(j);
-  M_SET(0, i);
-  M_WRMEM(j, i);
+    byte i;
+    int j;
+    j = M_XIX;
+    i = M_RDMEM(j);
+    M_SET(0, i);
+    M_WRMEM(j, i);
 };
 static void set_0_xiy(void) {
-  byte i;
-  int j;
-  j = M_XIY;
-  i = M_RDMEM(j);
-  M_SET(0, i);
-  M_WRMEM(j, i);
+    byte i;
+    int j;
+    j = M_XIY;
+    i = M_RDMEM(j);
+    M_SET(0, i);
+    M_WRMEM(j, i);
 };
 static void set_0_a(void) { M_SET(0, R.AF.B.h); };
 static void set_0_b(void) { M_SET(0, R.BC.B.h); };
@@ -1679,26 +1679,26 @@ static void set_0_h(void) { M_SET(0, R.HL.B.h); };
 static void set_0_l(void) { M_SET(0, R.HL.B.l); };
 
 static void set_1_xhl(void) {
-  byte i;
-  i = M_RDMEM(R.HL.D);
-  M_SET(1, i);
-  M_WRMEM(R.HL.D, i);
+    byte i;
+    i = M_RDMEM(R.HL.D);
+    M_SET(1, i);
+    M_WRMEM(R.HL.D, i);
 };
 static void set_1_xix(void) {
-  byte i;
-  int j;
-  j = M_XIX;
-  i = M_RDMEM(j);
-  M_SET(1, i);
-  M_WRMEM(j, i);
+    byte i;
+    int j;
+    j = M_XIX;
+    i = M_RDMEM(j);
+    M_SET(1, i);
+    M_WRMEM(j, i);
 };
 static void set_1_xiy(void) {
-  byte i;
-  int j;
-  j = M_XIY;
-  i = M_RDMEM(j);
-  M_SET(1, i);
-  M_WRMEM(j, i);
+    byte i;
+    int j;
+    j = M_XIY;
+    i = M_RDMEM(j);
+    M_SET(1, i);
+    M_WRMEM(j, i);
 };
 static void set_1_a(void) { M_SET(1, R.AF.B.h); };
 static void set_1_b(void) { M_SET(1, R.BC.B.h); };
@@ -1709,26 +1709,26 @@ static void set_1_h(void) { M_SET(1, R.HL.B.h); };
 static void set_1_l(void) { M_SET(1, R.HL.B.l); };
 
 static void set_2_xhl(void) {
-  byte i;
-  i = M_RDMEM(R.HL.D);
-  M_SET(2, i);
-  M_WRMEM(R.HL.D, i);
+    byte i;
+    i = M_RDMEM(R.HL.D);
+    M_SET(2, i);
+    M_WRMEM(R.HL.D, i);
 };
 static void set_2_xix(void) {
-  byte i;
-  int j;
-  j = M_XIX;
-  i = M_RDMEM(j);
-  M_SET(2, i);
-  M_WRMEM(j, i);
+    byte i;
+    int j;
+    j = M_XIX;
+    i = M_RDMEM(j);
+    M_SET(2, i);
+    M_WRMEM(j, i);
 };
 static void set_2_xiy(void) {
-  byte i;
-  int j;
-  j = M_XIY;
-  i = M_RDMEM(j);
-  M_SET(2, i);
-  M_WRMEM(j, i);
+    byte i;
+    int j;
+    j = M_XIY;
+    i = M_RDMEM(j);
+    M_SET(2, i);
+    M_WRMEM(j, i);
 };
 static void set_2_a(void) { M_SET(2, R.AF.B.h); };
 static void set_2_b(void) { M_SET(2, R.BC.B.h); };
@@ -1739,26 +1739,26 @@ static void set_2_h(void) { M_SET(2, R.HL.B.h); };
 static void set_2_l(void) { M_SET(2, R.HL.B.l); };
 
 static void set_3_xhl(void) {
-  byte i;
-  i = M_RDMEM(R.HL.D);
-  M_SET(3, i);
-  M_WRMEM(R.HL.D, i);
+    byte i;
+    i = M_RDMEM(R.HL.D);
+    M_SET(3, i);
+    M_WRMEM(R.HL.D, i);
 };
 static void set_3_xix(void) {
-  byte i;
-  int j;
-  j = M_XIX;
-  i = M_RDMEM(j);
-  M_SET(3, i);
-  M_WRMEM(j, i);
+    byte i;
+    int j;
+    j = M_XIX;
+    i = M_RDMEM(j);
+    M_SET(3, i);
+    M_WRMEM(j, i);
 };
 static void set_3_xiy(void) {
-  byte i;
-  int j;
-  j = M_XIY;
-  i = M_RDMEM(j);
-  M_SET(3, i);
-  M_WRMEM(j, i);
+    byte i;
+    int j;
+    j = M_XIY;
+    i = M_RDMEM(j);
+    M_SET(3, i);
+    M_WRMEM(j, i);
 };
 static void set_3_a(void) { M_SET(3, R.AF.B.h); };
 static void set_3_b(void) { M_SET(3, R.BC.B.h); };
@@ -1769,26 +1769,26 @@ static void set_3_h(void) { M_SET(3, R.HL.B.h); };
 static void set_3_l(void) { M_SET(3, R.HL.B.l); };
 
 static void set_4_xhl(void) {
-  byte i;
-  i = M_RDMEM(R.HL.D);
-  M_SET(4, i);
-  M_WRMEM(R.HL.D, i);
+    byte i;
+    i = M_RDMEM(R.HL.D);
+    M_SET(4, i);
+    M_WRMEM(R.HL.D, i);
 };
 static void set_4_xix(void) {
-  byte i;
-  int j;
-  j = M_XIX;
-  i = M_RDMEM(j);
-  M_SET(4, i);
-  M_WRMEM(j, i);
+    byte i;
+    int j;
+    j = M_XIX;
+    i = M_RDMEM(j);
+    M_SET(4, i);
+    M_WRMEM(j, i);
 };
 static void set_4_xiy(void) {
-  byte i;
-  int j;
-  j = M_XIY;
-  i = M_RDMEM(j);
-  M_SET(4, i);
-  M_WRMEM(j, i);
+    byte i;
+    int j;
+    j = M_XIY;
+    i = M_RDMEM(j);
+    M_SET(4, i);
+    M_WRMEM(j, i);
 };
 static void set_4_a(void) { M_SET(4, R.AF.B.h); };
 static void set_4_b(void) { M_SET(4, R.BC.B.h); };
@@ -1799,26 +1799,26 @@ static void set_4_h(void) { M_SET(4, R.HL.B.h); };
 static void set_4_l(void) { M_SET(4, R.HL.B.l); };
 
 static void set_5_xhl(void) {
-  byte i;
-  i = M_RDMEM(R.HL.D);
-  M_SET(5, i);
-  M_WRMEM(R.HL.D, i);
+    byte i;
+    i = M_RDMEM(R.HL.D);
+    M_SET(5, i);
+    M_WRMEM(R.HL.D, i);
 };
 static void set_5_xix(void) {
-  byte i;
-  int j;
-  j = M_XIX;
-  i = M_RDMEM(j);
-  M_SET(5, i);
-  M_WRMEM(j, i);
+    byte i;
+    int j;
+    j = M_XIX;
+    i = M_RDMEM(j);
+    M_SET(5, i);
+    M_WRMEM(j, i);
 };
 static void set_5_xiy(void) {
-  byte i;
-  int j;
-  j = M_XIY;
-  i = M_RDMEM(j);
-  M_SET(5, i);
-  M_WRMEM(j, i);
+    byte i;
+    int j;
+    j = M_XIY;
+    i = M_RDMEM(j);
+    M_SET(5, i);
+    M_WRMEM(j, i);
 };
 static void set_5_a(void) { M_SET(5, R.AF.B.h); };
 static void set_5_b(void) { M_SET(5, R.BC.B.h); };
@@ -1829,26 +1829,26 @@ static void set_5_h(void) { M_SET(5, R.HL.B.h); };
 static void set_5_l(void) { M_SET(5, R.HL.B.l); };
 
 static void set_6_xhl(void) {
-  byte i;
-  i = M_RDMEM(R.HL.D);
-  M_SET(6, i);
-  M_WRMEM(R.HL.D, i);
+    byte i;
+    i = M_RDMEM(R.HL.D);
+    M_SET(6, i);
+    M_WRMEM(R.HL.D, i);
 };
 static void set_6_xix(void) {
-  byte i;
-  int j;
-  j = M_XIX;
-  i = M_RDMEM(j);
-  M_SET(6, i);
-  M_WRMEM(j, i);
+    byte i;
+    int j;
+    j = M_XIX;
+    i = M_RDMEM(j);
+    M_SET(6, i);
+    M_WRMEM(j, i);
 };
 static void set_6_xiy(void) {
-  byte i;
-  int j;
-  j = M_XIY;
-  i = M_RDMEM(j);
-  M_SET(6, i);
-  M_WRMEM(j, i);
+    byte i;
+    int j;
+    j = M_XIY;
+    i = M_RDMEM(j);
+    M_SET(6, i);
+    M_WRMEM(j, i);
 };
 static void set_6_a(void) { M_SET(6, R.AF.B.h); };
 static void set_6_b(void) { M_SET(6, R.BC.B.h); };
@@ -1859,26 +1859,26 @@ static void set_6_h(void) { M_SET(6, R.HL.B.h); };
 static void set_6_l(void) { M_SET(6, R.HL.B.l); };
 
 static void set_7_xhl(void) {
-  byte i;
-  i = M_RDMEM(R.HL.D);
-  M_SET(7, i);
-  M_WRMEM(R.HL.D, i);
+    byte i;
+    i = M_RDMEM(R.HL.D);
+    M_SET(7, i);
+    M_WRMEM(R.HL.D, i);
 };
 static void set_7_xix(void) {
-  byte i;
-  int j;
-  j = M_XIX;
-  i = M_RDMEM(j);
-  M_SET(7, i);
-  M_WRMEM(j, i);
+    byte i;
+    int j;
+    j = M_XIX;
+    i = M_RDMEM(j);
+    M_SET(7, i);
+    M_WRMEM(j, i);
 };
 static void set_7_xiy(void) {
-  byte i;
-  int j;
-  j = M_XIY;
-  i = M_RDMEM(j);
-  M_SET(7, i);
-  M_WRMEM(j, i);
+    byte i;
+    int j;
+    j = M_XIY;
+    i = M_RDMEM(j);
+    M_SET(7, i);
+    M_WRMEM(j, i);
 };
 static void set_7_a(void) { M_SET(7, R.AF.B.h); };
 static void set_7_b(void) { M_SET(7, R.BC.B.h); };
@@ -1889,26 +1889,26 @@ static void set_7_h(void) { M_SET(7, R.HL.B.h); };
 static void set_7_l(void) { M_SET(7, R.HL.B.l); };
 
 static void sla_xhl(void) {
-  byte i;
-  i = M_RDMEM(R.HL.D);
-  M_SLA(i);
-  M_WRMEM(R.HL.D, i);
+    byte i;
+    i = M_RDMEM(R.HL.D);
+    M_SLA(i);
+    M_WRMEM(R.HL.D, i);
 }
 static void sla_xix(void) {
-  byte i;
-  int j;
-  j = M_XIX;
-  i = M_RDMEM(j);
-  M_SLA(i);
-  M_WRMEM(j, i);
+    byte i;
+    int j;
+    j = M_XIX;
+    i = M_RDMEM(j);
+    M_SLA(i);
+    M_WRMEM(j, i);
 }
 static void sla_xiy(void) {
-  byte i;
-  int j;
-  j = M_XIY;
-  i = M_RDMEM(j);
-  M_SLA(i);
-  M_WRMEM(j, i);
+    byte i;
+    int j;
+    j = M_XIY;
+    i = M_RDMEM(j);
+    M_SLA(i);
+    M_WRMEM(j, i);
 }
 static void sla_a(void) { M_SLA(R.AF.B.h); }
 static void sla_b(void) { M_SLA(R.BC.B.h); }
@@ -1919,26 +1919,26 @@ static void sla_h(void) { M_SLA(R.HL.B.h); }
 static void sla_l(void) { M_SLA(R.HL.B.l); }
 
 static void sll_xhl(void) {
-  byte i;
-  i = M_RDMEM(R.HL.D);
-  M_SLL(i);
-  M_WRMEM(R.HL.D, i);
+    byte i;
+    i = M_RDMEM(R.HL.D);
+    M_SLL(i);
+    M_WRMEM(R.HL.D, i);
 }
 static void sll_xix(void) {
-  byte i;
-  int j;
-  j = M_XIX;
-  i = M_RDMEM(j);
-  M_SLL(i);
-  M_WRMEM(j, i);
+    byte i;
+    int j;
+    j = M_XIX;
+    i = M_RDMEM(j);
+    M_SLL(i);
+    M_WRMEM(j, i);
 }
 static void sll_xiy(void) {
-  byte i;
-  int j;
-  j = M_XIY;
-  i = M_RDMEM(j);
-  M_SLL(i);
-  M_WRMEM(j, i);
+    byte i;
+    int j;
+    j = M_XIY;
+    i = M_RDMEM(j);
+    M_SLL(i);
+    M_WRMEM(j, i);
 }
 static void sll_a(void) { M_SLL(R.AF.B.h); }
 static void sll_b(void) { M_SLL(R.BC.B.h); }
@@ -1949,26 +1949,26 @@ static void sll_h(void) { M_SLL(R.HL.B.h); }
 static void sll_l(void) { M_SLL(R.HL.B.l); }
 
 static void sra_xhl(void) {
-  byte i;
-  i = M_RDMEM(R.HL.D);
-  M_SRA(i);
-  M_WRMEM(R.HL.D, i);
+    byte i;
+    i = M_RDMEM(R.HL.D);
+    M_SRA(i);
+    M_WRMEM(R.HL.D, i);
 }
 static void sra_xix(void) {
-  byte i;
-  int j;
-  j = M_XIX;
-  i = M_RDMEM(j);
-  M_SRA(i);
-  M_WRMEM(j, i);
+    byte i;
+    int j;
+    j = M_XIX;
+    i = M_RDMEM(j);
+    M_SRA(i);
+    M_WRMEM(j, i);
 }
 static void sra_xiy(void) {
-  byte i;
-  int j;
-  j = M_XIY;
-  i = M_RDMEM(j);
-  M_SRA(i);
-  M_WRMEM(j, i);
+    byte i;
+    int j;
+    j = M_XIY;
+    i = M_RDMEM(j);
+    M_SRA(i);
+    M_WRMEM(j, i);
 }
 static void sra_a(void) { M_SRA(R.AF.B.h); }
 static void sra_b(void) { M_SRA(R.BC.B.h); }
@@ -1979,26 +1979,26 @@ static void sra_h(void) { M_SRA(R.HL.B.h); }
 static void sra_l(void) { M_SRA(R.HL.B.l); }
 
 static void srl_xhl(void) {
-  byte i;
-  i = M_RDMEM(R.HL.D);
-  M_SRL(i);
-  M_WRMEM(R.HL.D, i);
+    byte i;
+    i = M_RDMEM(R.HL.D);
+    M_SRL(i);
+    M_WRMEM(R.HL.D, i);
 }
 static void srl_xix(void) {
-  byte i;
-  int j;
-  j = M_XIX;
-  i = M_RDMEM(j);
-  M_SRL(i);
-  M_WRMEM(j, i);
+    byte i;
+    int j;
+    j = M_XIX;
+    i = M_RDMEM(j);
+    M_SRL(i);
+    M_WRMEM(j, i);
 }
 static void srl_xiy(void) {
-  byte i;
-  int j;
-  j = M_XIY;
-  i = M_RDMEM(j);
-  M_SRL(i);
-  M_WRMEM(j, i);
+    byte i;
+    int j;
+    j = M_XIY;
+    i = M_RDMEM(j);
+    M_SRL(i);
+    M_WRMEM(j, i);
 }
 static void srl_a(void) { M_SRL(R.AF.B.h); }
 static void srl_b(void) { M_SRL(R.BC.B.h); }
@@ -2009,16 +2009,16 @@ static void srl_h(void) { M_SRL(R.HL.B.h); }
 static void srl_l(void) { M_SRL(R.HL.B.l); }
 
 static void sub_xhl(void) {
-  byte i = M_RD_XHL;
-  M_SUB(i);
+    byte i = M_RD_XHL;
+    M_SUB(i);
 }
 static void sub_xix(void) {
-  byte i = M_RD_XIX();
-  M_SUB(i);
+    byte i = M_RD_XIX();
+    M_SUB(i);
 }
 static void sub_xiy(void) {
-  byte i = M_RD_XIY();
-  M_SUB(i);
+    byte i = M_RD_XIY();
+    M_SUB(i);
 }
 static void sub_a(void) { R.AF.D = Z_FLAG | N_FLAG; }
 static void sub_b(void) { M_SUB(R.BC.B.h); }
@@ -2032,21 +2032,21 @@ static void sub_ixl(void) { M_SUB(R.IX.B.l); }
 static void sub_iyh(void) { M_SUB(R.IY.B.h); }
 static void sub_iyl(void) { M_SUB(R.IY.B.l); }
 static void sub_byte(void) {
-  byte i = M_RDMEM_OPCODE();
-  M_SUB(i);
+    byte i = M_RDMEM_OPCODE();
+    M_SUB(i);
 }
 
 static void xor_xhl(void) {
-  byte i = M_RD_XHL;
-  M_XOR(i);
+    byte i = M_RD_XHL;
+    M_XOR(i);
 }
 static void xor_xix(void) {
-  byte i = M_RD_XIX();
-  M_XOR(i);
+    byte i = M_RD_XIX();
+    M_XOR(i);
 }
 static void xor_xiy(void) {
-  byte i = M_RD_XIY();
-  M_XOR(i);
+    byte i = M_RD_XIY();
+    M_XOR(i);
 }
 static void xor_a(void) { R.AF.D = Z_FLAG | V_FLAG; }
 static void xor_b(void) { M_XOR(R.BC.B.h); }
@@ -2060,8 +2060,8 @@ static void xor_ixl(void) { M_XOR(R.IX.B.l); }
 static void xor_iyh(void) { M_XOR(R.IY.B.h); }
 static void xor_iyl(void) { M_XOR(R.IY.B.l); }
 static void xor_byte(void) {
-  byte i = M_RDMEM_OPCODE();
-  M_XOR(i);
+    byte i = M_RDMEM_OPCODE();
+    M_XOR(i);
 }
 
 static void no_op(void) { --R.PC.W.l; }
@@ -2176,18 +2176,18 @@ static opcode_fn opcode_fd_cb[256] = {
     no_op_xx,  no_op_xx,  no_op_xx,  no_op_xx,  set_7_xiy, no_op_xx};
 
 static void dd_cb(void) {
-  unsigned opcode;
-  opcode = M_RDOP_ARG((R.PC.D + 1) & 0xFFFF);
-  Z80_ICount -= cycles_xx_cb[opcode];
-  (*(opcode_dd_cb[opcode]))();
-  ++R.PC.W.l;
+    unsigned opcode;
+    opcode = M_RDOP_ARG((R.PC.D + 1) & 0xFFFF);
+    Z80_ICount -= cycles_xx_cb[opcode];
+    (*(opcode_dd_cb[opcode]))();
+    ++R.PC.W.l;
 };
 static void fd_cb(void) {
-  unsigned opcode;
-  opcode = M_RDOP_ARG((R.PC.D + 1) & 0xFFFF);
-  Z80_ICount -= cycles_xx_cb[opcode];
-  (*(opcode_fd_cb[opcode]))();
-  ++R.PC.W.l;
+    unsigned opcode;
+    opcode = M_RDOP_ARG((R.PC.D + 1) & 0xFFFF);
+    Z80_ICount -= cycles_xx_cb[opcode];
+    (*(opcode_fd_cb[opcode]))();
+    ++R.PC.W.l;
 };
 
 static opcode_fn opcode_cb[256] = {
@@ -2308,36 +2308,36 @@ static opcode_fn opcode_fd[256] = {
     no_op,       no_op,       no_op,       no_op};
 
 static void cb(void) {
-  unsigned opcode;
-  ++R.R;
-  opcode = M_RDOP(R.PC.D);
-  R.PC.W.l++;
-  Z80_ICount -= cycles_cb[opcode];
-  (*(opcode_cb[opcode]))();
+    unsigned opcode;
+    ++R.R;
+    opcode = M_RDOP(R.PC.D);
+    R.PC.W.l++;
+    Z80_ICount -= cycles_cb[opcode];
+    (*(opcode_cb[opcode]))();
 }
 static void dd(void) {
-  unsigned opcode;
-  ++R.R;
-  opcode = M_RDOP(R.PC.D);
-  R.PC.W.l++;
-  Z80_ICount -= cycles_xx[opcode];
-  (*(opcode_dd[opcode]))();
+    unsigned opcode;
+    ++R.R;
+    opcode = M_RDOP(R.PC.D);
+    R.PC.W.l++;
+    Z80_ICount -= cycles_xx[opcode];
+    (*(opcode_dd[opcode]))();
 }
 static void ed(void) {
-  unsigned opcode;
-  ++R.R;
-  opcode = M_RDOP(R.PC.D);
-  R.PC.W.l++;
-  Z80_ICount -= cycles_ed[opcode];
-  (*(opcode_ed[opcode]))();
+    unsigned opcode;
+    ++R.R;
+    opcode = M_RDOP(R.PC.D);
+    R.PC.W.l++;
+    Z80_ICount -= cycles_ed[opcode];
+    (*(opcode_ed[opcode]))();
 }
 static void fd(void) {
-  unsigned opcode;
-  ++R.R;
-  opcode = M_RDOP(R.PC.D);
-  R.PC.W.l++;
-  Z80_ICount -= cycles_xx[opcode];
-  (*(opcode_fd[opcode]))();
+    unsigned opcode;
+    ++R.R;
+    opcode = M_RDOP(R.PC.D);
+    R.PC.W.l++;
+    Z80_ICount -= cycles_xx[opcode];
+    (*(opcode_fd[opcode]))();
 }
 
 static opcode_fn opcode_main[256] = {
@@ -2372,129 +2372,129 @@ static opcode_fn opcode_main[256] = {
     call_m,      fd,         cp_byte,   rst_38};
 
 static void ei(void) {
-  unsigned opcode;
-  /* If interrupts were disabled, execute one more instruction and check the */
-  /* IRQ line. If not, simply set interrupt flip-flop 2                      */
-  if (!R.IFF1) {
+    unsigned opcode;
+    /* If interrupts were disabled, execute one more instruction and check the */
+    /* IRQ line. If not, simply set interrupt flip-flop 2                      */
+    if (!R.IFF1) {
 #ifdef DEBUG
-    if (R.PC.D == Z80_Trap)
-      Z80_Trace = 1;
-    if (Z80_Trace)
-      Z80_Debug(&R);
+        if (R.PC.D == Z80_Trap)
+            Z80_Trace = 1;
+        if (Z80_Trace)
+            Z80_Debug(&R);
 #endif
-    R.IFF1 = R.IFF2 = 1;
-    ++R.R;
-    opcode = M_RDOP(R.PC.D);
-    R.PC.W.l++;
-    Z80_ICount -= cycles_main[opcode];
-    (*(opcode_main[opcode]))();
-    Interrupt(Z80_Interrupt());
-    //  Interrupt(Z80_IRQ);
-  } else
-    R.IFF2 = 1;
+        R.IFF1 = R.IFF2 = 1;
+        ++R.R;
+        opcode = M_RDOP(R.PC.D);
+        R.PC.W.l++;
+        Z80_ICount -= cycles_main[opcode];
+        (*(opcode_main[opcode]))();
+        Interrupt(Z80_Interrupt());
+        //  Interrupt(Z80_IRQ);
+    } else
+        R.IFF2 = 1;
 }
 
 /****************************************************************************/
 /* Reset registers to their initial values                                  */
 /****************************************************************************/
 void Z80_Reset(void) {
-  memset(&R, 0, sizeof(Z80_Regs));
-  R.SP.D = 0xF000;
-  R.R = rand();
-  // Z80_ICount=Z80_IPeriod;
+    memset(&R, 0, sizeof(Z80_Regs));
+    R.SP.D = 0xF000;
+    R.R = rand();
+    // Z80_ICount=Z80_IPeriod;
 }
 
 /****************************************************************************/
 /* Initialise the various lookup tables used by the emulation code          */
 /****************************************************************************/
 static void InitTables(void) {
-  static int InitTables_virgin = 1;
-  byte zs;
-  int i, p;
-  if (!InitTables_virgin)
-    return;
-  InitTables_virgin = 0;
-  for (i = 0; i < 256; ++i) {
-    zs = 0;
-    if (i == 0)
-      zs |= Z_FLAG;
-    if (i & 0x80)
-      zs |= S_FLAG;
-    p = 0;
-    if (i & 1)
-      ++p;
-    if (i & 2)
-      ++p;
-    if (i & 4)
-      ++p;
-    if (i & 8)
-      ++p;
-    if (i & 16)
-      ++p;
-    if (i & 32)
-      ++p;
-    if (i & 64)
-      ++p;
-    if (i & 128)
-      ++p;
-    PTable[i] = (p & 1) ? 0 : V_FLAG;
-    ZSTable[i] = zs;
-    ZSPTable[i] = zs | PTable[i];
-  }
-  for (i = 0; i < 256; ++i) {
-    ZSTable[i + 256] = ZSTable[i] | C_FLAG;
-    ZSPTable[i + 256] = ZSPTable[i] | C_FLAG;
-    PTable[i + 256] = PTable[i] | C_FLAG;
-  }
+    static int InitTables_virgin = 1;
+    byte zs;
+    int i, p;
+    if (!InitTables_virgin)
+        return;
+    InitTables_virgin = 0;
+    for (i = 0; i < 256; ++i) {
+        zs = 0;
+        if (i == 0)
+            zs |= Z_FLAG;
+        if (i & 0x80)
+            zs |= S_FLAG;
+        p = 0;
+        if (i & 1)
+            ++p;
+        if (i & 2)
+            ++p;
+        if (i & 4)
+            ++p;
+        if (i & 8)
+            ++p;
+        if (i & 16)
+            ++p;
+        if (i & 32)
+            ++p;
+        if (i & 64)
+            ++p;
+        if (i & 128)
+            ++p;
+        PTable[i] = (p & 1) ? 0 : V_FLAG;
+        ZSTable[i] = zs;
+        ZSPTable[i] = zs | PTable[i];
+    }
+    for (i = 0; i < 256; ++i) {
+        ZSTable[i + 256] = ZSTable[i] | C_FLAG;
+        ZSPTable[i + 256] = ZSPTable[i] | C_FLAG;
+        PTable[i + 256] = PTable[i] | C_FLAG;
+    }
 }
 
 /****************************************************************************/
 /* Issue an interrupt if necessary                                          */
 /****************************************************************************/
 static void Interrupt(int j) {
-  if (j == Z80_IGNORE_INT)
-    return;
-  if (j == Z80_NMI_INT || R.IFF1) {
-    /* Clear interrupt flip-flop 1 */
-    R.IFF1 = 0;
-    /* Check if processor was halted */
-    if (R.HALT) {
-      ++R.PC.W.l;
-      R.HALT = 0;
-    }
-    if (j == Z80_NMI_INT) {
-      M_PUSH(PC);
-      R.PC.D = 0x0066;
-    } else {
-      /* Interrupt mode 2. Call [R.I:databyte] */
-      if (R.IM == 2) {
-        M_PUSH(PC);
-        R.PC.D = M_RDMEM_WORD((j & 255) | (R.I << 8));
-      } else
-          /* Interrupt mode 1. RST 38h */
-          if (R.IM == 1) {
-        Z80_ICount -= cycles_main[0xFF];
-        (*(opcode_main[0xFF]))();
-      } else
-      /* Interrupt mode 0. We check for CALL and JP instructions, if neither  */
-      /* of these were found we assume a 1 byte opcode was placed on the      */
-      /* databus                                                              */
-      {
-        switch (j & 0xFF0000) {
-        case 0xCD:
-          M_PUSH(PC);
-        case 0xC3:
-          R.PC.D = j & 0xFFFF;
-          break;
-        default:
-          j &= 255;
-          Z80_ICount -= cycles_main[j];
-          (*(opcode_main[j]))();
-          break;
+    if (j == Z80_IGNORE_INT)
+        return;
+    if (j == Z80_NMI_INT || R.IFF1) {
+        /* Clear interrupt flip-flop 1 */
+        R.IFF1 = 0;
+        /* Check if processor was halted */
+        if (R.HALT) {
+            ++R.PC.W.l;
+            R.HALT = 0;
         }
-      }
+        if (j == Z80_NMI_INT) {
+            M_PUSH(PC);
+            R.PC.D = 0x0066;
+        } else {
+            /* Interrupt mode 2. Call [R.I:databyte] */
+            if (R.IM == 2) {
+                M_PUSH(PC);
+                R.PC.D = M_RDMEM_WORD((j & 255) | (R.I << 8));
+            } else
+                /* Interrupt mode 1. RST 38h */
+                if (R.IM == 1) {
+                Z80_ICount -= cycles_main[0xFF];
+                (*(opcode_main[0xFF]))();
+            } else
+            /* Interrupt mode 0. We check for CALL and JP instructions, if neither  */
+            /* of these were found we assume a 1 byte opcode was placed on the      */
+            /* databus                                                              */
+            {
+                switch (j & 0xFF0000) {
+                case 0xCD:
+                    M_PUSH(PC);
+                case 0xC3:
+                    R.PC.D = j & 0xFFFF;
+                    break;
+                default:
+                    j &= 255;
+                    Z80_ICount -= cycles_main[j];
+                    (*(opcode_main[j]))();
+                    break;
+                }
+            }
+        }
     }
-  }
 }
 
 byte get_IM() { return R.IM; }
@@ -2522,80 +2522,80 @@ unsigned Z80_GetPC(void) { return R.PC.D; }
 /* Execute IPeriod T-States. Return 0 if emulation should be stopped        */
 /****************************************************************************/
 int Z80_Execute(void) {
-  unsigned opcode;
-  Z80_Running = 1;
-  InitTables();
+    unsigned opcode;
+    Z80_Running = 1;
+    InitTables();
 
-  do {
+    do {
 #ifdef TRACE
-    pc_trace[pc_count] = R.PC.D;
-    pc_count = (pc_count + 1) & 255;
+        pc_trace[pc_count] = R.PC.D;
+        pc_count = (pc_count + 1) & 255;
 #endif
 #ifdef DEBUG
-    if (R.PC.D == Z80_Trap)
-      Z80_Trace = 1;
-    if (Z80_Trace)
-      Z80_Debug(&R);
-    if (!Z80_Running)
-      break;
+        if (R.PC.D == Z80_Trap)
+            Z80_Trace = 1;
+        if (Z80_Trace)
+            Z80_Debug(&R);
+        if (!Z80_Running)
+            break;
 #endif
-    ++R.R;
-    opcode = M_RDOP(R.PC.D);
+        ++R.R;
+        opcode = M_RDOP(R.PC.D);
 
-    if (run_debug) {
-      Serial.print("PC: ");
-      Serial.print(R.PC.D, HEX);
-      Serial.print("  opcode: ");
-      Serial.print(opcode, HEX);
-      Serial.print("  HL: ");
-      Serial.print(R.HL.D, HEX);
-      Serial.print("  BC: ");
-      Serial.print(R.BC.D, HEX);
-      Serial.print("  AF: ");
-      Serial.println(R.AF.D, HEX);
-      Serial.printf("T-States: %d\n", cycles_main[opcode]);
-      Serial.printf("R-Register: %d\n", cycles_main[opcode]);
-    }
+        if (run_debug) {
+            Serial.print("PC: ");
+            Serial.print(R.PC.D, HEX);
+            Serial.print("  opcode: ");
+            Serial.print(opcode, HEX);
+            Serial.print("  HL: ");
+            Serial.print(R.HL.D, HEX);
+            Serial.print("  BC: ");
+            Serial.print(R.BC.D, HEX);
+            Serial.print("  AF: ");
+            Serial.println(R.AF.D, HEX);
+            Serial.printf("T-States: %d\n", cycles_main[opcode]);
+            Serial.printf("R-Register: %d\n", cycles_main[opcode]);
+        }
 
-    R.PC.W.l++;
+        R.PC.W.l++;
 
-    Z80_ICount -= cycles_main[opcode];
-    (*(opcode_main[opcode]))();
-    int retardo = cycles_main[opcode] / 4;
+        Z80_ICount -= cycles_main[opcode];
+        (*(opcode_main[opcode]))();
+        int retardo = cycles_main[opcode] / 4;
 
-    if (opcode != 0xd3)
-      delayMicroseconds(2);
+        if (opcode != 0xd3)
+            delayMicroseconds(2);
     } while (Z80_ICount > 0);
     Z80_ICount += Z80_IPeriod;
     Interrupt(Z80_Interrupt());
-   return Z80_Running;
+    return Z80_Running;
 }
 
 /****************************************************************************/
 /* Interpret Z80 code                                                       */
 /****************************************************************************/
 word Z80(void) {
-  while (Z80_Execute()) {
-    do_keyboard();
-    return (R.PC.W.l);
-  }
+    while (Z80_Execute()) {
+        do_keyboard();
+        return (R.PC.W.l);
+    }
 }
 
 /****************************************************************************/
 /* Dump register contents and (optionally) a PC trace to stdout             */
 /****************************************************************************/
 void Z80_RegisterDump(void) {
-  int i;
-  printf("AF:%04X HL:%04X DE:%04X BC:%04X PC:%04X SP:%04X IX:%04X IY:%04X\n", R.AF.W.l, R.HL.W.l, R.DE.W.l, R.BC.W.l,
-         R.PC.W.l, R.SP.W.l, R.IX.W.l, R.IY.W.l);
-  printf("STACK: ");
-  for (i = 0; i < 10; ++i)
-    printf("%04X ", M_RDMEM_WORD((R.SP.D + i * 2) & 0xFFFF));
-  puts("");
+    int i;
+    printf("AF:%04X HL:%04X DE:%04X BC:%04X PC:%04X SP:%04X IX:%04X IY:%04X\n", R.AF.W.l, R.HL.W.l, R.DE.W.l, R.BC.W.l,
+           R.PC.W.l, R.SP.W.l, R.IX.W.l, R.IY.W.l);
+    printf("STACK: ");
+    for (i = 0; i < 10; ++i)
+        printf("%04X ", M_RDMEM_WORD((R.SP.D + i * 2) & 0xFFFF));
+    puts("");
 #ifdef TRACE
-  puts("PC TRACE:");
-  for (i = 1; i <= 256; ++i)
-    printf("%04X\n", pc_trace[(pc_count - i) & 255]);
+    puts("PC TRACE:");
+    for (i = 1; i <= 256; ++i)
+        printf("%04X\n", pc_trace[(pc_count - i) & 255]);
 #endif
 }
 
@@ -2604,11 +2604,11 @@ void Z80_RegisterDump(void) {
 /* when the refresh register is being incremented)                          */
 /****************************************************************************/
 void Z80_SetWaitStates(int n) {
-  int i;
-  for (i = 0; i < 256; ++i) {
-    cycles_main[i] += n;
-    cycles_cb[i] += n;
-    cycles_ed[i] += n;
-    cycles_xx[i] += n;
-  }
+    int i;
+    for (i = 0; i < 256; ++i) {
+        cycles_main[i] += n;
+        cycles_cb[i] += n;
+        cycles_ed[i] += n;
+        cycles_xx[i] += n;
+    }
 }

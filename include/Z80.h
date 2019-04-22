@@ -43,57 +43,57 @@ typedef signed char offset;
 typedef union {
 #ifdef __128BIT__
 #ifdef LSB_FIRST
-  struct {
-    byte l, h, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11, h12, h13, h14, h15;
-  } B;
-  struct {
-    int16_t l, h, h2, h3, h4, h5, h6, h7;
-  } W;
-  dword D;
+    struct {
+        byte l, h, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11, h12, h13, h14, h15;
+    } B;
+    struct {
+        int16_t l, h, h2, h3, h4, h5, h6, h7;
+    } W;
+    dword D;
 #else
-  struct {
-    byte h15, h14, h13, h12, h11, h10, h9, h8, h7, h6, h5, h4, h3, h2, h, l;
-  } B;
-  struct {
-    int16_t h7, h6, h5, h4, h3, h2, h, l;
-  } W;
-  dword D;
+    struct {
+        byte h15, h14, h13, h12, h11, h10, h9, h8, h7, h6, h5, h4, h3, h2, h, l;
+    } B;
+    struct {
+        int16_t h7, h6, h5, h4, h3, h2, h, l;
+    } W;
+    dword D;
 #endif
 #elif __64BIT__
 #ifdef LSB_FIRST
-  struct {
-    byte l, h, h2, h3, h4, h5, h6, h7;
-  } B;
-  struct {
-    int16_t l, h, h2, h3;
-  } W;
-  dword D;
+    struct {
+        byte l, h, h2, h3, h4, h5, h6, h7;
+    } B;
+    struct {
+        int16_t l, h, h2, h3;
+    } W;
+    dword D;
 #else
-  struct {
-    byte h7, h6, h5, h4, h3, h2, h, l;
-  } B;
-  struct {
-    int16_t h3, h2, h, l;
-  } W;
-  dword D;
+    struct {
+        byte h7, h6, h5, h4, h3, h2, h, l;
+    } B;
+    struct {
+        int16_t h3, h2, h, l;
+    } W;
+    dword D;
 #endif
 #else
 #ifdef LSB_FIRST
-  struct {
-    byte l, h, h2, h3;
-  } B;
-  struct {
-    int16_t l, h;
-  } W;
-  dword D;
+    struct {
+        byte l, h, h2, h3;
+    } B;
+    struct {
+        int16_t l, h;
+    } W;
+    dword D;
 #else
-  struct {
-    byte h3, h2, h, l;
-  } B;
-  struct {
-    int16_t h, l;
-  } W;
-  dword D;
+    struct {
+        byte h3, h2, h, l;
+    } B;
+    struct {
+        int16_t h, l;
+    } W;
+    dword D;
 #endif
 #endif
 } pair;
@@ -113,9 +113,9 @@ typedef union {
 /* register is calculated as follows: refresh=(Regs.R&127)|(Regs.R2&128)    */
 /****************************************************************************/
 typedef struct {
-  pair AF, BC, DE, HL, IX, IY, PC, SP;
-  pair AF2, BC2, DE2, HL2;
-  int16_t IFF1, IFF2, HALT, IM, I, R, R2;
+    pair AF, BC, DE, HL, IX, IY, PC, SP;
+    pair AF2, BC2, DE2, HL2;
+    int16_t IFF1, IFF2, HALT, IM, I, R, R2;
 } Z80_Regs;
 
 /****************************************************************************/

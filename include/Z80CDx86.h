@@ -13,84 +13,84 @@
 #define _INLINE extern __inline__
 
 #define M_POP(Rg)                                                                                                      \
-  R.Rg.D = M_RDSTACK(R.SP.D) + (M_RDSTACK((R.SP.D + 1) & 65535) << 8);                                                 \
-  R.SP.W.l += 2
+    R.Rg.D = M_RDSTACK(R.SP.D) + (M_RDSTACK((R.SP.D + 1) & 65535) << 8);                                               \
+    R.SP.W.l += 2
 #define M_PUSH(Rg)                                                                                                     \
-  R.SP.W.l -= 2;                                                                                                       \
-  M_WRSTACK(R.SP.D, R.Rg.D);                                                                                           \
-  M_WRSTACK((R.SP.D + 1) & 65535, R.Rg.D >> 8)
+    R.SP.W.l -= 2;                                                                                                     \
+    M_WRSTACK(R.SP.D, R.Rg.D);                                                                                         \
+    M_WRSTACK((R.SP.D + 1) & 65535, R.Rg.D >> 8)
 #define M_CALL                                                                                                         \
-  {                                                                                                                    \
-    int q;                                                                                                             \
-    q = M_RDMEM_OPCODE_WORD();                                                                                         \
-    M_PUSH(PC);                                                                                                        \
-    R.PC.D = q;                                                                                                        \
-    Z80_ICount -= 7;                                                                                                   \
-  }
+    {                                                                                                                  \
+        int q;                                                                                                         \
+        q = M_RDMEM_OPCODE_WORD();                                                                                     \
+        M_PUSH(PC);                                                                                                    \
+        R.PC.D = q;                                                                                                    \
+        Z80_ICount -= 7;                                                                                               \
+    }
 #define M_JP R.PC.D = M_RDOP_ARG(R.PC.D) + ((M_RDOP_ARG((R.PC.D + 1) & 65535)) << 8)
 #define M_JR                                                                                                           \
-  R.PC.W.l += ((offset)M_RDOP_ARG(R.PC.D)) + 1;                                                                        \
-  Z80_ICount -= 5
+    R.PC.W.l += ((offset)M_RDOP_ARG(R.PC.D)) + 1;                                                                      \
+    Z80_ICount -= 5
 #define M_RET                                                                                                          \
-  M_POP(PC);                                                                                                           \
-  Z80_ICount -= 6
+    M_POP(PC);                                                                                                         \
+    Z80_ICount -= 6
 #define M_RST(Addr)                                                                                                    \
-  M_PUSH(PC);                                                                                                          \
-  R.PC.D = Addr
+    M_PUSH(PC);                                                                                                        \
+    R.PC.D = Addr
 #define M_SET(Bit, Reg) Reg |= 1 << Bit
 #define M_RES(Bit, Reg) Reg &= ~(1 << Bit)
 #define M_BIT(Bit, Reg)                                                                                                \
-  R.AF.B.l = (R.AF.B.l & C_FLAG) | H_FLAG | ((Reg & (1 << Bit)) ? ((Bit == 7) ? S_FLAG : 0) : Z_FLAG)
+    R.AF.B.l = (R.AF.B.l & C_FLAG) | H_FLAG | ((Reg & (1 << Bit)) ? ((Bit == 7) ? S_FLAG : 0) : Z_FLAG)
 #define M_IN(Reg)                                                                                                      \
-  Reg = DoIn(R.BC.B.l, R.BC.B.h);                                                                                      \
-  R.AF.B.l = (R.AF.B.l & C_FLAG) | ZSPTable[Reg]
+    Reg = DoIn(R.BC.B.l, R.BC.B.h);                                                                                    \
+    R.AF.B.l = (R.AF.B.l & C_FLAG) | ZSPTable[Reg]
 
 #define M_ADDW(Reg1, Reg2)                                                                                             \
-  {                                                                                                                    \
-    asm(" addb %%al,%%cl       \n"                                                                                     \
-        " adcb %%ah,%%ch       \n"                                                                                     \
-        " lahf                 \n"                                                                                     \
-        " andb $0x11,%%ah      \n"                                                                                     \
-        " andb $0xC4,%1	\n"                                                                                            \
-        " orb %%ah,%1		\n"                                                                                             \
-        : "=c"(R.Reg1.D), "=g"(R.AF.B.l)                                                                               \
-        : "0"(R.Reg1.D), "1"(R.AF.B.l), "a"(R.Reg2.D));                                                                \
-  }
+    {                                                                                                                  \
+        asm(" addb %%al,%%cl       \n"                                                                                 \
+            " adcb %%ah,%%ch       \n"                                                                                 \
+            " lahf                 \n"                                                                                 \
+            " andb $0x11,%%ah      \n"                                                                                 \
+            " andb $0xC4,%1	\n"                                                                                        \
+            " orb %%ah,%1		\n"                                                                                         \
+            : "=c"(R.Reg1.D), "=g"(R.AF.B.l)                                                                           \
+            : "0"(R.Reg1.D), "1"(R.AF.B.l), "a"(R.Reg2.D));                                                            \
+    }
 
 _INLINE void _M_ADCW(dword Reg) {
-  asm(" shrb $1,%%al         \n"
-      " adcb %%dl,%%cl       \n"
-      " adcb %%dh,%%ch       \n"
-      " lahf                 \n"
-      " setob %%al		\n"
-      " andb $0x91,%%ah	\n"
-      " shlb $2,%%al		\n"
-      " orb %%ah,%%al	\n"
-      " orl %%ecx,%%ecx      \n"
-      " lahf                 \n"
-      " andb $0x40,%%ah      \n"
-      " orb %%ah,%%al        \n"
-      : "=c"(R.HL.D), "=a"(R.AF.B.l)
-      : "0"(R.HL.D), "d"(Reg), "a"(R.AF.B.l));
+    asm(" shrb $1,%%al         \n"
+        " adcb %%dl,%%cl       \n"
+        " adcb %%dh,%%ch       \n"
+        " lahf                 \n"
+        " setob %%al		\n"
+        " andb $0x91,%%ah	\n"
+        " shlb $2,%%al		\n"
+        " orb %%ah,%%al	\n"
+        " orl %%ecx,%%ecx      \n"
+        " lahf                 \n"
+        " andb $0x40,%%ah      \n"
+        " orb %%ah,%%al        \n"
+        : "=c"(R.HL.D), "=a"(R.AF.B.l)
+        : "0"(R.HL.D), "d"(Reg), "a"(R.AF.B.l));
 }
 #define M_ADCW(Reg) _M_ADCW(R.Reg.D)
 
 _INLINE void _M_SBCW(dword Reg) {
-  asm(" shrb $1,%%al         \n"
-      " sbbb %%dl,%%cl       \n"
-      " sbbb %%dh,%%ch       \n"
-      " lahf                 \n"
-      " setob %%al		\n"
-      " andb $0x91,%%ah	\n"
-      " shlb $2,%%al		\n"
-      " orb %%ah,%%al	\n"
-      " orl %%ecx,%%ecx      \n"
-      " lahf                 \n"
-      " andb $0x40,%%ah      \n"
-      " orb $2,%%al          \n"
-      " orb %%ah,%%al        \n"
-      : "=c"(R.HL.D), "=a"(R.AF.B.l)
-      : "0"(R.HL.D), "d"(Reg), "a"(R.AF.B.l));
+    asm(" shrb $1,%%al         \n"
+        " sbbb %%dl,%%cl       \n"
+        " sbbb %%dh,%%ch       \n"
+        " lahf                 \n"
+        " setob %%al		\n"
+        " andb $0x91,%%ah	\n"
+        " shlb $2,%%al		\n"
+        " orb %%ah,%%al	\n"
+        " orl %%ecx,%%ecx      \n"
+        " lahf                 \n"
+        " andb $0x40,%%ah      \n"
+        " orb $2,%%al          \n"
+        " orb %%ah,%%al        \n"
+        : "=c"(R.HL.D), "=a"(R.AF.B.l)
+        : "0"(R.HL.D), "d"(Reg), "a"(R.AF.B.l));
 }
 #define M_SBCW(Reg) _M_SBCW(R.Reg.D)
 
@@ -261,198 +261,198 @@ _INLINE void _M_SBCW(dword Reg) {
    );
  */
 _INLINE void M_AND(byte Reg) {
-  asm(" andb %2,%0           \n"
-      " lahf                 \n"
-      " andb $0xC4,%%ah      \n"
-      " orb $0x10,%%ah       \n"
-      " movb %%ah,%1         \n"
-      : "=g"(R.AF.B.h), "=g"(R.AF.B.l)
-      : "r"(Reg)
-      : "eax");
+    asm(" andb %2,%0           \n"
+        " lahf                 \n"
+        " andb $0xC4,%%ah      \n"
+        " orb $0x10,%%ah       \n"
+        " movb %%ah,%1         \n"
+        : "=g"(R.AF.B.h), "=g"(R.AF.B.l)
+        : "r"(Reg)
+        : "eax");
 }
 
 _INLINE void M_OR(byte Reg) {
-  asm(" orb %2,%0            \n"
-      " lahf                 \n"
-      " andb $0xC4,%%ah      \n"
-      " movb %%ah,%1         \n"
-      : "=g"(R.AF.B.h), "=g"(R.AF.B.l)
-      : "r"(Reg)
-      : "eax");
+    asm(" orb %2,%0            \n"
+        " lahf                 \n"
+        " andb $0xC4,%%ah      \n"
+        " movb %%ah,%1         \n"
+        : "=g"(R.AF.B.h), "=g"(R.AF.B.l)
+        : "r"(Reg)
+        : "eax");
 }
 
 _INLINE void M_XOR(byte Reg) {
-  asm(" xorb %2,%0           \n"
-      " lahf                 \n"
-      " andb $0xC4,%%ah      \n"
-      " movb %%ah,%1         \n"
-      : "=g"(R.AF.B.h), "=g"(R.AF.B.l)
-      : "r"(Reg)
-      : "eax");
+    asm(" xorb %2,%0           \n"
+        " lahf                 \n"
+        " andb $0xC4,%%ah      \n"
+        " movb %%ah,%1         \n"
+        : "=g"(R.AF.B.h), "=g"(R.AF.B.l)
+        : "r"(Reg)
+        : "eax");
 }
 
 #define M_INC(Reg)                                                                                                     \
-  asm(" shrb $1,%%al         \n"                                                                                       \
-      " incb %0              \n"                                                                                       \
-      " lahf                 \n"                                                                                       \
-      " setob %%al           \n"                                                                                       \
-      " shlb $2,%%al         \n"                                                                                       \
-      " andb $0xD1,%%ah      \n"                                                                                       \
-      " orb %%ah,%%al        \n"                                                                                       \
-      : "=g"(Reg), "=a"(R.AF.B.l)                                                                                      \
-      : "0"(Reg), "a"(R.AF.B.l));
+    asm(" shrb $1,%%al         \n"                                                                                     \
+        " incb %0              \n"                                                                                     \
+        " lahf                 \n"                                                                                     \
+        " setob %%al           \n"                                                                                     \
+        " shlb $2,%%al         \n"                                                                                     \
+        " andb $0xD1,%%ah      \n"                                                                                     \
+        " orb %%ah,%%al        \n"                                                                                     \
+        : "=g"(Reg), "=a"(R.AF.B.l)                                                                                    \
+        : "0"(Reg), "a"(R.AF.B.l));
 
 #define M_DEC(Reg)                                                                                                     \
-  asm(" shrb $1,%%al         \n"                                                                                       \
-      " decb %0              \n"                                                                                       \
-      " lahf                 \n"                                                                                       \
-      " setob %%al           \n"                                                                                       \
-      " shlb $2,%%al         \n"                                                                                       \
-      " andb $0xD1,%%ah      \n"                                                                                       \
-      " orb %%ah,%%al        \n"                                                                                       \
-      " orb $2,%%al          \n"                                                                                       \
-      : "=g"(Reg), "=a"(R.AF.B.l)                                                                                      \
-      : "0"(Reg), "a"(R.AF.B.l));
+    asm(" shrb $1,%%al         \n"                                                                                     \
+        " decb %0              \n"                                                                                     \
+        " lahf                 \n"                                                                                     \
+        " setob %%al           \n"                                                                                     \
+        " shlb $2,%%al         \n"                                                                                     \
+        " andb $0xD1,%%ah      \n"                                                                                     \
+        " orb %%ah,%%al        \n"                                                                                     \
+        " orb $2,%%al          \n"                                                                                     \
+        : "=g"(Reg), "=a"(R.AF.B.l)                                                                                    \
+        : "0"(Reg), "a"(R.AF.B.l));
 
 _INLINE void M_ADD(byte Reg) {
-  asm(" addb %2,%0           \n"
-      " lahf                 \n"
-      " setob %%al           \n"
-      " shlb $2,%%al         \n"
-      " andb $0xD1,%%ah      \n"
-      " orb %%ah,%%al        \n"
-      " movb %%al,%1         \n"
-      : "=g"(R.AF.B.h), "=g"(R.AF.B.l)
-      : "r"(Reg), "0"(R.AF.B.h)
-      : "eax");
+    asm(" addb %2,%0           \n"
+        " lahf                 \n"
+        " setob %%al           \n"
+        " shlb $2,%%al         \n"
+        " andb $0xD1,%%ah      \n"
+        " orb %%ah,%%al        \n"
+        " movb %%al,%1         \n"
+        : "=g"(R.AF.B.h), "=g"(R.AF.B.l)
+        : "r"(Reg), "0"(R.AF.B.h)
+        : "eax");
 }
 
 _INLINE void M_ADC(byte Reg) {
-  asm(" shrb $1,%%al         \n"
-      " adcb %2,%0           \n"
-      " lahf                 \n"
-      " setob %%al           \n"
-      " shlb $2,%%al         \n"
-      " andb $0xD1,%%ah      \n"
-      " orb %%ah,%%al        \n"
-      : "=g"(R.AF.B.h), "=a"(R.AF.B.l)
-      : "r"(Reg), "a"(R.AF.B.l), "0"(R.AF.B.h));
+    asm(" shrb $1,%%al         \n"
+        " adcb %2,%0           \n"
+        " lahf                 \n"
+        " setob %%al           \n"
+        " shlb $2,%%al         \n"
+        " andb $0xD1,%%ah      \n"
+        " orb %%ah,%%al        \n"
+        : "=g"(R.AF.B.h), "=a"(R.AF.B.l)
+        : "r"(Reg), "a"(R.AF.B.l), "0"(R.AF.B.h));
 }
 
 _INLINE void M_SUB(byte Reg) {
-  asm(" subb %2,%0           \n"
-      " lahf                 \n"
-      " setob %%al           \n"
-      " shlb $2,%%al         \n"
-      " andb $0xD1,%%ah      \n"
-      " orb %%ah,%%al        \n"
-      " orb $2,%%al          \n"
-      : "=g"(R.AF.B.h), "=a"(R.AF.B.l)
-      : "r"(Reg), "0"(R.AF.B.h));
+    asm(" subb %2,%0           \n"
+        " lahf                 \n"
+        " setob %%al           \n"
+        " shlb $2,%%al         \n"
+        " andb $0xD1,%%ah      \n"
+        " orb %%ah,%%al        \n"
+        " orb $2,%%al          \n"
+        : "=g"(R.AF.B.h), "=a"(R.AF.B.l)
+        : "r"(Reg), "0"(R.AF.B.h));
 }
 
 _INLINE void M_SBC(byte Reg) {
-  asm(" shrb $1,%%al         \n"
-      " sbbb %2,%0           \n"
-      " lahf                 \n"
-      " setob %%al           \n"
-      " shlb $2,%%al         \n"
-      " andb $0xD1,%%ah      \n"
-      " orb %%ah,%%al        \n"
-      " orb $2,%%al          \n"
-      : "=g"(R.AF.B.h), "=a"(R.AF.B.l)
-      : "r"(Reg), "a"(R.AF.B.l), "0"(R.AF.B.h));
+    asm(" shrb $1,%%al         \n"
+        " sbbb %2,%0           \n"
+        " lahf                 \n"
+        " setob %%al           \n"
+        " shlb $2,%%al         \n"
+        " andb $0xD1,%%ah      \n"
+        " orb %%ah,%%al        \n"
+        " orb $2,%%al          \n"
+        : "=g"(R.AF.B.h), "=a"(R.AF.B.l)
+        : "r"(Reg), "a"(R.AF.B.l), "0"(R.AF.B.h));
 }
 
 _INLINE void M_CP(byte Reg) {
-  asm(" cmpb %2,%0          \n"
-      " lahf                \n"
-      " setob %%al          \n"
-      " shlb $2,%%al        \n"
-      " andb $0xD1,%%ah     \n"
-      " orb %%ah,%%al       \n"
-      " orb $2,%%al         \n"
-      : "=g"(R.AF.B.h), "=a"(R.AF.B.l)
-      : "r"(Reg), "0"(R.AF.B.h));
+    asm(" cmpb %2,%0          \n"
+        " lahf                \n"
+        " setob %%al          \n"
+        " shlb $2,%%al        \n"
+        " andb $0xD1,%%ah     \n"
+        " orb %%ah,%%al       \n"
+        " orb $2,%%al         \n"
+        : "=g"(R.AF.B.h), "=a"(R.AF.B.l)
+        : "r"(Reg), "0"(R.AF.B.h));
 }
 
 #define M_RLCA                                                                                                         \
-  R.AF.B.h = (R.AF.B.h << 1) | ((R.AF.B.h & 0x80) >> 7);                                                               \
-  R.AF.B.l = (R.AF.B.l & 0xEC) | (R.AF.B.h & C_FLAG)
+    R.AF.B.h = (R.AF.B.h << 1) | ((R.AF.B.h & 0x80) >> 7);                                                             \
+    R.AF.B.l = (R.AF.B.l & 0xEC) | (R.AF.B.h & C_FLAG)
 
 #define M_RRCA                                                                                                         \
-  R.AF.B.l = (R.AF.B.l & 0xEC) | (R.AF.B.h & 0x01);                                                                    \
-  R.AF.B.h = (R.AF.B.h >> 1) | (R.AF.B.h << 7)
+    R.AF.B.l = (R.AF.B.l & 0xEC) | (R.AF.B.h & 0x01);                                                                  \
+    R.AF.B.h = (R.AF.B.h >> 1) | (R.AF.B.h << 7)
 
 #define M_RLA                                                                                                          \
-  {                                                                                                                    \
-    int i;                                                                                                             \
-    i = R.AF.B.l & C_FLAG;                                                                                             \
-    R.AF.B.l = (R.AF.B.l & 0xEC) | ((R.AF.B.h & 0x80) >> 7);                                                           \
-    R.AF.B.h = (R.AF.B.h << 1) | i;                                                                                    \
-  }
+    {                                                                                                                  \
+        int i;                                                                                                         \
+        i = R.AF.B.l & C_FLAG;                                                                                         \
+        R.AF.B.l = (R.AF.B.l & 0xEC) | ((R.AF.B.h & 0x80) >> 7);                                                       \
+        R.AF.B.h = (R.AF.B.h << 1) | i;                                                                                \
+    }
 
 #define M_RRA                                                                                                          \
-  {                                                                                                                    \
-    int i;                                                                                                             \
-    i = R.AF.B.l & C_FLAG;                                                                                             \
-    R.AF.B.l = (R.AF.B.l & 0xEC) | (R.AF.B.h & 0x01);                                                                  \
-    R.AF.B.h = (R.AF.B.h >> 1) | (i << 7);                                                                             \
-  }
+    {                                                                                                                  \
+        int i;                                                                                                         \
+        i = R.AF.B.l & C_FLAG;                                                                                         \
+        R.AF.B.l = (R.AF.B.l & 0xEC) | (R.AF.B.h & 0x01);                                                              \
+        R.AF.B.h = (R.AF.B.h >> 1) | (i << 7);                                                                         \
+    }
 
 #define M_RLC(Reg)                                                                                                     \
-  {                                                                                                                    \
-    int q;                                                                                                             \
-    q = Reg >> 7;                                                                                                      \
-    Reg = (Reg << 1) | q;                                                                                              \
-    R.AF.B.l = ZSPTable[Reg] | q;                                                                                      \
-  }
+    {                                                                                                                  \
+        int q;                                                                                                         \
+        q = Reg >> 7;                                                                                                  \
+        Reg = (Reg << 1) | q;                                                                                          \
+        R.AF.B.l = ZSPTable[Reg] | q;                                                                                  \
+    }
 #define M_RRC(Reg)                                                                                                     \
-  {                                                                                                                    \
-    int q;                                                                                                             \
-    q = Reg & 1;                                                                                                       \
-    Reg = (Reg >> 1) | (q << 7);                                                                                       \
-    R.AF.B.l = ZSPTable[Reg] | q;                                                                                      \
-  }
+    {                                                                                                                  \
+        int q;                                                                                                         \
+        q = Reg & 1;                                                                                                   \
+        Reg = (Reg >> 1) | (q << 7);                                                                                   \
+        R.AF.B.l = ZSPTable[Reg] | q;                                                                                  \
+    }
 #define M_RL(Reg)                                                                                                      \
-  {                                                                                                                    \
-    int q;                                                                                                             \
-    q = Reg >> 7;                                                                                                      \
-    Reg = (Reg << 1) | (R.AF.B.l & 1);                                                                                 \
-    R.AF.B.l = ZSPTable[Reg] | q;                                                                                      \
-  }
+    {                                                                                                                  \
+        int q;                                                                                                         \
+        q = Reg >> 7;                                                                                                  \
+        Reg = (Reg << 1) | (R.AF.B.l & 1);                                                                             \
+        R.AF.B.l = ZSPTable[Reg] | q;                                                                                  \
+    }
 #define M_RR(Reg)                                                                                                      \
-  {                                                                                                                    \
-    int q;                                                                                                             \
-    q = Reg & 1;                                                                                                       \
-    Reg = (Reg >> 1) | (R.AF.B.l << 7);                                                                                \
-    R.AF.B.l = ZSPTable[Reg] | q;                                                                                      \
-  }
+    {                                                                                                                  \
+        int q;                                                                                                         \
+        q = Reg & 1;                                                                                                   \
+        Reg = (Reg >> 1) | (R.AF.B.l << 7);                                                                            \
+        R.AF.B.l = ZSPTable[Reg] | q;                                                                                  \
+    }
 #define M_SLL(Reg)                                                                                                     \
-  {                                                                                                                    \
-    int q;                                                                                                             \
-    q = Reg >> 7;                                                                                                      \
-    Reg = (Reg << 1) | 1;                                                                                              \
-    R.AF.B.l = ZSPTable[Reg] | q;                                                                                      \
-  }
+    {                                                                                                                  \
+        int q;                                                                                                         \
+        q = Reg >> 7;                                                                                                  \
+        Reg = (Reg << 1) | 1;                                                                                          \
+        R.AF.B.l = ZSPTable[Reg] | q;                                                                                  \
+    }
 #define M_SLA(Reg)                                                                                                     \
-  {                                                                                                                    \
-    int q;                                                                                                             \
-    q = Reg >> 7;                                                                                                      \
-    Reg <<= 1;                                                                                                         \
-    R.AF.B.l = ZSPTable[Reg] | q;                                                                                      \
-  }
+    {                                                                                                                  \
+        int q;                                                                                                         \
+        q = Reg >> 7;                                                                                                  \
+        Reg <<= 1;                                                                                                     \
+        R.AF.B.l = ZSPTable[Reg] | q;                                                                                  \
+    }
 #define M_SRL(Reg)                                                                                                     \
-  {                                                                                                                    \
-    int q;                                                                                                             \
-    q = Reg & 1;                                                                                                       \
-    Reg >>= 1;                                                                                                         \
-    R.AF.B.l = ZSPTable[Reg] | q;                                                                                      \
-  }
+    {                                                                                                                  \
+        int q;                                                                                                         \
+        q = Reg & 1;                                                                                                   \
+        Reg >>= 1;                                                                                                     \
+        R.AF.B.l = ZSPTable[Reg] | q;                                                                                  \
+    }
 #define M_SRA(Reg)                                                                                                     \
-  {                                                                                                                    \
-    int q;                                                                                                             \
-    q = Reg & 1;                                                                                                       \
-    Reg = (Reg >> 1) | (Reg & 0x80);                                                                                   \
-    R.AF.B.l = ZSPTable[Reg] | q;                                                                                      \
-  }
+    {                                                                                                                  \
+        int q;                                                                                                         \
+        q = Reg & 1;                                                                                                   \
+        Reg = (Reg >> 1) | (Reg & 0x80);                                                                               \
+        R.AF.B.l = ZSPTable[Reg] | q;                                                                                  \
+    }
