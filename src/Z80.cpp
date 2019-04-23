@@ -17,7 +17,7 @@
 
 #include "Z80.h"
 #include "paledefs.h"
-extern bool run_debug;
+extern boolean cfg_debug_on;
 extern void do_keyboard();
 
 #define M_RDMEM(A) Z80_RDMEM(A)
@@ -2542,7 +2542,7 @@ int Z80_Execute(void) {
         ++R.R;
         opcode = M_RDOP(R.PC.D);
 
-        if (run_debug) {
+        if (cfg_debug_on) {
             Serial.print("PC: ");
             Serial.print(R.PC.D, HEX);
             Serial.print("  opcode: ");

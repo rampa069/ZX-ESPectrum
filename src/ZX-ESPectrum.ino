@@ -14,18 +14,15 @@
 #include <bt.h>
 #include <esp_task_wdt.h>
 
-// Constants
-#define BOOT_FILE "/boot.cfg"
-
-// SWITCHES
-bool run_snapshot = true;
-bool run_debug = false;
-
-// EXTERNS + GLOBALS
+// EXTERN VARS
 extern byte bank_latch;
 extern int start_im1_irq;
 extern int Z80_IPeriod;
 extern boolean writeScreen;
+extern boolean cfg_mode_sna;
+extern boolean cfg_slog_on;
+
+// EXTERN METHODS
 void Z80_Reset(void);       /* Reset registers to the initial values */
 unsigned int Z80_Execute(); /* Execute IPeriod T-States              */
 unsigned int Z80();         /* Execute IPeriod T-States              */
@@ -33,6 +30,7 @@ void load_speccy();
 void setup_cpuspeed();
 byte Z80_RDMEM(uint16_t A);
 void Z80_WRMEM(uint16_t A, byte V);
+void config_read();
 void do_OSD();
 
 // GLOBALS
@@ -42,7 +40,6 @@ byte borderTemp = 7;
 byte soundTemp = 0;
 byte flashing = 0;
 byte lastAudio = 0;
-char boot_cfg;
 
 SemaphoreHandle_t xULAMutex = xSemaphoreCreateMutex();
 
@@ -50,39 +47,21 @@ SemaphoreHandle_t xULAMutex = xSemaphoreCreateMutex();
 VGA3Bit vga;
 
 void setup() {
-    File config_lhandle;
-
     // Turn off peripherals to gain memory (?do they release properly)
     esp_bt_controller_deinit();
     esp_bt_controller_mem_release(ESP_BT_MODE_BTDM);
     // esp_wifi_set_mode(WIFI_MODE_NULL);
 
-    Serial.begin(115200);
+    config_read();
 
-    // Boot config file
-    Serial.printf("Loading %s\n", BOOT_FILE);
-    while (!SPIFFS.begin()) {
-        Serial.println("Internal memory Mount Failed");
-        sleep(5);
+    if (cfg_slog_on) {
+        Serial.println("CHIP setup");
+        Serial.println("VGA framebufer");
     }
-    config_lhandle = SPIFFS.open(BOOT_FILE, FILE_READ);
-    while (!config_lhandle) {
-        Serial.printf("Cannot read %s\n", BOOT_FILE);
-        sleep(10);
-        config_lhandle = SPIFFS.open(BOOT_FILE, FILE_READ);
-    }
-    for (int i = 0; i < config_lhandle.size(); i++) {
-        Serial.print((char)config_lhandle.read());
-    }
-    config_lhandle.close();
-
-    Serial.println("CHIP setup.");
-    Serial.println("VGA framebufer");
-    // we need double buffering for smooth animations
     vga.setFrameBufferCount(2);
-    Serial.println("VGA init");
     vga.init(vga.MODE360x200, redPin, greenPin, bluePin, hsyncPin, vsyncPin);
-    Serial.println("VGA initialized");
+    if (cfg_slog_on)
+        Serial.println("VGA init completed");
 
     pinMode(SOUND_PIN, OUTPUT);
     digitalWrite(SOUND_PIN, LOW);
@@ -95,14 +74,16 @@ void setup() {
     //
     bank0 = (byte *)malloc(49152);
     if (bank0 == NULL)
-        Serial.println("Failed to allocate Bank 1 memory");
-    Serial.printf("Free Heap after bank0: %d\n", system_get_free_heap_size());
+        if (cfg_slog_on)
+            Serial.println("Failed to allocate Bank 1 memory");
+    if (cfg_slog_on)
+        Serial.printf("Free Heap after bank0: %d\n", system_get_free_heap_size());
 
     setup_cpuspeed();
 
     // START Z80
-
-    Serial.println("RESETTING Z80");
+    if (cfg_slog_on)
+        Serial.println("RESETTING Z80");
     Z80_Reset();
 
     // make sure keyboard ports are FF
@@ -110,8 +91,10 @@ void setup() {
         z80ports_in[t] = 0xff;
     }
 
-    Serial.printf("Setup: MAIN Executing on core %x ", xPortGetCoreID());
-    Serial.printf("Free Heap after Z80 Reset: %d\n", system_get_free_heap_size());
+    if (cfg_slog_on) {
+        Serial.printf("Setup: MAIN Executing on core %x ", xPortGetCoreID());
+        Serial.printf("Free Heap after Z80 Reset: %d\n", system_get_free_heap_size());
+    }
 
     xTaskCreatePinnedToCore(videoTask,   /* Function to implement the task */
                             "videoTask", /* Name of the task */
@@ -121,7 +104,7 @@ void setup() {
                             NULL,        /* Task handle. */
                             0);          /* Core where the task should run */
 
-    if (run_snapshot)
+    if (cfg_mode_sna)
         load_speccy();
 }
 

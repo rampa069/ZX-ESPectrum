@@ -3,13 +3,14 @@
 
 unsigned int shift = 0;
 byte lastcode = 0;
-bool keyup = false;
-bool shift_presed = false;
-bool symbol_pressed = false;
+boolean keyup = false;
+boolean shift_presed = false;
+boolean symbol_pressed = false;
 byte rc = 0;
 byte keymap[256];
 byte oldKeymap[256];
-extern bool debug_keyboard;
+
+extern boolean debug_keyboard;
 
 void kb_interruptHandler(void) {
     static uint8_t bitcount = 0;
@@ -52,8 +53,6 @@ void kb_interruptHandler(void) {
                 keyup = true;
             else
                 keyup = false;
-
-            // Serial.printf("Incoming: %d\n",incoming);
         }
         bitcount = 0;
         incoming = 0;

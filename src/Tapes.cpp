@@ -8,47 +8,28 @@ extern byte *bank0;
 extern int start_im1_irq;
 extern byte borderTemp;
 extern void Z80_SetRegs(Z80_Regs *Regs);
+extern String cfg_ram_file;
+extern boolean cfg_slog_on;
 
 typedef int32_t dword;
 typedef signed char offset;
 
 void load_speccy() {
     File lhandle;
-    uint16_t buf_p = 0, quot = 0, size_read, load_address;
-    unsigned char csum, flag_byte, header_byte1;
-    uint16_t cdd, f, ret, blocksize, data_leng, param1;
-    uint16_t tap_leng, exec_address, buf_pale;
-    char csum_ok[10];
-    int file_id;
-    byte *lbuffer;
+    uint16_t size_read;
     Z80_Regs i;
 
-    Serial.printf("Free Heap before SNA: %d\n", system_get_free_heap_size());
+    if (cfg_slog_on)
+        Serial.printf("Free Heap before SNA: %d\n", system_get_free_heap_size());
 
     if (!SPIFFS.begin()) {
-        Serial.println("Internal memory Mount Failed");
+        if (cfg_slog_on)
+            Serial.println("Internal memory Mount Failed");
         return;
     }
 
     // open a file for input
-    // lhandle = SPIFFS.open("/beep.sna", FILE_READ);
-    // lhandle = SPIFFS.open("/fantasy.sna", FILE_READ);
-    // lhandle = SPIFFS.open("/sppong.sna", FILE_READ);
-    // lhandle = SPIFFS.open("/ramiro1.sna", FILE_READ);
-    // lhandle = SPIFFS.open("/ramiro2016.sna", FILE_READ);
-    // lhandle = SPIFFS.open("/manic.sna", FILE_READ);
-    // lhandle = SPIFFS.open("/jetpac.sna", FILE_READ);
-    // lhandle = SPIFFS.open("/jsw1.sna", FILE_READ);
-    // lhandle = SPIFFS.open("/skooldz.sna", FILE_READ);
-    // lhandle = SPIFFS.open("/sirababol.sna", FILE_READ);
-    // lhandle = SPIFFS.open("/joust.sna", FILE_READ);
-    // lhandle = SPIFFS.open("/diag.sna", FILE_READ);
-    lhandle = SPIFFS.open("/pheenix.sna", FILE_READ);
-    // lhandle = SPIFFS.open("/rocman.sna", FILE_READ);
-    // lhandle = SPIFFS.open("/3dchess.sna", FILE_READ);
-    // lhandle = SPIFFS.open("/3dcombat.sna", FILE_READ);
-    // lhandle = SPIFFS.open("/sintetiza.sna", FILE_READ);
-    // lhandle = SPIFFS.open("/deathchase.sna", FILE_READ);
+    lhandle = SPIFFS.open(cfg_ram_file, FILE_READ);
 
     size_read = 0;
     if (lhandle != NULL) {
@@ -103,29 +84,36 @@ void load_speccy() {
             buf_p++;
         }
         lhandle.close();
-        Serial.printf("noof bytes: %x\n", buf_p);
-
-        Serial.printf("STACK:\n");
-        for (int yy = 0; yy < 16; yy++)
-            Serial.printf("%x -> %x\n", thestack + yy, bank0[thestack - 0x4000 + yy]);
+        if (cfg_slog_on) {
+            Serial.printf("noof bytes: %x\n", buf_p);
+            Serial.printf("STACK:\n");
+        }
+        if (cfg_slog_on) {
+            for (int yy = 0; yy < 16; yy++)
+                Serial.printf("%x -> %x\n", thestack + yy, bank0[thestack - 0x4000 + yy]);
+        }
 
         uint16_t offset = thestack - 0x4000;
         uint16_t retaddr = bank0[offset] + 0x100 * bank0[offset + 1];
-        Serial.printf("SP before: %x\n", i.SP.D);
+        if (cfg_slog_on)
+            Serial.printf("SP before: %x\n", i.SP.D);
         i.SP.D++;
         i.SP.D++;
-        Serial.printf("SP after: %x\n", i.SP.D);
+        if (cfg_slog_on)
+            Serial.printf("SP after: %x\n", i.SP.D);
 
         i.PC.D = retaddr;
         // i.PC.D = 0x8400;
         start_im1_irq = i.IM;
-        Serial.printf("ret address: %x\n", retaddr);
+        if (cfg_slog_on)
+            Serial.printf("ret address: %x\n", retaddr);
 
         Z80_SetRegs(&i);
-        Serial.printf("Free Heap after SNA: %d\n", system_get_free_heap_size());
-
+        if (cfg_slog_on)
+            Serial.printf("Free Heap after SNA: %d\n", system_get_free_heap_size());
     } else {
-        Serial.println("Couldn't Open SNA file ");
+        if (cfg_slog_on)
+            Serial.println("Couldn't Open SNA file ");
         return;
     }
 }
