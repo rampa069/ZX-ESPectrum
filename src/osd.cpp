@@ -12,11 +12,13 @@ void do_OSD() {
         */
         if (keymap[0x05] == 0) {
             xSemaphoreTake(xULAMutex, 0);
+            keymap[0x05] = 1;
             Serial.println("OSD ON");
-            while (keymap[0x76] != 0) {
+            while (keymap[0x05] != 0) {
                 Serial.println("OSD Active");
             }
             Serial.println("OSD OFF");
+            keymap[0x05] = 1;
             xSemaphoreGive(xULAMutex);
         }
     }
