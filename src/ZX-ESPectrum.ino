@@ -14,6 +14,9 @@
 #include <bt.h>
 #include <esp_task_wdt.h>
 
+// Constants
+#define BOOT_FILE "/boot.cfg"
+
 // SWITCHES
 bool run_snapshot = true;
 bool run_debug = false;
@@ -39,6 +42,7 @@ byte borderTemp = 7;
 byte soundTemp = 0;
 byte flashing = 0;
 byte lastAudio = 0;
+char boot_cfg;
 
 SemaphoreHandle_t xULAMutex = xSemaphoreCreateMutex();
 
@@ -46,15 +50,34 @@ SemaphoreHandle_t xULAMutex = xSemaphoreCreateMutex();
 VGA3Bit vga;
 
 void setup() {
+    File config_lhandle;
+
     // Turn off peripherals to gain memory (?do they release properly)
     esp_bt_controller_deinit();
     esp_bt_controller_mem_release(ESP_BT_MODE_BTDM);
     // esp_wifi_set_mode(WIFI_MODE_NULL);
 
     Serial.begin(115200);
+
+    // Boot config file
+    Serial.printf("Loading %s\n", BOOT_FILE);
+    while (!SPIFFS.begin()) {
+        Serial.println("Internal memory Mount Failed");
+        sleep(5);
+    }
+    config_lhandle = SPIFFS.open(BOOT_FILE, FILE_READ);
+    while (!config_lhandle) {
+        Serial.printf("Cannot read %s\n", BOOT_FILE);
+        sleep(10);
+        config_lhandle = SPIFFS.open(BOOT_FILE, FILE_READ);
+    }
+    for (int i = 0; i < config_lhandle.size(); i++) {
+        Serial.print((char)config_lhandle.read());
+    }
+    config_lhandle.close();
+
     Serial.println("CHIP setup.");
     Serial.println("VGA framebufer");
-
     // we need double buffering for smooth animations
     vga.setFrameBufferCount(2);
     Serial.println("VGA init");
