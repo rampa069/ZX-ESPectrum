@@ -8,7 +8,7 @@ void do_OSD() {
           Esc.: 0x76
         */
         if (keymap[0x05] == 0) {
-            vTaskSuspend(xULA);
+            xULAStop = true;
             log("OSD ON");
             vga.clear(7);
             vga.rect(20, 20, 240, 190, vga.RGB(0, 192, 192));
@@ -19,7 +19,7 @@ void do_OSD() {
             }
             log("OSD OFF");
             keymap[0x05] = 1;
-            vTaskResume(xULA);
+            xULAStop = false;
         }
     }
 }
