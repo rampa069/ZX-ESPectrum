@@ -46,6 +46,7 @@ byte soundTemp = 0;
 byte flashing = 0;
 byte lastAudio = 0;
 boolean xULAStop = false;
+boolean xULAStopped = false;
 
 // SETUP *************************************
 VGA3Bit vga;
@@ -114,8 +115,10 @@ void videoTask(void *parameter) {
 
     while (1) {
         while (xULAStop) {
+            xULAStopped = true;
             delay(5);
         }
+        xULAStopped = false;
         if (flashing++ > 32)
             flashing = 0;
 
