@@ -3,7 +3,7 @@
 extern byte keymap[256];
 extern byte oldKeymap[256];
 extern SemaphoreHandle_t xULAMutex;
-extern boolean cfg_slog_on;
+extern void log(String);
 
 void do_OSD() {
     if (keymap != oldKeymap) {
@@ -15,14 +15,11 @@ void do_OSD() {
         if (keymap[0x05] == 0) {
             xSemaphoreTake(xULAMutex, 0);
             keymap[0x05] = 1;
-            if (cfg_slog_on)
-                Serial.println("OSD ON");
+            log("OSD ON");
             while (keymap[0x05] != 0) {
-                if (cfg_slog_on)
-                    Serial.println("OSD Active");
+                log("OSD Active");
             }
-            if (cfg_slog_on)
-                Serial.println("OSD OFF");
+            log("OSD OFF");
             keymap[0x05] = 1;
             xSemaphoreGive(xULAMutex);
         }

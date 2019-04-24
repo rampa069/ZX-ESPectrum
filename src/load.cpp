@@ -42,7 +42,7 @@ void load_ram(String sna_file) {
     uint16_t size_read;
     Z80_Regs i;
 
-    log(MSG_FREE_HEAP_BEFORE + "SNA: " + system_get_free_heap_size());
+    log(MSG_FREE_HEAP_BEFORE + "SNA: " + (String)system_get_free_heap_size());
 
     lhandle = open_read_file(sna_file);
     size_read = 0;
@@ -101,7 +101,7 @@ void load_ram(String sna_file) {
     start_im1_irq = i.IM;
 
     Z80_SetRegs(&i);
-    log(MSG_FREE_HEAP_AFTER + "SNA: " + system_get_free_heap_size());
+    log(MSG_FREE_HEAP_AFTER + "SNA: " + (String)system_get_free_heap_size());
 }
 
 void load_rom(String rom_file) {

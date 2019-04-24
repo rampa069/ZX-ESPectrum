@@ -1,10 +1,10 @@
-// ____________________________________________________
-// ESP32 Spectrum Emulator (KOGEL esp32)
-// Pete Todd 2017
-// Ramón Martínez & Jorge fuertes 2019
-//     You are not allowed to distribute this software commercially
-//     Please, notify me, if you make any changes to this file
-// ____________________________________________________
+// -------------------------------------------------------------------
+//  ESPectrum Emulator
+//  Ramón Martínez & Jorge fuertes 2019
+//  Though from ESP32 Spectrum Emulator (KOGEL esp32) Pete Todd 2017
+//  You are not allowed to distribute this software commercially
+//  lease, notify me, if you make any changes to this file
+// -------------------------------------------------------------------
 
 #include "FS.h"
 #include "PS2Kbd.h"

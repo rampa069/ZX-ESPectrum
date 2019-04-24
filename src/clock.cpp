@@ -13,6 +13,6 @@ void setup_cpuspeed() {
     int calculated_period = FRAME_PERIOD_MS * 1000;
     Z80_IPeriod = calculated_period * 2;
     Z80_ICount = calculated_count * 2;
-    log("Calculated ICount: " + calculated_count);
-    log("Calculated IPeriod:" + calculated_period);
+    log("Calculated ICount: " + (String)calculated_count);
+    log("Calculated IPeriod:" + (String)calculated_period);
 }

@@ -2542,21 +2542,6 @@ int Z80_Execute(void) {
         ++R.R;
         opcode = M_RDOP(R.PC.D);
 
-        if (cfg_debug_on) {
-            Serial.print("PC: ");
-            Serial.print(R.PC.D, HEX);
-            Serial.print("  opcode: ");
-            Serial.print(opcode, HEX);
-            Serial.print("  HL: ");
-            Serial.print(R.HL.D, HEX);
-            Serial.print("  BC: ");
-            Serial.print(R.BC.D, HEX);
-            Serial.print("  AF: ");
-            Serial.println(R.AF.D, HEX);
-            Serial.printf("T-States: %d\n", cycles_main[opcode]);
-            Serial.printf("R-Register: %d\n", cycles_main[opcode]);
-        }
-
         R.PC.W.l++;
 
         Z80_ICount -= cycles_main[opcode];
