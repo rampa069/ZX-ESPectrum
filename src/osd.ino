@@ -1,9 +1,4 @@
-#include "Arduino.h"
-
-extern byte keymap[256];
-extern byte oldKeymap[256];
-extern SemaphoreHandle_t xULAMutex;
-extern void log(String);
+// On Screen Display
 
 void do_OSD() {
     if (keymap != oldKeymap) {
@@ -13,15 +8,18 @@ void do_OSD() {
           Esc.: 0x76
         */
         if (keymap[0x05] == 0) {
-            xSemaphoreTake(xULAMutex, 0);
-            keymap[0x05] = 1;
+            vTaskSuspend(xULA);
             log("OSD ON");
+            vga.clear(7);
+            vga.rect(20, 20, 240, 190, vga.RGB(0, 192, 192));
+            vga.show();
+            keymap[0x05] = 1;
             while (keymap[0x05] != 0) {
-                log("OSD Active");
+                log("OSD active...");
             }
             log("OSD OFF");
             keymap[0x05] = 1;
-            xSemaphoreGive(xULAMutex);
+            vTaskResume(xULA);
         }
     }
 }

@@ -37,6 +37,8 @@ byte Z80_RDMEM(uint16_t A);
 void Z80_WRMEM(uint16_t A, byte V);
 void config_read();
 void do_OSD();
+TaskHandle_t xULA;
+TaskHandle_t xZ80;
 
 // GLOBALS
 byte *bank0;
@@ -45,8 +47,6 @@ byte borderTemp = 7;
 byte soundTemp = 0;
 byte flashing = 0;
 byte lastAudio = 0;
-
-SemaphoreHandle_t xULAMutex = xSemaphoreCreateMutex();
 
 // SETUP *************************************
 VGA3Bit vga;
@@ -97,7 +97,7 @@ void setup() {
                             2048,        /* Stack size in words */
                             NULL,        /* Task input parameter */
                             20,          /* Priority of the task */
-                            NULL,        /* Task handle. */
+                            &xULA,       /* Task handle. */
                             0);          /* Core where the task should run */
 
     load_rom(cfg_rom_file);
@@ -114,7 +114,6 @@ void videoTask(void *parameter) {
     unsigned int tmpColour;
 
     while (1) {
-        xSemaphoreTake(xULAMutex, 0);
         if (flashing++ > 32)
             flashing = 0;
 
@@ -158,7 +157,6 @@ void videoTask(void *parameter) {
         TIMERG0.wdt_wprotect = TIMG_WDT_WKEY_VALUE;
         TIMERG0.wdt_feed = 1;
         TIMERG0.wdt_wprotect = 0;
-        xSemaphoreGive(xULAMutex);
         // vTaskDelay(0);
     }
 }
