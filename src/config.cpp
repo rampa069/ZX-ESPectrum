@@ -16,6 +16,9 @@ void config_read() {
     String line;
     File cfg_f;
 
+    if (cfg_slog_on)
+        Serial.begin(115200);
+
     // Boot config file
     cfg_f = open_read_file(boot_filename);
     for (int i = 0; i < cfg_f.size(); i++) {
