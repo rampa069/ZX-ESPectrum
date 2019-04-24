@@ -29,7 +29,6 @@ int start_ss_nmi = 0;
 int break_nmi = 0;
 
 void fastWrite(byte port, byte value) {
-
     if (value > 0)
         REG_WRITE(GPIO_OUT_W1TS_REG, BIT5);
     else
