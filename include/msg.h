@@ -1,4 +1,4 @@
-#include "Arduino.h"
+#pragma once
 
 const String MSG_MOUNT_FAIL = "Cannot mount internal memory!";
 const String MSG_LOADING = "Loading file: ";

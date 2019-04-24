@@ -1,4 +1,5 @@
 #pragma once
+#include <Arduino.h>
 
 void kb_begin();
 extern byte lastcode;

@@ -9,6 +9,8 @@
 /***     Please, notify me, if you make any changes to this file          ***/
 /****************************************************************************/
 
+#include <Arduino.h>
+
 #ifndef _Z80_H
 #define _Z80_H
 

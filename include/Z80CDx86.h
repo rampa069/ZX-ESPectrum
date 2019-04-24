@@ -10,6 +10,8 @@
 /***     Please, notify me, if you make any changes to this file          ***/
 /****************************************************************************/
 
+#include <Arduino.h>
+
 #define _INLINE extern __inline__
 
 #define M_POP(Rg)                                                                                                      \

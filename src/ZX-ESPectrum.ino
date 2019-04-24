@@ -262,8 +262,8 @@ void do_keyboard() {
 void loop() {
     while (1) {
         start_im1_irq = 1;
-        do_OSD();
         do_keyboard();
+        do_OSD();
         Z80_Execute();
         TIMERG0.wdt_wprotect = TIMG_WDT_WKEY_VALUE;
         TIMERG0.wdt_feed = 1;
