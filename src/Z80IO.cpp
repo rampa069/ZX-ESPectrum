@@ -16,13 +16,13 @@
 #include "Arduino.h"
 #include "Z80.h"
 #include "paledefs.h"
-#include "rom.h"
 #include <stdint.h>
 
 extern byte z80ports_in[32];
 extern byte *bank0;
 extern byte borderTemp;
 extern byte soundTemp;
+extern byte specrom[16384];
 boolean writeScreen = false;
 int start_im1_irq = 0;
 int start_ss_nmi = 0;

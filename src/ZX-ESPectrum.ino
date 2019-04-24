@@ -9,8 +9,9 @@
 #include "FS.h"
 #include "PS2Kbd.h"
 #include "SPIFFS.h"
+#include "msg.h"
 #include "paledefs.h"
-#include <ESP32Lib.h> // Bitluni VGA driver library
+#include <ESP32Lib.h>
 #include <bt.h>
 #include <esp_task_wdt.h>
 
@@ -21,12 +22,16 @@ extern int Z80_IPeriod;
 extern boolean writeScreen;
 extern boolean cfg_mode_sna;
 extern boolean cfg_slog_on;
+extern String cfg_ram_file;
+extern String cfg_rom_file;
+extern void load_rom(String);
+extern void load_ram(String);
+extern void log(String);
 
 // EXTERN METHODS
 void Z80_Reset(void);       /* Reset registers to the initial values */
 unsigned int Z80_Execute(); /* Execute IPeriod T-States              */
 unsigned int Z80();         /* Execute IPeriod T-States              */
-void load_speccy();
 void setup_cpuspeed();
 byte Z80_RDMEM(uint16_t A);
 void Z80_WRMEM(uint16_t A, byte V);
@@ -54,14 +59,10 @@ void setup() {
 
     config_read();
 
-    if (cfg_slog_on) {
-        Serial.println("CHIP setup");
-        Serial.println("VGA framebufer");
-    }
+    log(MSG_CHIP_SETUP);
+    log(MSG_VGA_INIT);
     vga.setFrameBufferCount(2);
     vga.init(vga.MODE360x200, redPin, greenPin, bluePin, hsyncPin, vsyncPin);
-    if (cfg_slog_on)
-        Serial.println("VGA init completed");
 
     pinMode(SOUND_PIN, OUTPUT);
     digitalWrite(SOUND_PIN, LOW);
@@ -74,16 +75,13 @@ void setup() {
     //
     bank0 = (byte *)malloc(49152);
     if (bank0 == NULL)
-        if (cfg_slog_on)
-            Serial.println("Failed to allocate Bank 1 memory");
-    if (cfg_slog_on)
-        Serial.printf("Free Heap after bank0: %d\n", system_get_free_heap_size());
+        log(MSG_BANK_FAIL + "0");
+    log(MSG_FREE_HEAP_AFTER + "bank 0: " + system_get_free_heap_size() + "b");
 
     setup_cpuspeed();
 
     // START Z80
-    if (cfg_slog_on)
-        Serial.println("RESETTING Z80");
+    log(MSG_Z80_RESET);
     Z80_Reset();
 
     // make sure keyboard ports are FF
@@ -91,10 +89,8 @@ void setup() {
         z80ports_in[t] = 0xff;
     }
 
-    if (cfg_slog_on) {
-        Serial.printf("Setup: MAIN Executing on core %x ", xPortGetCoreID());
-        Serial.printf("Free Heap after Z80 Reset: %d\n", system_get_free_heap_size());
-    }
+    log(MSG_EXEC_ON_CORE + xPortGetCoreID());
+    log(MSG_FREE_HEAP_AFTER + "Z80 reset: " + system_get_free_heap_size());
 
     xTaskCreatePinnedToCore(videoTask,   /* Function to implement the task */
                             "videoTask", /* Name of the task */
@@ -104,8 +100,9 @@ void setup() {
                             NULL,        /* Task handle. */
                             0);          /* Core where the task should run */
 
+    load_rom(cfg_rom_file);
     if (cfg_mode_sna)
-        load_speccy();
+        load_ram(cfg_ram_file);
 }
 
 // VIDEO core 0 *************************************

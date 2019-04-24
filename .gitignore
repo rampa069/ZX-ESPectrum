@@ -6,6 +6,10 @@ data/**
 !data/sppong.sna
 !data/beep.sna
 !data/diag.sna
+!data/diag_v28.rom
+!data/zx48.rom
+!data/opense.rom
+!data/sintetiza.sna
 .pioenvs/
 platformio.ini
 .clang_complete
