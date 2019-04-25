@@ -24,11 +24,11 @@ extern boolean cfg_mode_sna;
 extern boolean cfg_slog_on;
 extern String cfg_ram_file;
 extern String cfg_rom_file;
+
+// EXTERN METHODS
 extern void load_rom(String);
 extern void load_ram(String);
 extern void log(String);
-
-// EXTERN METHODS
 void Z80_Reset(void);       /* Reset registers to the initial values */
 unsigned int Z80_Execute(); /* Execute IPeriod T-States              */
 unsigned int Z80();         /* Execute IPeriod T-States              */
