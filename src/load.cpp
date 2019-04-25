@@ -47,25 +47,30 @@ void load_ram(String sna_file) {
     size_read = 0;
     // Read in the registers
     _zxCpu.i = lhandle.read();
-    _zxCpu.registers.byte[Z80_H]=lhandle.read();
     _zxCpu.registers.byte[Z80_L]=lhandle.read();
-    _zxCpu.registers.byte[Z80_D]=lhandle.read();
+    _zxCpu.registers.byte[Z80_H]=lhandle.read();
     _zxCpu.registers.byte[Z80_E]=lhandle.read();
-    _zxCpu.registers.byte[Z80_B]=lhandle.read();
+    _zxCpu.registers.byte[Z80_D]=lhandle.read();
     _zxCpu.registers.byte[Z80_C]=lhandle.read();
-    _zxCpu.registers.byte[Z80_A]=lhandle.read();
+    _zxCpu.registers.byte[Z80_B]=lhandle.read();
     _zxCpu.registers.byte[Z80_F]=lhandle.read();
+    _zxCpu.registers.byte[Z80_A]=lhandle.read();
 
-    _zxCpu.registers.byte[Z80_H]=lhandle.read();
+    _zxCpu.alternates[Z80_HL]=_zxCpu.registers.word[Z80_HL];
+    _zxCpu.alternates[Z80_DE]=_zxCpu.registers.word[Z80_DE];
+    _zxCpu.alternates[Z80_BC]=_zxCpu.registers.word[Z80_BC];
+    _zxCpu.alternates[Z80_AF]=_zxCpu.registers.word[Z80_AF];
+
     _zxCpu.registers.byte[Z80_L]=lhandle.read();
-    _zxCpu.registers.byte[Z80_D]=lhandle.read();
+    _zxCpu.registers.byte[Z80_H]=lhandle.read();
     _zxCpu.registers.byte[Z80_E]=lhandle.read();
-    _zxCpu.registers.byte[Z80_B]=lhandle.read();
+    _zxCpu.registers.byte[Z80_D]=lhandle.read();
     _zxCpu.registers.byte[Z80_C]=lhandle.read();
-    _zxCpu.registers.byte[Z80_IYH]=lhandle.read();
+    _zxCpu.registers.byte[Z80_B]=lhandle.read();
     _zxCpu.registers.byte[Z80_IYL]=lhandle.read();
-    _zxCpu.registers.byte[Z80_IXH]=lhandle.read();
+    _zxCpu.registers.byte[Z80_IYH]=lhandle.read();
     _zxCpu.registers.byte[Z80_IXL]=lhandle.read();
+    _zxCpu.registers.byte[Z80_IXH]=lhandle.read();
 
 
     byte inter = lhandle.read();
@@ -73,8 +78,8 @@ void load_ram(String sna_file) {
 
     _zxCpu.r = lhandle.read();
 
-    _zxCpu.registers.byte[Z80_A]=lhandle.read();
     _zxCpu.registers.byte[Z80_F]=lhandle.read();
+    _zxCpu.registers.byte[Z80_A]=lhandle.read();
     sp_h=lhandle.read();
     sp_l=lhandle.read();
 
@@ -101,7 +106,7 @@ void load_ram(String sna_file) {
     _zxCpu.registers.word[Z80_SP]++;
 
     _zxCpu.pc = retaddr;
-    
+
     log(MSG_FREE_HEAP_AFTER + "SNA: " + (String)system_get_free_heap_size());
 }
 
