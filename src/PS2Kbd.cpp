@@ -1,4 +1,5 @@
 #include "paledefs.h"
+#include "Emulator/Keyboard/PS2Kbd.h"
 #include <Arduino.h>
 
 unsigned int shift = 0;
@@ -7,8 +8,8 @@ boolean keyup = false;
 boolean shift_presed = false;
 boolean symbol_pressed = false;
 byte rc = 0;
-byte keymap[256];
-byte oldKeymap[256];
+char keymap[256];
+char oldKeymap[256];
 
 extern boolean debug_keyboard;
 

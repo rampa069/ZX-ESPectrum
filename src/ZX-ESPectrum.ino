@@ -7,7 +7,9 @@
 // -------------------------------------------------------------------
 
 #include "FS.h"
-#include "PS2Kbd.h"
+#include "Emulator/Keyboard/PS2Kbd.h"
+#include "Emulator/z80emu/z80emu.h"
+#include "Emulator/z80user.h"
 #include "SPIFFS.h"
 #include "msg.h"
 #include "paledefs.h"
@@ -16,31 +18,30 @@
 #include <esp_task_wdt.h>
 
 // EXTERN VARS
-extern byte bank_latch;
-extern int start_im1_irq;
-extern int Z80_IPeriod;
 extern boolean writeScreen;
 extern boolean cfg_mode_sna;
 extern boolean cfg_slog_on;
 extern String cfg_ram_file;
 extern String cfg_rom_file;
+extern CONTEXT _zxContext;
+extern Z80_STATE _zxCpu;
+extern int _total;
+extern int _next_total;
+
 
 // EXTERN METHODS
-extern void load_rom(String);
-extern void load_ram(String);
-extern void log(String);
-void Z80_Reset(void);       /* Reset registers to the initial values */
-unsigned int Z80_Execute(); /* Execute IPeriod T-States              */
-unsigned int Z80();         /* Execute IPeriod T-States              */
+void load_rom(String);
+void load_ram(String);
+void log(String);
+void zx_setup(void);       /* Reset registers to the initial values */
+
 void setup_cpuspeed();
-byte Z80_RDMEM(uint16_t A);
-void Z80_WRMEM(uint16_t A, byte V);
 void config_read();
 void do_OSD();
 
 // GLOBALS
 byte *bank0;
-byte z80ports_in[32];
+byte z80ports_in[128];
 byte borderTemp = 7;
 byte soundTemp = 0;
 byte flashing = 0;
@@ -67,7 +68,6 @@ void setup() {
     pinMode(SOUND_PIN, OUTPUT);
     digitalWrite(SOUND_PIN, LOW);
 
-    start_im1_irq = 1;
 
     kb_begin();
 
@@ -82,7 +82,7 @@ void setup() {
 
     // START Z80
     log(MSG_Z80_RESET);
-    Z80_Reset();
+    zx_setup();
 
     // make sure keyboard ports are FF
     for (int t = 0; t < 32; t++) {
@@ -264,10 +264,9 @@ void do_keyboard() {
 */
 void loop() {
     while (1) {
-        start_im1_irq = 1;
         do_keyboard();
         do_OSD();
-        Z80_Execute();
+        Z80Emulate(&_zxCpu, _next_total - _total, &_zxContext);
         TIMERG0.wdt_wprotect = TIMG_WDT_WKEY_VALUE;
         TIMERG0.wdt_feed = 1;
         TIMERG0.wdt_wprotect = 0;

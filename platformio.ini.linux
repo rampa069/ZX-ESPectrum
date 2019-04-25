@@ -13,3 +13,4 @@ upload_port = /dev/ttyUSB0
 upload_protocol = esptool
 
 monitor_speed = 115200
+build_flags = -w

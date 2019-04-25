@@ -1,16 +1,15 @@
 #include "Arduino.h"
 #include "FS.h"
-#include "PS2Kbd.h"
+#include "Emulator/Keyboard/PS2Kbd.h"
 #include "SPIFFS.h"
-#include "Z80.h"
+#include "Emulator/z80emu/z80emu.h"
 #include "msg.h"
 
 extern byte *bank0;
-extern int start_im1_irq;
 extern byte borderTemp;
-extern void Z80_SetRegs(Z80_Regs *Regs);
 extern boolean cfg_slog_on;
 extern void log(String);
+extern Z80_STATE _zxCpu;
 
 byte specrom[16384];
 
@@ -40,51 +39,54 @@ File open_read_file(String filename) {
 void load_ram(String sna_file) {
     File lhandle;
     uint16_t size_read;
-    Z80_Regs i;
+    byte sp_h,sp_l;
 
     log(MSG_FREE_HEAP_BEFORE + "SNA: " + (String)system_get_free_heap_size());
 
     lhandle = open_read_file(sna_file);
     size_read = 0;
     // Read in the registers
-    i.I = lhandle.read();
-    i.HL2.B.l = lhandle.read();
-    i.HL2.B.h = lhandle.read();
-    i.DE2.B.l = lhandle.read();
-    i.DE2.B.h = lhandle.read();
-    i.BC2.B.l = lhandle.read();
-    i.BC2.B.h = lhandle.read();
-    i.AF2.B.l = lhandle.read();
-    i.AF2.B.h = lhandle.read();
-    i.HL.B.l = lhandle.read();
-    i.HL.B.h = lhandle.read();
-    i.DE.B.l = lhandle.read();
-    i.DE.B.h = lhandle.read();
-    i.BC.B.l = lhandle.read();
-    i.BC.B.h = lhandle.read();
-    i.IY.B.l = lhandle.read();
-    i.IY.B.h = lhandle.read();
-    i.IX.B.l = lhandle.read();
-    i.IX.B.h = lhandle.read();
+    _zxCpu.i = lhandle.read();
+    _zxCpu.registers.byte[Z80_H]=lhandle.read();
+    _zxCpu.registers.byte[Z80_L]=lhandle.read();
+    _zxCpu.registers.byte[Z80_D]=lhandle.read();
+    _zxCpu.registers.byte[Z80_E]=lhandle.read();
+    _zxCpu.registers.byte[Z80_B]=lhandle.read();
+    _zxCpu.registers.byte[Z80_C]=lhandle.read();
+    _zxCpu.registers.byte[Z80_A]=lhandle.read();
+    _zxCpu.registers.byte[Z80_F]=lhandle.read();
+
+    _zxCpu.registers.byte[Z80_H]=lhandle.read();
+    _zxCpu.registers.byte[Z80_L]=lhandle.read();
+    _zxCpu.registers.byte[Z80_D]=lhandle.read();
+    _zxCpu.registers.byte[Z80_E]=lhandle.read();
+    _zxCpu.registers.byte[Z80_B]=lhandle.read();
+    _zxCpu.registers.byte[Z80_C]=lhandle.read();
+    _zxCpu.registers.byte[Z80_IYH]=lhandle.read();
+    _zxCpu.registers.byte[Z80_IYL]=lhandle.read();
+    _zxCpu.registers.byte[Z80_IXH]=lhandle.read();
+    _zxCpu.registers.byte[Z80_IXL]=lhandle.read();
+
 
     byte inter = lhandle.read();
-    i.IFF2 = (inter & 0x04) ? 1 : 0;
+    _zxCpu.iff2 = (inter & 0x04) ? 1 : 0;
 
-    i.R = lhandle.read();
-    i.AF.B.h = lhandle.read();
-    i.AF.B.l = lhandle.read();
-    i.SP.B.l = lhandle.read();
-    i.SP.B.h = lhandle.read();
-    i.IM = lhandle.read();
+    _zxCpu.r = lhandle.read();
+
+    _zxCpu.registers.byte[Z80_A]=lhandle.read();
+    _zxCpu.registers.byte[Z80_F]=lhandle.read();
+    sp_h=lhandle.read();
+    sp_l=lhandle.read();
+
+    _zxCpu.im = lhandle.read();
     byte bordercol = lhandle.read();
-
-    i.SP.D = i.SP.B.l + i.SP.B.h * 0x100;
+    _zxCpu.registers.word[Z80_SP]=sp_l + sp_h * 0x100;
 
     borderTemp = bordercol;
 
-    i.IFF1 = i.IFF2;
+    _zxCpu.iff1 = _zxCpu.iff2;
 
-    uint16_t thestack = i.SP.D;
+    uint16_t thestack = _zxCpu.registers.word[Z80_SP];
     uint16_t buf_p = 0;
     while (lhandle.available()) {
         bank0[buf_p] = lhandle.read();
@@ -94,13 +96,12 @@ void load_ram(String sna_file) {
 
     uint16_t offset = thestack - 0x4000;
     uint16_t retaddr = bank0[offset] + 0x100 * bank0[offset + 1];
-    i.SP.D++;
-    i.SP.D++;
 
-    i.PC.D = retaddr;
-    start_im1_irq = i.IM;
+    _zxCpu.registers.word[Z80_SP]++;
+    _zxCpu.registers.word[Z80_SP]++;
 
-    Z80_SetRegs(&i);
+    _zxCpu.pc = retaddr;
+    
     log(MSG_FREE_HEAP_AFTER + "SNA: " + (String)system_get_free_heap_size());
 }
 
