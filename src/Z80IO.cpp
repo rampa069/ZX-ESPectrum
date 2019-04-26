@@ -13,10 +13,12 @@
 /* Input a byte from given I/O port                                         */
 /****************************************************************************/
 
-#include "Arduino.h"
+#pragma GCC diagnostic ignored "-Wall"
 #include "Z80.h"
-#include "paledefs.h"
+#include <Arduino.h>
 #include <stdint.h>
+#pragma GCC diagnostic warning "-Wall"
+#include "paledefs.h"
 
 extern byte z80ports_in[32];
 extern byte *bank0;
@@ -158,7 +160,7 @@ int Z80_Interrupt(void) {
     {
         start_ss_nmi = 0;
         return (Z80_NMI_INT);
-    } else if (get_IM() == 1 && start_im1_irq == 1 || (break_nmi == 1)) {
+    } else if ((get_IM() == 1 && start_im1_irq == 1) || (break_nmi == 1)) {
         start_im1_irq = 0;
         return (0xff); // IM1 interrupt device  FF - rst 38
     } else

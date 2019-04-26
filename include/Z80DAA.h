@@ -10,7 +10,9 @@
 /***     Please, notify me, if you make any changes to this file          ***/
 /****************************************************************************/
 
+#pragma GCC diagnostic ignored "-Wall"
 #include <Arduino.h>
+#pragma GCC diagnostic warning "-Wall"
 
 static int16_t DAATable[2048] = {
     68,     256,    512,    772,    1024,   1284,   1540,   1792,   2056,   2316,   4112,   4372,   4628,   4880,

@@ -6,14 +6,21 @@
 //  lease, notify me, if you make any changes to this file
 // -------------------------------------------------------------------
 
+// Headers
+#pragma GCC diagnostic ignored "-Wall"
 #include "FS.h"
-#include "PS2Kbd.h"
 #include "SPIFFS.h"
-#include "msg.h"
-#include "paledefs.h"
+#include <Arduino.h>
 #include <ESP32Lib.h>
-#include <bt.h>
+#include <Ressources/Font6x8.h>
+#include <esp_bt.h>
 #include <esp_task_wdt.h>
+#pragma GCC diagnostic warning "-Wall"
+
+#include "PS2Kbd.h"
+#include "msg.h"
+#include "osd.h"
+#include "paledefs.h"
 
 // EXTERN VARS
 extern byte bank_latch;
@@ -28,7 +35,6 @@ extern String cfg_rom_file;
 // EXTERN METHODS
 extern void load_rom(String);
 extern void load_ram(String);
-extern void log(String);
 void Z80_Reset(void);       /* Reset registers to the initial values */
 unsigned int Z80_Execute(); /* Execute IPeriod T-States              */
 unsigned int Z80();         /* Execute IPeriod T-States              */
@@ -59,8 +65,8 @@ void setup() {
 
     config_read();
 
-    log(MSG_CHIP_SETUP);
-    log(MSG_VGA_INIT);
+    Serial.println(MSG_CHIP_SETUP);
+    Serial.println(MSG_VGA_INIT);
     vga.setFrameBufferCount(2);
     vga.init(vga.MODE360x200, redPin, greenPin, bluePin, hsyncPin, vsyncPin);
 
@@ -75,13 +81,15 @@ void setup() {
     //
     bank0 = (byte *)malloc(49152);
     if (bank0 == NULL)
-        log(MSG_BANK_FAIL + "0");
-    log(MSG_FREE_HEAP_AFTER + "bank 0: " + system_get_free_heap_size() + "b");
+        Serial.println(MSG_BANK_FAIL + "0");
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+    Serial.println(MSG_FREE_HEAP_AFTER + "bank 0: " + system_get_free_heap_size() + "b");
+#pragma GCC diagnostic warning "-Wall"
 
     setup_cpuspeed();
 
     // START Z80
-    log(MSG_Z80_RESET);
+    Serial.println(MSG_Z80_RESET);
     Z80_Reset();
 
     // make sure keyboard ports are FF
@@ -89,8 +97,10 @@ void setup() {
         z80ports_in[t] = 0xff;
     }
 
-    log(MSG_EXEC_ON_CORE + xPortGetCoreID());
-    log(MSG_FREE_HEAP_AFTER + "Z80 reset: " + system_get_free_heap_size());
+    Serial.println(MSG_EXEC_ON_CORE + xPortGetCoreID());
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+    Serial.println(MSG_FREE_HEAP_AFTER + "Z80 reset: " + system_get_free_heap_size());
+#pragma GCC diagnostic warning "-Wall"
 
     xTaskCreatePinnedToCore(videoTask,   /* Function to implement the task */
                             "videoTask", /* Name of the task */

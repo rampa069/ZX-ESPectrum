@@ -1,8 +1,10 @@
+#pragma GCC diagnostic ignored "-Wall"
 #include "Arduino.h"
 #include "FS.h"
-#include "PS2Kbd.h"
 #include "SPIFFS.h"
 #include "Z80.h"
+#pragma GCC diagnostic warning "-Wall"
+#include "PS2Kbd.h"
 #include "msg.h"
 
 extern byte *bank0;
@@ -10,7 +12,6 @@ extern int start_im1_irq;
 extern byte borderTemp;
 extern void Z80_SetRegs(Z80_Regs *Regs);
 extern boolean cfg_slog_on;
-extern void log(String);
 
 byte specrom[16384];
 
@@ -19,18 +20,18 @@ typedef signed char offset;
 
 void mount_spiffs() {
     while (!SPIFFS.begin()) {
-        log(MSG_MOUNT_FAIL);
-        sleep(5);
+        Serial.println(MSG_MOUNT_FAIL);
+        delay(500);
     }
 }
 
 File open_read_file(String filename) {
     File f;
     mount_spiffs();
-    log(MSG_LOADING + filename);
+    Serial.println(MSG_LOADING + filename);
     f = SPIFFS.open(filename, FILE_READ);
     while (!f) {
-        log(MSG_READ_FILE_FAIL + filename);
+        Serial.println(MSG_READ_FILE_FAIL + filename);
         sleep(10);
         f = SPIFFS.open(filename, FILE_READ);
     }
@@ -39,13 +40,11 @@ File open_read_file(String filename) {
 
 void load_ram(String sna_file) {
     File lhandle;
-    uint16_t size_read;
     Z80_Regs i;
 
-    log(MSG_FREE_HEAP_BEFORE + "SNA: " + (String)system_get_free_heap_size());
+    Serial.println(MSG_FREE_HEAP_BEFORE + "SNA: " + (String)system_get_free_heap_size());
 
     lhandle = open_read_file(sna_file);
-    size_read = 0;
     // Read in the registers
     i.I = lhandle.read();
     i.HL2.B.l = lhandle.read();
@@ -101,7 +100,7 @@ void load_ram(String sna_file) {
     start_im1_irq = i.IM;
 
     Z80_SetRegs(&i);
-    log(MSG_FREE_HEAP_AFTER + "SNA: " + (String)system_get_free_heap_size());
+    Serial.println(MSG_FREE_HEAP_AFTER + "SNA: " + (String)system_get_free_heap_size());
 }
 
 void load_rom(String rom_file) {

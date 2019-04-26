@@ -1,5 +1,7 @@
-#include "paledefs.h"
+#pragma GCC diagnostic ignored "-Wall"
 #include <Arduino.h>
+#pragma GCC diagnostic warning "-Wall"
+#include "paledefs.h"
 
 unsigned int shift = 0;
 byte lastcode = 0;

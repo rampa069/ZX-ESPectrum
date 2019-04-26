@@ -12,10 +12,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
+#pragma GCC diagnostic ignored "-Wall"
 #include "Arduino.h"
-
 #include "Z80.h"
+#pragma GCC diagnostic warning "-Wall"
+
 #include "paledefs.h"
 extern boolean cfg_debug_on;
 extern void do_keyboard();
@@ -2546,7 +2547,6 @@ int Z80_Execute(void) {
 
         Z80_ICount -= cycles_main[opcode];
         (*(opcode_main[opcode]))();
-        int retardo = cycles_main[opcode] / 4;
 
         if (opcode != 0xd3)
             delayMicroseconds(2);

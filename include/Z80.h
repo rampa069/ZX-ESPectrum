@@ -9,7 +9,9 @@
 /***     Please, notify me, if you make any changes to this file          ***/
 /****************************************************************************/
 
+#pragma GCC diagnostic ignored "-Wall"
 #include <Arduino.h>
+#pragma GCC diagnostic warning "-Wall"
 
 #ifndef _Z80_H
 #define _Z80_H

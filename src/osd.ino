@@ -1,14 +1,13 @@
 // On Screen Display
-#include "osd.h";
 
-unsigned short int osdX(unsigned short int rel_x) { return OSD_X + OSD_MARGIN + rel_x; }
-
-unsigned short int osdY(unsigned short int rel_y) { return OSD_Y + OSD_MARGIN + rel_y; }
+// Globals
+byte row_pos = 0;
+byte col_pos = 0;
 
 void osdHome() { vga.setCursor(osdX(0), osdY(0)); }
 
 // Text 17x45 with 6x8 font
-void osdAt(int row, int col) {
+void osdAt(byte row, byte col) {
     if (row > OSD_MAX_ROW)
         row = 0;
     if (col > OSD_MAX_COL)
@@ -18,11 +17,11 @@ void osdAt(int row, int col) {
     col_pos = col;
 }
 
-void osdCharSq(int lines, int cols) {
-    const int start_row = row_pos;
-    const int start_col = col_pos;
-    for (int l = 1; l <= lines; l++) {
-        for (int c = 1; c <= cols; c++) {
+void osdCharSq(byte lines, byte cols) {
+    const byte start_row = row_pos;
+    const byte start_col = col_pos;
+    for (byte l = 1; l <= lines; l++) {
+        for (byte c = 1; c <= cols; c++) {
             vga.print(" ");
         }
         osdAt(row_pos + 1, start_col);
@@ -30,28 +29,44 @@ void osdCharSq(int lines, int cols) {
     osdAt(start_row, start_col);
 }
 
-void do_OSD() {
-    if (keymap != oldKeymap) {
-        /*
-          Scancodes
-          F1..: 0x05
-          Esc.: 0x76
-        */
-        if (keymap[0x05] == 0) {
-            xULAStop = true;
-            while (!xULAStopped) {
-                delay(5);
-            }
-            keymap[0x05] = 1;
-            keymap[0x76] = 1;
-            while (keymap[0x05] != 0 && keymap[0x76] != 0) {
-                int opt = osdMainMenu();
-            }
-            keymap[0x05] = 1;
-            xULAStop = false;
-        }
+// Menu calc
+byte menuCols(const char menu[MENU_MAX_OPTS][MENU_MAX_LINE_LEN]) {
+    byte max = 0;
+    byte i = 0;
+    while (menu[i][0] != 0) {
+        if (strlen(menu[i]) > max)
+            max = strlen(menu[i]);
+        i++;
     }
+    if (max < 20)
+        max = 20;
+    if (max > 140)
+        max = 140;
+    return max;
 }
+
+byte menuRows(const char menu[MENU_MAX_OPTS][MENU_MAX_LINE_LEN]) {
+    byte i = 0;
+    while (menu[i][0] != 0)
+        i++;
+    return i;
+}
+
+// Menu max columns
+byte menuW(const char menu[MENU_MAX_OPTS][MENU_MAX_LINE_LEN]) { return (menuCols(menu) * 6) + 2; }
+// Menu max rows
+byte menuH(const char menu[MENU_MAX_OPTS][MENU_MAX_LINE_LEN]) { return (menuRows(menu) * 8) + 4; }
+// Menu width in pixels
+unsigned short menuY(const char menu[MENU_MAX_OPTS][MENU_MAX_LINE_LEN]) {
+    return (OSD_H / 2) - (menuH(menu) / 2) + OSD_Y;
+}
+// Menu height in pixels
+unsigned short menuX(const char menu[MENU_MAX_OPTS][MENU_MAX_LINE_LEN]) {
+    return (OSD_W / 2) - (menuW(menu) / 2) + OSD_X;
+}
+
+unsigned short osdX(unsigned short rel_x) { return (OSD_X + OSD_MARGIN + rel_x); }
+unsigned short osdY(unsigned short rel_y) { return (OSD_Y + OSD_MARGIN + rel_y); }
 
 void osdSquare() {
     vga.fillRect(OSD_X, OSD_Y, OSD_W, OSD_H, zxcolor(1, 0));
@@ -66,84 +81,74 @@ void osdSquare() {
     vga.println(" Cursor: Move | Enter: Select | F1/Esc: Exit ");
 }
 
-void menuLine(String line, int row) {
-    vga.setCursor(menu_x + 1, menu_y + 1 + (row * 8));
-    if (row == 0) {
-        vga.setTextColor(zxcolor(7, 1), zxcolor(0, 1));
-    } else {
-        vga.setTextColor(zxcolor(0, 1), zxcolor(7, 1));
-    }
-    vga.print(" ");
-    vga.print(line.c_str());
-    for (int i = 1; i < (menu_cols - line.length()); i++) {
-        vga.print(" ");
-    }
-}
-
-// int menuMaxLen(char menu) {
-//     int max = 0;
-//     for (int i = 0; i >= sizeof(menu); i++) {
-//         if (sizeof(menu[i]) > max)
-//             max = sizeof(menu[i]);
-//     }
-//     return max;
-// }
-
-void menuFocusRow(int row) {
-    if (row == 0)
-        row = 1;
-    vga.setCursor(menu_x + 1, menu_y + 1 + (row * 8));
-}
-
-void menuSquare(String title, int rows, int cols) {
-    // Menu calc relative to OSD
-    menu_cols = cols;
-    menu_rows = rows;
-    menu_w = cols * 6 + 2;
-    menu_h = rows * 8 + 4;
-    menu_y = (OSD_H / 2) - (menu_h / 2) + OSD_Y;
-    menu_x = (OSD_W / 2) - (menu_w / 2) + OSD_X;
+void menuDraw(const char menu[MENU_MAX_OPTS][MENU_MAX_LINE_LEN]) {
+    Serial.printf("MENU X:%u Y:%u W:%u H:%u\n", menuX(menu), menuY(menu), menuW(menu), menuH(menu));
     // White background
-    vga.fillRect(menu_x, menu_y, menu_w, menu_h, zxcolor(7, 1));
+    vga.fillRect(menuX(menu), menuY(menu), menuW(menu), menuH(menu), zxcolor(7, 1));
     // Black border
-    vga.rect(menu_x, menu_y, menu_w, menu_h, zxcolor(0, 0));
-    // Text title
-    menuLine(title, 0);
-    menuRainbow();
-}
+    vga.rect(menuX(menu), menuY(menu), menuW(menu), menuH(menu), zxcolor(0, 0));
 
-void menuRainbow() {
+    byte row = 0;
+    while (menu[row][0] != 0) {
+        vga.setCursor(menuX(menu) + 1, menuY(menu) + 1 + (row * 8));
+        vga.setTextColor(zxcolor(0, 1), zxcolor(7, 1));
+        if (row == 0)
+            vga.setTextColor(zxcolor(7, 1), zxcolor(0, 1));
+        vga.print(" ");
+        vga.print(menu[row]);
+        for (byte i = 0; i < (menuCols(menu) - strlen(menu[row]) - 1); i++) {
+            vga.print(" ");
+        }
+        row++;
+    }
     // Rainbow
-    int rb_x = menu_x + menu_w - 20;
-    int rb_y = menu_y + 8;
-    int rb_colors[] = {2, 6, 4, 5};
-    int rb_paint_x = rb_x;
-    for (int c = 0; c < 4; c++) {
-        for (int i = 0; i < 3; i++) {
+    unsigned short rb_y = menuY(menu) + 8;
+    unsigned short rb_paint_x = menuX(menu) + menuW(menu) - 20;
+    byte rb_colors[] = {2, 6, 4, 5};
+    for (byte c = 0; c < 4; c++) {
+        for (byte i = 0; i < 3; i++) {
             vga.line(rb_paint_x + i, rb_y, rb_paint_x + 4 + i, rb_y - 8, zxcolor(rb_colors[c], 0));
         }
         rb_paint_x += 3;
     }
 }
 
-int osdMainMenu() {
-    Serial.printf("Menu Max Size: %d", menuMaxLen(main_menu));
+// Main Menu
+byte osdMenu(const char menu[MENU_MAX_OPTS][MENU_MAX_LINE_LEN]) {
+    Serial.println("OSD MENU BEGIN");
+    Serial.printf("Menu Max COLS:%u ROWS:%u\n", menuCols(menu), menuRows(menu));
     osdSquare();
-    menuSquare("Main Menu", 4, 20);
-    menuLine("Change ROM", 1);
-    menuLine("Change RAM", 2);
-    menuLine("Reset ESPectrum", 3);
-    // osdAt(4, 16);
-    // vga.setTextColor(zxcolor(0, 0), zxcolor(7, 0));
-    // osdCharSq(6, menu_w);
-    // vga.setTextColor(zxcolor(7, 1), zxcolor(0, 1));
-    // vga.println(menuLine("Main Menu", menu_w).c_str());
-    // vga.setTextColor(zxcolor(0, 1), zxcolor(7, 0));
-    // vga.println(menuLine("Change ROM", menu_w).c_str());
-    // vga.println(menuLine("Change RAM", menu_w).c_str());
-    // vga.println(menuLine("Reset", menu_w).c_str());
+    menuDraw(menu);
     vga.show();
-    while (1)
+    for (byte i = 0; i < 255; i++)
         delay(50);
+    Serial.println("Menu closed");
     return 1;
+}
+
+// Check if key is pressed and clean it
+boolean checkAndCleanKeymap(byte scancode) {
+    if (keymap != oldKeymap) {
+        if (keymap[scancode] == 0) {
+            keymap[scancode] = 1;
+            return true;
+        }
+    }
+    return false;
+}
+
+// OSD Main Loop
+void do_OSD() {
+    if (checkAndCleanKeymap(KEY_F1)) {
+        Serial.println(OSD_ON);
+        xULAStop = true;
+        while (!xULAStopped) {
+            delay(20);
+        }
+        Serial.println(ULA_OFF);
+        byte opt = osdMenu(main_menu);
+        Serial.printf("Menu option: %u --> %s", opt, main_menu[opt]);
+        xULAStop = false;
+        Serial.println(ULA_ON);
+    }
 }
