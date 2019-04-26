@@ -12,3 +12,9 @@ const unsigned short OSD_MAX_COL = 44;
 const unsigned short MENU_MAX_OPTS = 20;
 const unsigned short MENU_MAX_LINE_LEN = 80;
 const char main_menu[MENU_MAX_OPTS][MENU_MAX_LINE_LEN] = {"Main Menu", "Change ROM", "Change RAM", "Reset", 0};
+
+extern boolean checkAndCleanKey(byte scancode);
+extern boolean isKeymapChanged();
+extern void updateKeymap();
+
+#define MENUPARAM const char menu[MENU_MAX_OPTS][MENU_MAX_LINE_LEN]

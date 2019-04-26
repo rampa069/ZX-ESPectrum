@@ -72,3 +72,23 @@ void kb_begin() {
         oldKeymap[gg] = 1;
     }
 }
+
+// Check if keymatrix is changed
+boolean isKeymapChanged() {
+    if (keymap != oldKeymap) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+// Check if key is pressed and clean it
+boolean checkAndCleanKey(byte scancode) {
+    if (isKeymapChanged()) {
+        if (keymap[scancode] == 0) {
+            keymap[scancode] = 1;
+            return true;
+        }
+    }
+    return false;
+}
