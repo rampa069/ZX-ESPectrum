@@ -5,7 +5,7 @@
  *
  * This code is free, do whatever you want with it.
  */
-
+#include "Arduino.h"
 #include "Emulator/z80emu/z80emu.h"
 #include "Emulator/z80user.h"
 #include "Emulator/z80emu/instructions.h"
@@ -209,7 +209,6 @@ int Z80Interrupt (Z80_STATE *state, int data_on_bus, void *context)
                 }
 
         } else
-
                 return 0;
 }
 
@@ -240,7 +239,6 @@ int Z80Emulate (Z80_STATE *state, int number_cycles, void *context)
 	pc = state->pc;
         Z80_FETCH_BYTE(pc, opcode);
         state->pc = pc + 1;
-
         return emulate(state, opcode, elapsed_cycles, number_cycles, context);
 }
 
@@ -257,6 +255,7 @@ static int emulate (Z80_STATE * state,
 
         pc = state->pc;
         r = state->r & 0x7f;
+
         goto start_emulation;
 
         for ( ; ; ) {
@@ -267,7 +266,10 @@ static int emulate (Z80_STATE * state,
                 Z80_FETCH_BYTE(pc, opcode);
                 pc++;
 
+
 start_emulation:
+                if (opcode != 0xd3)
+                  delayMicroseconds(4);
 
                 registers = state->register_table;
 

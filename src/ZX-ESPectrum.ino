@@ -34,6 +34,7 @@ void load_rom(String);
 void load_ram(String);
 void log(String);
 void zx_setup(void);       /* Reset registers to the initial values */
+void zx_loop();
 
 void setup_cpuspeed();
 void config_read();
@@ -46,6 +47,7 @@ byte borderTemp = 7;
 byte soundTemp = 0;
 byte flashing = 0;
 byte lastAudio = 0;
+byte onFrame=1;
 boolean xULAStop = false;
 boolean xULAStopped = false;
 
@@ -92,6 +94,7 @@ void setup() {
     log(MSG_EXEC_ON_CORE + xPortGetCoreID());
     log(MSG_FREE_HEAP_AFTER + "Z80 reset: " + system_get_free_heap_size());
 
+
     xTaskCreatePinnedToCore(videoTask,   /* Function to implement the task */
                             "videoTask", /* Name of the task */
                             2048,        /* Stack size in words */
@@ -100,10 +103,13 @@ void setup() {
                             NULL,        /* Task handle. */
                             0);          /* Core where the task should run */
 
+
+
     load_rom(cfg_rom_file);
     if (cfg_mode_sna)
         load_ram(cfg_ram_file);
 }
+
 
 // VIDEO core 0 *************************************
 
@@ -113,17 +119,17 @@ void videoTask(void *parameter) {
     unsigned int zx_vidcalc;
     unsigned int tmpColour;
 
+
     while (1) {
         while (xULAStop) {
             xULAStopped = true;
             delay(5);
         }
         xULAStopped = false;
-        if (flashing++ > 32)
-            flashing = 0;
 
-        vga.clear(zxcolor(borderTemp, 0));
-        for (unsigned int lin = 0; lin < 192; lin++) {
+
+        vga.clear(zxcolor(borderTemp,0));
+        for (unsigned int lin = 192; lin > 0; lin--) {
             for (ff = 0; ff < 32; ff++) // foreach byte in line
             {
                 byte_offset = lin * 32 + ff; //*2+1;
@@ -135,14 +141,8 @@ void videoTask(void *parameter) {
                 zx_fore_color = color_attrib & 0x07;
                 zx_back_color = (color_attrib & 0x38) >> 3;
 
-                flash = bitRead(color_attrib, 7);
                 bright = bitRead(color_attrib, 6);
 
-                if (flash && (flashing > 16)) {
-                    tmpColour = zx_fore_color;
-                    zx_fore_color = zx_back_color;
-                    zx_back_color = tmpColour;
-                }
 
                 for (i = 0; i < 8; i++) // foreach pixel within a byte
                 {
@@ -158,7 +158,6 @@ void videoTask(void *parameter) {
         }
 
         vga.show();
-
         TIMERG0.wdt_wprotect = TIMG_WDT_WKEY_VALUE;
         TIMERG0.wdt_feed = 1;
         TIMERG0.wdt_wprotect = 0;
@@ -266,7 +265,8 @@ void loop() {
     while (1) {
         do_keyboard();
         do_OSD();
-        Z80Emulate(&_zxCpu, _next_total - _total, &_zxContext);
+        //Z80Emulate(&_zxCpu, _next_total - _total, &_zxContext);
+        zx_loop();
         TIMERG0.wdt_wprotect = TIMG_WDT_WKEY_VALUE;
         TIMERG0.wdt_feed = 1;
         TIMERG0.wdt_wprotect = 0;

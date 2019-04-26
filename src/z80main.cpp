@@ -1,32 +1,31 @@
 #include <string.h>
 #include <stdio.h>
 #include "startup.h"
+#include "paledefs.h"
 
 
 #include "Emulator/z80main.h"
 #include "Emulator/z80Input.h"
 #include "Emulator/Keyboard/PS2Kbd.h"
 
-//#define BEEPER
-#define CYCLES_PER_STEP 69888
+#define CYCLES_PER_STEP 71600
 #define RAM_AVAILABLE 0xC000
 
 Sound::Ay3_8912_state _ay3_8912;
-uint8_t RamBuffer[RAM_AVAILABLE];
 Z80_STATE _zxCpu;
 
 extern byte *bank0;
 extern byte specrom[16394];
 extern byte borderTemp;
 extern byte z80ports_in[128];
-
-
+extern boolean xULAStop;
+extern boolean xULAStopped;
 CONTEXT _zxContext;
 static uint16_t _attributeCount;
 int _total;
 int _next_total = 0;
 static uint8_t zx_data = 0;
-static uint8_t frames = 0;
+static uint32_t frames = 0;
 static uint32_t _ticks = 0;
 
 extern "C"
@@ -63,6 +62,8 @@ void zx_reset()
 int32_t zx_loop()
 {
     int32_t result = -1;
+    byte tmp_color =0;
+
 
     _total += Z80Emulate(&_zxCpu, _next_total - _total, &_zxContext);
 
@@ -70,16 +71,46 @@ int32_t zx_loop()
     {
         _next_total += CYCLES_PER_STEP;
 
+        frames++;
+        if (frames > 320)
+        {
+            xULAStop=true;
+            frames = 0;
+
+            while (!xULAStopped)
+            {
+              delay(5);
+            }
+
+            for (int i = 0x1800; i < 0x1800+768; i++)
+            {
+                byte color = bank0[i];
+                if (bitRead(color,7) != 0)
+                {
+                        bitWrite(tmp_color,0,bitRead(color,3));
+                        bitWrite(tmp_color,1,bitRead(color,4));
+                        bitWrite(tmp_color,2,bitRead(color,5));
+                        bitWrite(tmp_color,3,bitRead(color,0));
+                        bitWrite(tmp_color,4,bitRead(color,1));
+                        bitWrite(tmp_color,5,bitRead(color,2));
+                        bitWrite(tmp_color,6,bitRead(color,6));
+                        bitWrite(tmp_color,7,bitRead(color,7));
+                        bank0[i]=tmp_color;
+                }
+            }
+            xULAStop=false;
+        }
+
+
         Z80Interrupt(&_zxCpu, 0xff, &_zxContext);
 
         // delay
-        //while (_spectrumScreen->_frames < _ticks)
-        //{
-        //}
+        //delay(20);
+        //onFrame=0;
 
 		//_ticks = _spectrumScreen->_frames + 1;
-    }
 
+    }
     return result;
 }
 
@@ -119,35 +150,27 @@ extern "C" void writeword(uint16_t addr, uint16_t data)
 
 extern "C" uint8_t input(uint8_t portLow, uint8_t portHigh)
 {
+    int16_t kbdarrno = 0;
     if (portLow == 0xFE)
     {
     	// Keyboard
 
         switch (portHigh)
         {
-        case 0xFE:
-        case 0xFD:
-        case 0xFB:
-        case 0xF7:
-        case 0xEF:
-        case 0xDF:
-        case 0xBF:
-        case 0x7F:
-            return z80ports_in[portHigh - 0x7F];
-        case 0x00:
-			{
-				uint8_t result = z80ports_in[0xFE - 0x7F];
-				result &= z80ports_in[0xFD - 0x7F];
-				result &= z80ports_in[0xFB - 0x7F];
-				result &= z80ports_in[0xF7 - 0x7F];
-				result &= z80ports_in[0xEF - 0x7F];
-				result &= z80ports_in[0xDF - 0x7F];
-				result &= z80ports_in[0xBF - 0x7F];
-				result &= z80ports_in[0x7F - 0x7F];
-				return result;
-			}
+
+          case 0xfe: kbdarrno = 0;break;
+          case 0xfd: kbdarrno = 1;break;
+          case 0xfb: kbdarrno = 2;break;
+          case 0xf7: kbdarrno = 3;break;
+          case 0xef: kbdarrno = 4;break;
+          case 0xdf: kbdarrno = 5;break;
+          case 0xbf: kbdarrno = 6;break;
+          case 0x7f: kbdarrno = 7;break;
         }
-    }
+        return(z80ports_in[kbdarrno]);
+
+			}
+
 
     // Sound (AY-3-8912)
     if (portLow == 0xFD)
@@ -172,26 +195,24 @@ extern "C" void output(uint8_t portLow, uint8_t portHigh, uint8_t data)
     case 0xFE:
     {
         // border color (no bright colors)
-        uint8_t borderColor = (data & 0x07);
-    	if ((z80ports_in[0x20] & 0x07) != borderColor)
-    	{
-            borderTemp=borderColor;
-    	}
+      bitWrite(borderTemp,0,bitRead(data,0));
+      bitWrite(borderTemp,1,bitRead(data,1));
+      bitWrite(borderTemp,2,bitRead(data,2));
 
-#ifdef BEEPER
-        uint8_t sound = (data & 0x10);
+
+
+      uint8_t sound = (data & 0x10);
     	if ((z80ports_in[0x20] & 0x10) != sound)
     	{
 			if (sound)
 			{
-				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_SET);
+        digitalWrite(SOUND_PIN,1);
 			}
 			else
 			{
-				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_RESET);
+				digitalWrite(SOUND_PIN,0);
 			}
     	}
-#endif
 
         z80ports_in[0x20] = data;
     }

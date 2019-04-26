@@ -10,6 +10,7 @@ extern byte borderTemp;
 extern boolean cfg_slog_on;
 extern void log(String);
 extern Z80_STATE _zxCpu;
+void zx_reset();
 
 byte specrom[16384];
 
@@ -40,7 +41,7 @@ void load_ram(String sna_file) {
     File lhandle;
     uint16_t size_read;
     byte sp_h,sp_l;
-
+    zx_reset();
     log(MSG_FREE_HEAP_BEFORE + "SNA: " + (String)system_get_free_heap_size());
 
     lhandle = open_read_file(sna_file);
@@ -80,12 +81,13 @@ void load_ram(String sna_file) {
 
     _zxCpu.registers.byte[Z80_F]=lhandle.read();
     _zxCpu.registers.byte[Z80_A]=lhandle.read();
-    sp_h=lhandle.read();
+
     sp_l=lhandle.read();
+    sp_h=lhandle.read();
+    _zxCpu.registers.word[Z80_SP]=sp_l + sp_h * 0x100;
 
     _zxCpu.im = lhandle.read();
     byte bordercol = lhandle.read();
-    _zxCpu.registers.word[Z80_SP]=sp_l + sp_h * 0x100;
 
     borderTemp = bordercol;
 
@@ -106,8 +108,11 @@ void load_ram(String sna_file) {
     _zxCpu.registers.word[Z80_SP]++;
 
     _zxCpu.pc = retaddr;
+    //_zxCpu.pc=0x8400;
+
 
     log(MSG_FREE_HEAP_AFTER + "SNA: " + (String)system_get_free_heap_size());
+    Serial.printf("Ret address: %x Stack: %x AF: %x Border: %x\n" , retaddr,_zxCpu.registers.word[Z80_SP],_zxCpu.registers.word[Z80_AF],borderTemp);
 }
 
 void load_rom(String rom_file) {
