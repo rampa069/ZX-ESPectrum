@@ -63,24 +63,28 @@ int32_t zx_loop()
 {
     int32_t result = -1;
     byte tmp_color =0;
-
-
+    uint32_t ts1,ts2;
+    xULAStop=false;
+    ts1=millis();
     _total += Z80Emulate(&_zxCpu, _next_total - _total, &_zxContext);
+    ts2=millis();
 
+    //Serial.println((ts2-ts1));
+    if ((ts2-ts1) < 20)
+      delay(20-(ts2-ts1));
+
+
+    xULAStop=true;
     if (_total >= _next_total)
     {
         _next_total += CYCLES_PER_STEP;
 
         frames++;
-        if (frames > 320)
+        if (frames > 32)
         {
-            xULAStop=true;
             frames = 0;
 
-            while (!xULAStopped)
-            {
-              delay(5);
-            }
+
 
             for (int i = 0x1800; i < 0x1800+768; i++)
             {
@@ -98,7 +102,8 @@ int32_t zx_loop()
                         bank0[i]=tmp_color;
                 }
             }
-            xULAStop=false;
+
+
         }
 
 

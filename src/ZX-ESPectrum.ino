@@ -121,15 +121,10 @@ void videoTask(void *parameter) {
 
 
     while (1) {
-        while (xULAStop) {
-            xULAStopped = true;
-            delay(5);
-        }
-        xULAStopped = false;
 
 
         vga.clear(zxcolor(borderTemp,0));
-        for (unsigned int lin = 192; lin > 0; lin--) {
+        for (unsigned int lin = 0; lin < 192; lin++) {
             for (ff = 0; ff < 32; ff++) // foreach byte in line
             {
                 byte_offset = lin * 32 + ff; //*2+1;
@@ -156,6 +151,11 @@ void videoTask(void *parameter) {
                 }
             }
         }
+        while (xULAStop) {
+            xULAStopped = true;
+            delay(5);
+        }
+        xULAStopped = false;
 
         vga.show();
         TIMERG0.wdt_wprotect = TIMG_WDT_WKEY_VALUE;
