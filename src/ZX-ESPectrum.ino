@@ -27,6 +27,8 @@ extern CONTEXT _zxContext;
 extern Z80_STATE _zxCpu;
 extern int _total;
 extern int _next_total;
+extern void load_rom(String);
+extern void load_ram(String);
 
 
 // EXTERN METHODS
