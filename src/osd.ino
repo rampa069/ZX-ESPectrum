@@ -148,23 +148,63 @@ byte osdMenu(MENUPARAM, byte focus_row) {
     }
 }
 
+// File Menu run
+// Menu run
+String fileMenu() {
+    byte focus_row = 1;
+    Serial.println("FILE MENU BEGIN");
+    osdSquare();
+    char menu[MENU_MAX_OPTS][MENU_MAX_LINE_LEN] = {"Select ROM File", 0};
+    menuDraw(menu, focus_row);
+    vga.show();
+    byte new_focus_row = focus_row;
+    while (1) {
+        if (checkAndCleanKey(KEY_UP)) {
+            new_focus_row = focus_row - 1;
+            if (new_focus_row < 1)
+                new_focus_row = menuRows(menu) - 1;
+        } else if (checkAndCleanKey(KEY_DOWN)) {
+            new_focus_row = focus_row + 1;
+            if (new_focus_row > menuRows(menu) - 1)
+                new_focus_row = 1;
+        } else if (checkAndCleanKey(KEY_ENTER)) {
+            Serial.printf("Menu option: %u --> %s\n", focus_row, menu[focus_row]);
+            return "row";
+        } else if (checkAndCleanKey(KEY_ESC) || checkAndCleanKey(KEY_F1)) {
+            Serial.println("Canceled menu");
+            return "cancel";
+        }
+
+        if (new_focus_row != focus_row) {
+            focus_row = new_focus_row;
+            osdSquare();
+            menuDraw(menu, focus_row);
+            vga.show();
+        }
+        delay(50);
+    }
+}
+
 // OSD Main Loop
 void do_OSD() {
     if (checkAndCleanKey(KEY_F1)) {
+        byte opt = 0;
         Serial.println(OSD_ON);
         xULAStop = true;
         while (!xULAStopped) {
             delay(20);
         }
         Serial.println(ULA_OFF);
-        byte opt = osdMenu(main_menu, 1);
+        opt = osdMenu(main_menu, 1);
         switch (opt) {
-        case 1:
+        case 1: {
             // Change ROM
-            Z80_Reset();
+            String rom_file_name = fileMenu();
+            Serial.printf("Selected ROM: %s\n", rom_file_name);
             break;
+        }
         case 3:
-            byte opt = osdMenu(reset_menu, 1);
+            opt = osdMenu(reset_menu, 1);
             switch (opt) {
             case 1:
                 Z80_Reset();
@@ -177,6 +217,9 @@ void do_OSD() {
             }
         }
         xULAStop = false;
+        while (xULAStopped) {
+            delay(20);
+        }
         Serial.println(ULA_ON);
     }
 }
