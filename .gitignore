@@ -1,8 +1,9 @@
 *~
 .DS_Store
-data/**
+data/rom/**
+data/sna/**
 !.keep
-!data/boot.cfg
+/data/boot.cfg
 !data/rom/diag_v28.rom
 !data/rom/zx48.rom
 !data/rom/opense.rom
