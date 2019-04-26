@@ -131,8 +131,10 @@ byte osdMenu(MENUPARAM, byte focus_row) {
             if (new_focus_row > menuRows(menu) - 1)
                 new_focus_row = 1;
         } else if (checkAndCleanKey(KEY_ENTER)) {
+            Serial.printf("Menu option: %u --> %s\n", focus_row, menu[focus_row]);
             return focus_row;
         } else if (checkAndCleanKey(KEY_ESC) || checkAndCleanKey(KEY_F1)) {
+            Serial.println("Canceled menu");
             return 0;
         }
 
@@ -156,13 +158,22 @@ void do_OSD() {
         }
         Serial.println(ULA_OFF);
         byte opt = osdMenu(main_menu, 1);
-        Serial.printf("Menu option: %u --> %s", opt, main_menu[opt]);
         switch (opt) {
+        case 1:
+            // Change ROM
+
         case 3:
-            // RESET
-            Serial.println(MSG_Z80_RESET);
-            Z80_Reset();
-            break;
+            byte opt = osdMenu(reset_menu, 1);
+            switch (opt) {
+            case 1:
+                Z80_Reset();
+                if (cfg_mode_sna)
+                    load_ram(cfg_ram_file);
+                break;
+            case 2:
+                Z80_Reset();
+                break;
+            }
         }
         xULAStop = false;
         Serial.println(ULA_ON);
