@@ -161,7 +161,8 @@ void do_OSD() {
         switch (opt) {
         case 1:
             // Change ROM
-
+            Z80_Reset();
+            break;
         case 3:
             byte opt = osdMenu(reset_menu, 1);
             switch (opt) {

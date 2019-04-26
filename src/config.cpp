@@ -37,9 +37,9 @@ void config_read() {
             } else if (line.compareTo("mode:sna") == 0) {
                 cfg_mode_sna = true;
             } else if (line.startsWith("rom:")) {
-                cfg_rom_file = "/" + line.substring(line.lastIndexOf(':') + 1);
+                cfg_rom_file = "/rom/" + line.substring(line.lastIndexOf(':') + 1);
             } else if (line.startsWith("ram:")) {
-                cfg_ram_file = "/" + line.substring(line.lastIndexOf(':') + 1);
+                cfg_ram_file = "/sna/" + line.substring(line.lastIndexOf(':') + 1);
             }
             line = "";
         } else {

@@ -15,7 +15,7 @@ const unsigned short MENU_FILE_MAX_OPTS = 20;
 const unsigned short MENU_FILE_MAX_LINE_LEN = 20;
 char main_menu[MENU_MAX_OPTS][MENU_MAX_LINE_LEN] = {"Main Menu", "Change ROM", "Change RAM", "Reset", "Return", 0};
 char reset_menu[MENU_MAX_OPTS][MENU_MAX_LINE_LEN] = {"Reset Menu", "Soft reset", "Hard reset", "Cancel", 0};
-char file_menu[MENU_MAX_OPTS][MENU_FILE_MAX_LINE_LEN] = {"Select file", 0};
+char file_menu[MENU_FILE_MAX_OPTS][MENU_FILE_MAX_LINE_LEN] = {"Select file", 0};
 
 extern boolean checkAndCleanKey(byte scancode);
 extern boolean isKeymapChanged();
