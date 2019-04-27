@@ -16,6 +16,12 @@
 #include <ESP32Lib.h>
 #include <bt.h>
 #include <esp_task_wdt.h>
+//
+//types
+typedef struct {
+  byte paper;
+  byte ink;
+} Zx_attr;
 
 // EXTERN VARS
 extern boolean writeScreen;
@@ -67,6 +73,7 @@ void setup() {
     log(MSG_VGA_INIT);
     //vga.setFrameBufferCount(1);
     vga.init(vga.MODE360x200, redPin, greenPin, bluePin, hsyncPin, vsyncPin);
+    vga.clear(vga.RGB(0x000000));
 
     pinMode(SOUND_PIN, OUTPUT);
     digitalWrite(SOUND_PIN, LOW);
@@ -116,19 +123,17 @@ void setup() {
 
 void videoTask(void *parameter) {
     unsigned int ff, i, byte_offset;
-    unsigned char color_attrib, pixel_map, zx_fore_color, zx_back_color, flash, bright;
-    unsigned int zx_vidcalc;
-    unsigned int tmp_color,old_border;
+    unsigned char color_attrib, pixel_map, flash, bright;
+    unsigned int zx_vidcalc, calc_y;
+    unsigned int old_border;
     unsigned int ts1,ts2;
-
+    Zx_attr tmp_color;
 
     while (1) {
 
         ts1=millis();
         if(borderTemp != old_border)
         {
-          //vga.fillRect(0, 0, 320, 200,zxcolor(borderTemp,0) );
-          //vga.clear(zxcolor(borderTemp,0));
           border(zxcolor(borderTemp,0));
           old_border=borderTemp;
         }
@@ -136,40 +141,43 @@ void videoTask(void *parameter) {
         if (flashing++ > 32)
             flashing = 0;
 
+        if(borderTemp != old_border)
+         for (int bor =0;bor < 3;bor++){
+           vga.line(32,bor,327,bor,zxcolor(borderTemp,0));
+           vga.line(32,bor+197,327,bor+197,zxcolor(borderTemp,0));
+         }
 
         for (unsigned int lin = 0; lin < 192; lin++) {
             for (ff = 0; ff < 32; ff++) // foreach byte in line
             {
                 byte_offset = lin * 32 + ff; //*2+1;
 
-
-
-                // spectrum attributes
-                // bit 7 6   5 4 3   2 1 0
-                //    F B   P A P   I N K
                 color_attrib = bank0[0x1800 + (calcY(byte_offset) / 8) * 32 + ff]; // get 1 of 768 attrib values
                 pixel_map = bank0[byte_offset];
-                zx_fore_color = color_attrib & 0x07;
-                zx_back_color = (color_attrib & 0x38) >> 3;
-                flash = bitRead(color_attrib, 7);
-                bright = bitRead(color_attrib, 6);
+                calc_y=calcY(byte_offset);
 
-                if (flash && (flashing > 16)) {
-                    tmp_color = zx_fore_color;
-                    zx_fore_color = zx_back_color;
-                    zx_back_color = tmp_color;
+                if(borderTemp != old_border){
+                  vga.line(32,lin+3,51,lin+3,zxcolor(borderTemp,0));
+                  vga.line(308,lin+3,326,lin+3,zxcolor(borderTemp,0));
+
                 }
+
 
                 for (i = 0; i < 8; i++) // foreach pixel within a byte
                 {
+
                     zx_vidcalc = ff * 8 + i;
                     byte bitpos = (0x80 >> i);
 
+                    tmp_color=zx_attr(color_attrib);
+                    //Serial.printf("Ink: %x Paper: %x\n",tmp_color.ink,tmp_color.paper);
+
                     if ((pixel_map & bitpos) != 0)
-                        vga.dotFast(zx_vidcalc + 52, calcY(byte_offset) + 3, zxcolor(zx_fore_color, bright));
+                        vga.dotFast(zx_vidcalc + 52, calc_y + 3, tmp_color.ink);
                     else
-                        vga.dotFast(zx_vidcalc + 52, calcY(byte_offset) + 3, zxcolor(zx_back_color, bright));
+                        vga.dotFast(zx_vidcalc + 52, calc_y + 3, tmp_color.paper);
                 }
+
             }
         }
         while (xULAStop) {
@@ -184,8 +192,6 @@ void videoTask(void *parameter) {
         TIMERG0.wdt_wprotect = TIMG_WDT_WKEY_VALUE;
         TIMERG0.wdt_feed = 1;
         TIMERG0.wdt_wprotect = 0;
-        //if ((ts2-ts1) < 40)
-        // delay(40-(ts2-ts1));
 
         //Serial.println(ts2-ts1);
         // vTaskDelay(0);
@@ -204,30 +210,61 @@ int calcY(int offset) {
 /* Calculate X coordinate (0-255) from Spectrum screen memory location */
 int calcX(int offset) { return (offset % 32) << 3; }
 
-unsigned int zxcolor(byte c, byte f) {
-    int rgbLevel = 192;
-    if (f)
-        rgbLevel = 255;
-    else
-        rgbLevel = 192;
 
-    if (c == 0)
-        return vga.RGB(0, 0, 0);
-    else if (c == 1)
-        return vga.RGB(0, 0, rgbLevel);
-    else if (c == 2)
-        return vga.RGB(rgbLevel, 0, 0);
-    else if (c == 3)
-        return vga.RGB(rgbLevel, 0, rgbLevel);
-    else if (c == 4)
-        return vga.RGB(0, rgbLevel, 0);
-    else if (c == 5)
-        return vga.RGB(0, rgbLevel, rgbLevel);
-    else if (c == 6)
-        return vga.RGB(rgbLevel, rgbLevel, 0);
-    else if (c == 7)
-        return vga.RGB(rgbLevel, rgbLevel, rgbLevel);
-    return 0;
+
+Zx_attr zx_attr(byte attrib) {
+    byte bright,flash,tmp_color;
+    byte zx_fore_color,zx_back_color;
+    byte rgbLevel =255;
+    Zx_attr calcColor;
+
+    zx_fore_color = attrib & 0x07;
+    zx_back_color = (attrib & 0x38) >> 3;
+    flash = bitRead(attrib, 7);
+    bright = bitRead(attrib, 6);
+
+    if (flash && (flashing > 16)) {
+        tmp_color = zx_fore_color;
+        zx_fore_color = zx_back_color;
+        zx_back_color = tmp_color;
+    }
+
+
+
+    calcColor.paper = zxcolor(zx_back_color,bright);
+    calcColor.ink = zxcolor(zx_fore_color,bright);
+    return calcColor;
+    }
+
+unsigned int zxcolor(int c, int bright)
+{
+  byte rgbLevel =255;
+
+  if (bright>0)
+      rgbLevel = 255;
+  else
+      rgbLevel = 192;
+
+  switch (c)
+  {
+
+     case 0: return vga.RGB(0, 0, 0);break;
+     case 1: return vga.RGB(0, 0, rgbLevel);break;
+     case 2: return vga.RGB(rgbLevel, 0, 0);break;
+     case 3: return vga.RGB(rgbLevel, 0, rgbLevel);break;
+     case 4: return vga.RGB(0, rgbLevel, 0);break;
+     case 5: return vga.RGB(0, rgbLevel, rgbLevel);break;
+     case 6: return vga.RGB(rgbLevel,rgbLevel, 0);break;
+     case 7: return vga.RGB(rgbLevel, rgbLevel, rgbLevel);break;
+  }
+}
+
+void border(byte color)
+{
+  vga.fillRect(32,   0, 296, 4,zxcolor(borderTemp,0) );
+  vga.fillRect(32, 195, 296, 5,zxcolor(borderTemp,0) );
+  vga.fillRect(32,   0, 20, 195,zxcolor(borderTemp,0));
+  vga.fillRect(308,  0, 20, 195,zxcolor(borderTemp,0));
 }
 
 /* Load zx keyboard lines from PS/2 */
@@ -285,13 +322,7 @@ void do_keyboard() {
 }
 
 
-void border(unsigned int color)
-{
-  vga.fillRect(42,   0, 276, 4,zxcolor(borderTemp,0) );
-  vga.fillRect(42, 195, 276, 5,zxcolor(borderTemp,0) );
-  vga.fillRect(42,   0, 10, 200,zxcolor(borderTemp,0));
-  vga.fillRect(308,  0, 10, 200,zxcolor(borderTemp,0));
-}
+
 /* +-------------+
    | LOOP core 1 |
    +-------------+
