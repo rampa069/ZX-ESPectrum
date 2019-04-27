@@ -27,7 +27,7 @@ void config_read() {
     for (int i = 0; i < cfg_f.size(); i++) {
         char c = (char)cfg_f.read();
         if (c == '\n') {
-            Serial.printf("CFG LINE --> %s\n", line);
+            Serial.printf("CFG LINE --> %s\n", line.c_str());
             if (line.compareTo("debug:true") == 0) {
                 cfg_debug_on = true;
             } else if (line.compareTo("slog:false") == 0) {

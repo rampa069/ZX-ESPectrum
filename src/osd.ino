@@ -4,106 +4,83 @@
 byte row_pos = 0;
 byte col_pos = 0;
 
-void osdHome() { vga.setCursor(osdX(0), osdY(0)); }
+// Cursor to OSD first row,col
+void osdHome() {
+    Serial.printf("OSD HOME X:%d Y:%d\n", osdInsideX(), osdInsideY());
+    vga.setCursor(osdInsideX(), osdInsideY());
+}
 
-// Text 17x45 with 6x8 font
+// Cursor positioning
 void osdAt(byte row, byte col) {
-    if (row > OSD_MAX_ROW)
+    if (row > osdMaxRows() - 1)
         row = 0;
-    if (col > OSD_MAX_COL)
+    if (col > osdMaxCols() - 1)
         col = 0;
-    vga.setCursor(osdX(col * 6), osdY(row * 8));
-    row_pos = row;
-    col_pos = col;
+    unsigned short y = (row * OSD_FONT_H) + osdInsideY();
+    unsigned short x = (col * OSD_FONT_W) + osdInsideX();
+    Serial.printf("OSD AT ROW:%d/%d-->%dpx COL:%d/%d-->%dpx\n", row, osdMaxRows(), y, col, osdMaxCols(), x);
+    vga.setCursor(x, y);
 }
 
-void osdCharSq(byte lines, byte cols) {
-    const byte start_row = row_pos;
-    const byte start_col = col_pos;
-    for (byte l = 1; l <= lines; l++) {
-        for (byte c = 1; c <= cols; c++) {
-            vga.print(" ");
-        }
-        osdAt(row_pos + 1, start_col);
-    }
-    osdAt(start_row, start_col);
-}
-
-// Menu calc
-byte menuCols(MENUPARAM) {
-    byte max = 0;
-    byte i = 0;
-    while (menu[i][0] != 0) {
-        if (strlen(menu[i]) > max)
-            max = strlen(menu[i]);
-        i++;
-    }
-    if (max < 20)
-        max = 20;
-    if (max > 140)
-        max = 140;
-    return max;
-}
-
-byte menuRows(MENUPARAM) {
-    byte i = 0;
-    while (menu[i][0] != 0)
-        i++;
-    return i;
-}
-
-// Menu max columns
-byte menuW(MENUPARAM) { return (menuCols(menu) * 6) + 2; }
-// Menu max rows
-byte menuH(MENUPARAM) { return (menuRows(menu) * 8) + 4; }
-// Menu width in pixels
-unsigned short menuY(MENUPARAM) { return (OSD_H / 2) - (menuH(menu) / 2) + OSD_Y; }
-// Menu height in pixels
-unsigned short menuX(MENUPARAM) { return (OSD_W / 2) - (menuW(menu) / 2) + OSD_X; }
-
-unsigned short osdX(unsigned short rel_x) { return (OSD_X + OSD_MARGIN + rel_x); }
-unsigned short osdY(unsigned short rel_y) { return (OSD_Y + OSD_MARGIN + rel_y); }
-
-void osdSquare() {
-    vga.fillRect(OSD_X, OSD_Y, OSD_W, OSD_H, zxcolor(1, 0));
-    vga.rect(OSD_X, OSD_Y, OSD_W, OSD_H, zxcolor(0, 0));
-    vga.rect(OSD_X + 1, OSD_Y + 1, OSD_W - 2, OSD_H - 2, zxcolor(7, 0));
-    osdHome();
+void drawOSD() {
+    Serial.println("Drawing OSD");
+    unsigned short x = scrAlignCenterX(OSD_W);
+    unsigned short y = scrAlignCenterY(OSD_H);
+    Serial.printf("OSD X:%d Y:%d W:%d H:%d\n", x, y, OSD_W, OSD_H);
+    vga.fillRect(x, y, OSD_W, OSD_H, zxcolor(1, 0));
+    vga.rect(x, y, OSD_W, OSD_H, zxcolor(0, 0));
+    vga.rect(x + 1, y + 1, OSD_W - 2, OSD_H - 2, zxcolor(7, 0));
     vga.setTextColor(zxcolor(0, 0), zxcolor(5, 1));
     vga.setFont(Font6x8);
-    vga.println("** ZX-ESPectrum v1.0 by Rampa & Queru 2019 **");
-    osdAt(16, 0);
+    osdHome();
+    vga.print("* ZX-ESPectrum v1.0|Rampa & Queru 2019 *");
+    osdAt(17, 0);
     vga.setTextColor(zxcolor(0, 0), zxcolor(5, 0));
-    vga.println(" Cursor: Move | Enter: Select | F1/Esc: Exit ");
+    vga.print("           LIVE FREE OR DIE!!           ");
 }
 
-void menuDraw(MENUPARAM, byte focus_row) {
-    Serial.printf("MENU X:%u Y:%u W:%u H:%u\n", menuX(menu), menuY(menu), menuW(menu), menuH(menu));
+void drawMenu(String menu, byte focus) {
+    Serial.printf("Drawing menu, focus on: %d\n", focus);
+    const byte cols = menuColMax(menu) + 2;
+    const unsigned short real_rows = menuRowCount(menu);
+    const byte rows = menuVirtualRows(menu);
+    const byte w = (cols * OSD_FONT_W) + 2;
+    const byte h = (rows * OSD_FONT_H) + 2;
+    const unsigned short x = scrAlignCenterX(w);
+    const unsigned short y = scrAlignCenterY(h);
+    Serial.printf("%d cols, %d real_rows and %d rows\n", cols, real_rows, rows);
     // White background
-    vga.fillRect(menuX(menu), menuY(menu), menuW(menu), menuH(menu), zxcolor(7, 1));
+    Serial.printf("White bg x:%d, y:%d, w:%d, h:%d\n", x, y, w, h);
+    vga.fillRect(x, y, w, h, zxcolor(7, 1));
     // Black border
-    vga.rect(menuX(menu), menuY(menu), menuW(menu), menuH(menu), zxcolor(0, 0));
+    Serial.printf("Black border x:%d, y:%d, w:%d, h:%d\n", x, y, w, h);
+    vga.rect(x, y, w, h, zxcolor(0, 0));
 
-    byte row = 0;
-    while (menu[row][0] != 0) {
-        vga.setCursor(menuX(menu) + 1, menuY(menu) + 1 + (row * 8));
+    Serial.printf("Iterating %d rows\n", rows);
+    for (byte row = 0; row < rows; row++) {
+        Serial.printf("Row %d: ", row);
+        vga.setCursor(x + 1, y + 1 + (row * OSD_FONT_H));
         if (row == 0) {
+            Serial.println("Title row");
             vga.setTextColor(zxcolor(7, 1), zxcolor(0, 1));
-        } else if (row == focus_row) {
+        } else if (row == focus) {
+            Serial.println("Focus row");
             vga.setTextColor(zxcolor(0, 1), zxcolor(5, 1));
         } else {
+            Serial.println("Normal row");
             vga.setTextColor(zxcolor(0, 1), zxcolor(7, 1));
         }
+        String line = menuGetRow(menu, row);
+        Serial.printf("Printing row %d '%s' len:%d to cols:%d\n", row, line.c_str(), line.length(), cols);
         vga.print(" ");
-        vga.print(menu[row]);
-        for (byte i = 0; i < (menuCols(menu) - strlen(menu[row]) - 1); i++) {
+        vga.print(line.c_str());
+        for (byte i = line.length(); i < (cols - 1); i++)
             vga.print(" ");
-        }
-        row++;
     }
+
     // Rainbow
-    unsigned short rb_y = menuY(menu) + 8;
-    unsigned short rb_paint_x = menuX(menu) + menuW(menu) - 20;
+    unsigned short rb_y = y + 8;
+    unsigned short rb_paint_x = x + w - 20;
     byte rb_colors[] = {2, 6, 4, 5};
     for (byte c = 0; c < 4; c++) {
         for (byte i = 0; i < 3; i++) {
@@ -113,72 +90,38 @@ void menuDraw(MENUPARAM, byte focus_row) {
     }
 }
 
-// Menu run
-byte osdMenu(MENUPARAM, byte focus_row) {
-    Serial.println("OSD MENU BEGIN");
-    Serial.printf("Menu Max COLS:%u ROWS:%u\n", menuCols(menu), menuRows(menu));
-    osdSquare();
-    menuDraw(menu, focus_row);
+unsigned short do_Menu(String menu) {
+    const unsigned short real_rows = menuRowCount(menu);
+    const byte rows = menuVirtualRows(menu);
+    unsigned short focus = 1;
+    unsigned short focus_new = 1;
+
+    Serial.println("Draw OSD");
+    drawOSD();
+    Serial.println("Draw Menu");
+    drawMenu(menu, focus);
+    Serial.println("VGA Show");
     vga.show();
-    byte new_focus_row = focus_row;
+    delay(50);
     while (1) {
         if (checkAndCleanKey(KEY_UP)) {
-            new_focus_row = focus_row - 1;
-            if (new_focus_row < 1)
-                new_focus_row = menuRows(menu) - 1;
+            focus_new = focus - 1;
+            if (focus_new < 1)
+                focus_new = rows - 1;
         } else if (checkAndCleanKey(KEY_DOWN)) {
-            new_focus_row = focus_row + 1;
-            if (new_focus_row > menuRows(menu) - 1)
-                new_focus_row = 1;
+            focus_new = focus + 1;
+            if (focus_new >= rows)
+                focus_new = 1;
         } else if (checkAndCleanKey(KEY_ENTER)) {
-            Serial.printf("Menu option: %u --> %s\n", focus_row, menu[focus_row]);
-            return focus_row;
+            return focus;
         } else if (checkAndCleanKey(KEY_ESC) || checkAndCleanKey(KEY_F1)) {
-            Serial.println("Canceled menu");
             return 0;
         }
 
-        if (new_focus_row != focus_row) {
-            focus_row = new_focus_row;
-            osdSquare();
-            menuDraw(menu, focus_row);
-            vga.show();
-        }
-        delay(50);
-    }
-}
-
-// File Menu run
-// Menu run
-String fileMenu() {
-    byte focus_row = 1;
-    Serial.println("FILE MENU BEGIN");
-    osdSquare();
-    char menu[MENU_MAX_OPTS][MENU_MAX_LINE_LEN] = {"Select ROM File", 0};
-    menuDraw(menu, focus_row);
-    vga.show();
-    byte new_focus_row = focus_row;
-    while (1) {
-        if (checkAndCleanKey(KEY_UP)) {
-            new_focus_row = focus_row - 1;
-            if (new_focus_row < 1)
-                new_focus_row = menuRows(menu) - 1;
-        } else if (checkAndCleanKey(KEY_DOWN)) {
-            new_focus_row = focus_row + 1;
-            if (new_focus_row > menuRows(menu) - 1)
-                new_focus_row = 1;
-        } else if (checkAndCleanKey(KEY_ENTER)) {
-            Serial.printf("Menu option: %u --> %s\n", focus_row, menu[focus_row]);
-            return "row";
-        } else if (checkAndCleanKey(KEY_ESC) || checkAndCleanKey(KEY_F1)) {
-            Serial.println("Canceled menu");
-            return "cancel";
-        }
-
-        if (new_focus_row != focus_row) {
-            focus_row = new_focus_row;
-            osdSquare();
-            menuDraw(menu, focus_row);
+        if (focus_new != focus) {
+            focus = focus_new;
+            drawOSD();
+            drawMenu(menu, focus);
             vga.show();
         }
         delay(50);
@@ -188,34 +131,40 @@ String fileMenu() {
 // OSD Main Loop
 void do_OSD() {
     if (checkAndCleanKey(KEY_F1)) {
-        byte opt = 0;
         Serial.println(OSD_ON);
         xULAStop = true;
         while (!xULAStopped) {
             delay(20);
         }
         Serial.println(ULA_OFF);
-        opt = osdMenu(main_menu, 1);
-        switch (opt) {
-        case 1: {
+        // ULA Stopped
+        Serial.printf("Main menu rows: %d\n", menuRowCount(main_menu));
+        Serial.printf("Main menu max col: %d\n", menuColMax(main_menu));
+        switch (do_Menu(main_menu)) {
+        case 1:
             // Change ROM
-            String rom_file_name = fileMenu();
-            Serial.printf("Selected ROM: %s\n", rom_file_name);
             break;
-        }
+        case 2:
+            // Change RAM
+            break;
         case 3:
-            opt = osdMenu(reset_menu, 1);
-            switch (opt) {
+            // Reset
+            drawMenu(main_menu, 1);
+            switch (do_Menu(reset_menu)) {
             case 1:
+                // Soft
                 Z80_Reset();
                 if (cfg_mode_sna)
                     load_ram(cfg_ram_file);
                 break;
             case 2:
+                // Hard
                 Z80_Reset();
                 break;
             }
         }
+
+        // Exit
         xULAStop = false;
         while (xULAStopped) {
             delay(20);
