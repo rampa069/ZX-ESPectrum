@@ -47,9 +47,8 @@ byte *bank0;
 byte z80ports_in[128];
 byte borderTemp = 7;
 byte soundTemp = 0;
-byte flashing = 0;
+unsigned int flashing = 0;
 byte lastAudio = 0;
-byte onFrame=1;
 boolean xULAStop = false;
 boolean xULAStopped = false;
 
@@ -66,7 +65,7 @@ void setup() {
 
     log(MSG_CHIP_SETUP);
     log(MSG_VGA_INIT);
-    vga.setFrameBufferCount(2);
+    //vga.setFrameBufferCount(1);
     vga.init(vga.MODE360x200, redPin, greenPin, bluePin, hsyncPin, vsyncPin);
 
     pinMode(SOUND_PIN, OUTPUT);
@@ -119,17 +118,32 @@ void videoTask(void *parameter) {
     unsigned int ff, i, byte_offset;
     unsigned char color_attrib, pixel_map, zx_fore_color, zx_back_color, flash, bright;
     unsigned int zx_vidcalc;
-    unsigned int tmpColour;
+    unsigned int tmp_color,old_border;
+    unsigned int ts1,ts2;
 
 
     while (1) {
 
+        ts1=millis();
+        if(borderTemp != old_border)
+        {
+          //vga.fillRect(0, 0, 320, 200,zxcolor(borderTemp,0) );
+          //vga.clear(zxcolor(borderTemp,0));
+          border(zxcolor(borderTemp,0));
+          old_border=borderTemp;
+        }
 
-        vga.clear(zxcolor(borderTemp,0));
+        if (flashing++ > 32)
+            flashing = 0;
+
+
         for (unsigned int lin = 0; lin < 192; lin++) {
             for (ff = 0; ff < 32; ff++) // foreach byte in line
             {
                 byte_offset = lin * 32 + ff; //*2+1;
+
+
+
                 // spectrum attributes
                 // bit 7 6   5 4 3   2 1 0
                 //    F B   P A P   I N K
@@ -137,9 +151,14 @@ void videoTask(void *parameter) {
                 pixel_map = bank0[byte_offset];
                 zx_fore_color = color_attrib & 0x07;
                 zx_back_color = (color_attrib & 0x38) >> 3;
-
+                flash = bitRead(color_attrib, 7);
                 bright = bitRead(color_attrib, 6);
 
+                if (flash && (flashing > 16)) {
+                    tmp_color = zx_fore_color;
+                    zx_fore_color = zx_back_color;
+                    zx_back_color = tmp_color;
+                }
 
                 for (i = 0; i < 8; i++) // foreach pixel within a byte
                 {
@@ -147,9 +166,9 @@ void videoTask(void *parameter) {
                     byte bitpos = (0x80 >> i);
 
                     if ((pixel_map & bitpos) != 0)
-                        vga.dotFast(zx_vidcalc + 52, calcY(byte_offset) + 5, zxcolor(zx_fore_color, bright));
+                        vga.dotFast(zx_vidcalc + 52, calcY(byte_offset) + 3, zxcolor(zx_fore_color, bright));
                     else
-                        vga.dotFast(zx_vidcalc + 52, calcY(byte_offset) + 5, zxcolor(zx_back_color, bright));
+                        vga.dotFast(zx_vidcalc + 52, calcY(byte_offset) + 3, zxcolor(zx_back_color, bright));
                 }
             }
         }
@@ -159,10 +178,16 @@ void videoTask(void *parameter) {
         }
         xULAStopped = false;
 
-        vga.show();
+        //vga.show();
+        ts2=millis();
+
         TIMERG0.wdt_wprotect = TIMG_WDT_WKEY_VALUE;
         TIMERG0.wdt_feed = 1;
         TIMERG0.wdt_wprotect = 0;
+        //if ((ts2-ts1) < 40)
+        // delay(40-(ts2-ts1));
+
+        //Serial.println(ts2-ts1);
         // vTaskDelay(0);
     }
 }
@@ -259,6 +284,14 @@ void do_keyboard() {
     strcpy(oldKeymap, keymap);
 }
 
+
+void border(unsigned int color)
+{
+  vga.fillRect(42,   0, 276, 4,zxcolor(borderTemp,0) );
+  vga.fillRect(42, 195, 276, 5,zxcolor(borderTemp,0) );
+  vga.fillRect(42,   0, 10, 200,zxcolor(borderTemp,0));
+  vga.fillRect(308,  0, 10, 200,zxcolor(borderTemp,0));
+}
 /* +-------------+
    | LOOP core 1 |
    +-------------+

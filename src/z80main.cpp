@@ -80,31 +80,6 @@ int32_t zx_loop()
         _next_total += CYCLES_PER_STEP;
 
         frames++;
-        if (frames > 32)
-        {
-            frames = 0;
-
-
-
-            for (int i = 0x1800; i < 0x1800+768; i++)
-            {
-                byte color = bank0[i];
-                if (bitRead(color,7) != 0)
-                {
-                        bitWrite(tmp_color,0,bitRead(color,3));
-                        bitWrite(tmp_color,1,bitRead(color,4));
-                        bitWrite(tmp_color,2,bitRead(color,5));
-                        bitWrite(tmp_color,3,bitRead(color,0));
-                        bitWrite(tmp_color,4,bitRead(color,1));
-                        bitWrite(tmp_color,5,bitRead(color,2));
-                        bitWrite(tmp_color,6,bitRead(color,6));
-                        bitWrite(tmp_color,7,bitRead(color,7));
-                        bank0[i]=tmp_color;
-                }
-            }
-
-
-        }
 
 
         Z80Interrupt(&_zxCpu, 0xff, &_zxContext);
@@ -114,6 +89,7 @@ int32_t zx_loop()
         //onFrame=0;
 
 		//_ticks = _spectrumScreen->_frames + 1;
+    //xULAStop=false;
 
     }
     return result;
