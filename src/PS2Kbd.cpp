@@ -1,6 +1,7 @@
-#include "paledefs.h"
-#include "Emulator/Keyboard/PS2Kbd.h"
+#pragma GCC diagnostic ignored "-Wall"
 #include <Arduino.h>
+#pragma GCC diagnostic warning "-Wall"
+#include "paledefs.h"
 
 unsigned int shift = 0;
 byte lastcode = 0;
@@ -8,8 +9,8 @@ boolean keyup = false;
 boolean shift_presed = false;
 boolean symbol_pressed = false;
 byte rc = 0;
-char keymap[256];
-char oldKeymap[256];
+byte keymap[256];
+byte oldKeymap[256];
 
 extern boolean debug_keyboard;
 
@@ -70,4 +71,16 @@ void kb_begin() {
         keymap[gg] = 1;
         oldKeymap[gg] = 1;
     }
+}
+
+// Check if keymatrix is changed
+boolean isKeymapChanged() { return (keymap != oldKeymap); }
+
+// Check if key is pressed and clean it
+boolean checkAndCleanKey(byte scancode) {
+    if (keymap[scancode] == 0) {
+        keymap[scancode] = 1;
+        return true;
+    }
+    return false;
 }

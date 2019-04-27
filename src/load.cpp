@@ -3,7 +3,7 @@
 #include "Emulator/Keyboard/PS2Kbd.h"
 #include "SPIFFS.h"
 #include "Emulator/z80emu/z80emu.h"
-#include "msg.h"
+#include "Emulator/msg.h"
 
 extern byte *bank0;
 extern byte borderTemp;

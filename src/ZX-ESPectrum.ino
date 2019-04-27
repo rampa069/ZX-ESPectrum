@@ -11,11 +11,15 @@
 #include "Emulator/z80emu/z80emu.h"
 #include "Emulator/z80user.h"
 #include "SPIFFS.h"
-#include "msg.h"
 #include "paledefs.h"
 #include <ESP32Lib.h>
 #include <bt.h>
 #include <esp_task_wdt.h>
+#include <Ressources/Font6x8.h>
+#include "Emulator/Keyboard/PS2Kbd.h"
+#include "Emulator/msg.h"
+#include "Emulator/osd.h"
+
 //
 //types
 typedef struct {
