@@ -149,7 +149,6 @@ void do_OSD() {
             break;
         case 3:
             // Reset
-            drawMenu(main_menu, 1);
             switch (do_Menu(reset_menu)) {
             case 1:
                 // Soft
