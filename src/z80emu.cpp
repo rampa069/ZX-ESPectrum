@@ -12,6 +12,7 @@
 #include "Emulator/z80emu/macros.h"
 #include "Emulator/z80emu/tables.h"
 
+
 /* Indirect (HL) or prefixed indexed (IX + d) and (IY + d) memory operands are
  * encoded using the 3 bits "110" (0x06).
  */
@@ -268,10 +269,11 @@ static int emulate (Z80_STATE * state,
 
 
 start_emulation:
-                //if (opcode != 0xd3)
-                  delayMicroseconds(2);
+
 
                 registers = state->register_table;
+                //if (opcode == 0xd3)
+                  delayMicroseconds(1);
 
 emulate_next_opcode:
 
@@ -2615,6 +2617,5 @@ stop_emulation:
 
         state->r = (state->r & 0x80) | (r & 0x7f);
         state->pc = pc & 0xffff;
-
         return elapsed_cycles;
 }

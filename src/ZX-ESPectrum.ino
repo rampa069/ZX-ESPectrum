@@ -132,7 +132,7 @@ void videoTask(void *parameter) {
 
 
         while (1) {
-                tick=0;
+                
                 ts1=millis();
 
 
@@ -143,7 +143,7 @@ void videoTask(void *parameter) {
                 for (unsigned int vga_lin = 0; vga_lin < 200; vga_lin++) {
                         //unsigned int lin = vga_lin - 4;
                         //Serial.println(vga_lin);
-
+                        tick=0;
                         if (vga_lin<4 || vga_lin > 194) {
                                 for (int bor= 32; bor < 328; bor++)
                                         vga.dotFast(bor,vga_lin,zxcolor(borderTemp,0));
@@ -189,6 +189,8 @@ void videoTask(void *parameter) {
 
                         }
                 }
+                tick=1;
+
                 while (xULAStop) {
                         xULAStopped = true;
                         delay(5);
@@ -201,7 +203,6 @@ void videoTask(void *parameter) {
                 TIMERG0.wdt_wprotect = TIMG_WDT_WKEY_VALUE;
                 TIMERG0.wdt_feed = 1;
                 TIMERG0.wdt_wprotect = 0;
-                tick=1;
                 if (ts2-ts1 < 20)
                    delay(20-(ts2-ts1));
 

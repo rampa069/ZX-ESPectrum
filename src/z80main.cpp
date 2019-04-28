@@ -66,6 +66,7 @@ int32_t zx_loop()
     uint32_t ts1,ts2;
 
 
+
     ts1=millis();
     _total += Z80Emulate(&_zxCpu, _next_total - _total, &_zxContext);
     ts2=millis();
@@ -73,11 +74,16 @@ int32_t zx_loop()
 
     //if ((ts2-ts1) < 20)
       //delay(20-(ts2-ts1));
-
+      //while (tick==0)
+       //delayMicroseconds(1);
 
     if (_total >= _next_total)
     {
         _next_total += CYCLES_PER_STEP;
+
+        //while (tick==0)
+         //delayMicroseconds(1);
+
         Z80Interrupt(&_zxCpu, 0xff, &_zxContext);
 
     }
@@ -107,7 +113,7 @@ extern "C" void writebyte(uint16_t addr, uint8_t data)
 {
     if (addr >= (uint16_t)0x4000 && addr <= (uint16_t)0x8000)
     {
-            while (tick=0)
+            while (tick==0)
              delayMicroseconds(1);
 
             bank0[addr-0x4000] = data;
@@ -177,13 +183,11 @@ extern "C" void output(uint8_t portLow, uint8_t portHigh, uint8_t data)
 
 
 
-      uint8_t sound = (data & 0x10);
-    	if ((z80ports_in[0x20] & 0x10) != sound)
-    	{
-			digitalWrite(SOUND_PIN,sound);
-    	}
-      //if (bitRead(data,3))
-          digitalWrite(SOUND_PIN,bitRead(data,3));
+
+			digitalWrite(SOUND_PIN,bitRead(data,4));  //speaker
+
+
+      //digitalWrite(SOUND_PIN,bitRead(data,3));  //tape_out
 
       z80ports_in[0x20] = data;
     }
