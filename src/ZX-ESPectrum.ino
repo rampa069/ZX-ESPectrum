@@ -132,7 +132,7 @@ void videoTask(void *parameter) {
 
 
         while (1) {
-                
+
                 ts1=millis();
 
 
@@ -238,14 +238,15 @@ unsigned int zxcolor(int c, int bright)
 
         switch (c)
         {
-        case 0: return 8; break;
-        case 1: return 0x4; break;
-        case 2: return 0x1; break;
-        case 3: return 0x5; break;
-        case 4: return 0x2; break;
-        case 5: return 0x6; break;
-        case 6: return 0x3; break;
-        case 7: return 0x7; break;
+
+          case 0: return 0x08; break; // black
+          case 1: return 0x0c; break; // blue
+          case 2: return 0x09; break; // red
+          case 3: return 0x0d; break; // magenta
+          case 4: return 0x0a; break; // green
+          case 5: return 0x0e; break; // cyan
+          case 6: return 0x0b; break; // yellow
+          case 7: return 0x0f; break; // white
 
         }
 }
@@ -254,7 +255,7 @@ unsigned int zxcolor(int c, int bright)
 
 /* Load zx keyboard lines from PS/2 */
 void do_keyboard() {
-        if (keymap != oldKeymap) {
+        if (!strcmp(keymap , oldKeymap)) {
                 bitWrite(z80ports_in[0], 0, keymap[0x12]);
                 bitWrite(z80ports_in[0], 1, keymap[0x1a]);
                 bitWrite(z80ports_in[0], 2, keymap[0x22]);
