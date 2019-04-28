@@ -8,8 +8,6 @@
 
 // Headers
 #pragma GCC diagnostic ignored "-Wall"
-#include "FS.h"
-#include "SPIFFS.h"
 #include <Arduino.h>
 #include <ESP32Lib.h>
 #include <Ressources/Font6x8.h>
@@ -18,6 +16,7 @@
 #pragma GCC diagnostic warning "-Wall"
 
 #include "PS2Kbd.h"
+#include "datafs.h"
 #include "msg.h"
 #include "osd.h"
 #include "paledefs.h"

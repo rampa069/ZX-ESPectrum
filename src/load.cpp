@@ -1,10 +1,9 @@
 #pragma GCC diagnostic ignored "-Wall"
 #include "Arduino.h"
-#include "FS.h"
-#include "SPIFFS.h"
 #include "Z80.h"
 #pragma GCC diagnostic warning "-Wall"
 #include "PS2Kbd.h"
+#include "datafs.h"
 #include "msg.h"
 
 extern byte *bank0;
@@ -17,26 +16,6 @@ byte specrom[16384];
 
 typedef int32_t dword;
 typedef signed char offset;
-
-void mount_spiffs() {
-    while (!SPIFFS.begin()) {
-        Serial.println(MSG_MOUNT_FAIL);
-        delay(500);
-    }
-}
-
-File open_read_file(String filename) {
-    File f;
-    mount_spiffs();
-    Serial.println(MSG_LOADING + filename);
-    f = SPIFFS.open(filename, FILE_READ);
-    while (!f) {
-        Serial.println(MSG_READ_FILE_FAIL + filename);
-        sleep(10);
-        f = SPIFFS.open(filename, FILE_READ);
-    }
-    return f;
-}
 
 void load_ram(String sna_file) {
     File lhandle;
