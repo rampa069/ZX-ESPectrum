@@ -71,8 +71,8 @@ int32_t zx_loop()
     ts2=millis();
 
 
-    if ((ts2-ts1) < 20)
-      delay(20-(ts2-ts1));
+    //if ((ts2-ts1) < 20)
+      //delay(20-(ts2-ts1));
 
 
     if (_total >= _next_total)
@@ -180,17 +180,12 @@ extern "C" void output(uint8_t portLow, uint8_t portHigh, uint8_t data)
       uint8_t sound = (data & 0x10);
     	if ((z80ports_in[0x20] & 0x10) != sound)
     	{
-			if (sound)
-			{
-        digitalWrite(SOUND_PIN,1);
-			}
-			else
-			{
-				digitalWrite(SOUND_PIN,0);
-			}
+			digitalWrite(SOUND_PIN,sound);
     	}
+      //if (bitRead(data,3))
+          digitalWrite(SOUND_PIN,bitRead(data,3));
 
-        z80ports_in[0x20] = data;
+      z80ports_in[0x20] = data;
     }
     break;
 
@@ -211,4 +206,5 @@ extern "C" void output(uint8_t portLow, uint8_t portHigh, uint8_t data)
         zx_data = data;
         break;
     }
+    //Serial.printf("Port: %x High: %x Value: %x\n",portLow,portHigh,data );
 }

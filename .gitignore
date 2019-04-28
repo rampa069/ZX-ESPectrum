@@ -17,3 +17,5 @@ platformio.ini
 .clang_complete
 .gcc-flags.json
 /work
+.piolibdeps/
+

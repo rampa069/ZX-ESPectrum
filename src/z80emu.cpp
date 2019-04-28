@@ -269,7 +269,7 @@ static int emulate (Z80_STATE * state,
 
 start_emulation:
                 //if (opcode != 0xd3)
-                  delayMicroseconds(1);
+                  delayMicroseconds(2);
 
                 registers = state->register_table;
 

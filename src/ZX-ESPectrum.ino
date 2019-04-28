@@ -144,7 +144,7 @@ void videoTask(void *parameter) {
                         //unsigned int lin = vga_lin - 4;
                         //Serial.println(vga_lin);
 
-                        if (vga_lin<4 || vga_lin > 195) {
+                        if (vga_lin<4 || vga_lin > 194) {
                                 for (int bor= 32; bor < 328; bor++)
                                         vga.dotFast(bor,vga_lin,zxcolor(borderTemp,0));
                         }
@@ -158,7 +158,7 @@ void videoTask(void *parameter) {
                                 for (ff = 0; ff < 32; ff++) // foreach byte in line
                                 {
 
-                                        byte_offset = (vga_lin -4 )* 32 + ff; //*2+1;
+                                        byte_offset = (vga_lin -3 )* 32 + ff; //*2+1;
 
                                         color_attrib = bank0[0x1800 + (calcY(byte_offset) / 8) * 32 + ff]; // get 1 of 768 attrib values
                                         pixel_map = bank0[byte_offset];
