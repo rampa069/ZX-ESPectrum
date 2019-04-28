@@ -35,7 +35,7 @@ void drawOSD() {
     osdHome();
     vga.print("* ZX-ESPectrum v1.0|Rampa & Queru 2019 *");
     osdAt(17, 0);
-    vga.setTextColor(zxcolor(0, 0), zxcolor(5, 0));
+    vga.setTextColor(zxcolor(0, 0), zxcolor(13, 0));
     vga.print("           LIVE FREE OR DIE!!           ");
 }
 
@@ -101,7 +101,7 @@ unsigned short do_Menu(String menu) {
     Serial.println("Draw Menu");
     drawMenu(menu, focus);
     Serial.println("VGA Show");
-    vga.show();
+    //vga.show();
     delay(50);
     while (1) {
         if (checkAndCleanKey(KEY_UP)) {
@@ -122,7 +122,7 @@ unsigned short do_Menu(String menu) {
             focus = focus_new;
             drawOSD();
             drawMenu(menu, focus);
-            vga.show();
+            //vga.show();
         }
         delay(50);
     }

@@ -18,8 +18,8 @@ extern byte *bank0;
 extern byte specrom[16394];
 extern byte borderTemp;
 extern byte z80ports_in[128];
-extern boolean xULAStop;
-extern boolean xULAStopped;
+extern byte tick;
+
 CONTEXT _zxContext;
 static uint16_t _attributeCount;
 int _total;
@@ -64,32 +64,21 @@ int32_t zx_loop()
     int32_t result = -1;
     byte tmp_color =0;
     uint32_t ts1,ts2;
-    //xULAStop=false;
+
+
     ts1=millis();
     _total += Z80Emulate(&_zxCpu, _next_total - _total, &_zxContext);
     ts2=millis();
 
-    //Serial.println((ts2-ts1));
-    if ((ts2-ts1) < 25)
-      delay(25-(ts2-ts1));
+
+    if ((ts2-ts1) < 20)
+      delay(20-(ts2-ts1));
 
 
-    //xULAStop=true;
     if (_total >= _next_total)
     {
         _next_total += CYCLES_PER_STEP;
-
-        frames++;
-
-
         Z80Interrupt(&_zxCpu, 0xff, &_zxContext);
-
-        // delay
-        //delay(20);
-        //onFrame=0;
-
-		//_ticks = _spectrumScreen->_frames + 1;
-    //xULAStop=false;
 
     }
     return result;
@@ -116,11 +105,17 @@ extern "C" uint16_t readword(uint16_t addr)
 
 extern "C" void writebyte(uint16_t addr, uint8_t data)
 {
+    if (addr >= (uint16_t)0x4000 && addr <= (uint16_t)0x8000)
+    {
+            while (tick=0)
+             delayMicroseconds(1);
+
+            bank0[addr-0x4000] = data;
+    }
     if (addr >= (uint16_t)0x4000)
     {
             bank0[addr-0x4000] = data;
     }
-
 }
 
 extern "C" void writeword(uint16_t addr, uint16_t data)
