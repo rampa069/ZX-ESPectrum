@@ -63,6 +63,10 @@ void setup() {
     esp_bt_controller_mem_release(ESP_BT_MODE_BTDM);
     // esp_wifi_set_mode(WIFI_MODE_NULL);
 
+    if (!SPIFFS.begin()) {
+        Serial.begin(115200);
+        Serial.println(MSG_MOUNT_FAIL);
+    }
     config_read();
 
     Serial.println(MSG_CHIP_SETUP);

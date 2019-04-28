@@ -18,17 +18,19 @@ byte specrom[16384];
 typedef int32_t dword;
 typedef signed char offset;
 
-void mount_spiffs() {
-    while (!SPIFFS.begin()) {
-        if (cfg_slog_on)
-            Serial.println(MSG_MOUNT_FAIL);
-        delay(500);
+void listAllFiles() {
+    File root = SPIFFS.open("/");
+    File file = root.openNextFile();
+
+    while (file) {
+        Serial.print("FILE: ");
+        Serial.println(file.name());
+        file = root.openNextFile();
     }
 }
 
 File open_read_file(String filename) {
     File f;
-    mount_spiffs();
     if (cfg_slog_on)
         Serial.println(MSG_LOADING + filename);
     f = SPIFFS.open(filename, FILE_READ);
@@ -41,9 +43,33 @@ File open_read_file(String filename) {
     return f;
 }
 
-String getDirAsMenu(String title, String path) {
-    String menu = title + "\n";
-    return menu;
+String getDirAsMenu(String title, String dirname) {
+    Serial.printf("Listing directory: %s\r\n", dirname.c_str());
+
+    File root = open_read_file(dirname);
+    if (!root) {
+        Serial.println("- failed to open directory");
+        return "FAIL\n";
+    }
+    if (!root.isDirectory()) {
+        Serial.println(" - not a directory");
+        return "NO DIR\n";
+    }
+
+    File file = root.openNextFile();
+    while (file) {
+        if (file.isDirectory()) {
+            Serial.print("  DIR : ");
+            Serial.println(file.name());
+        } else {
+            Serial.print("  FILE: ");
+            Serial.print(file.name());
+            Serial.print("\tSIZE: ");
+            Serial.println(file.size());
+        }
+        file = root.openNextFile();
+    }
+    return "OK\n";
 }
 
 void load_ram(String sna_file) {

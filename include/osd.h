@@ -12,6 +12,8 @@ extern boolean checkAndCleanKey(byte scancode);
 extern boolean isKeymapChanged();
 extern void updateKeymap();
 extern File open_read_file(String filename);
+extern String getDirAsMenu(String title, String path);
+extern void listAllFiles();
 
 const String main_menu = "Main Menu\nChange ROM\nChange RAM\nReset\nReturn\n";
 const String reset_menu = "Reset Menu\nSoft reset\nHard reset\nCancel\n";

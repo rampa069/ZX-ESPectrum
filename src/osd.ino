@@ -1,7 +1,5 @@
 // On Screen Display
 
-extern String getDirAsMenu(String title, String path);
-
 // Globals
 byte row_pos = 0;
 byte col_pos = 0;
@@ -145,8 +143,9 @@ void do_OSD() {
         switch (do_Menu(main_menu)) {
         case 1: {
             // Change ROM
-            String rom_menu = getDirAsMenu("Select ROM File", "/rom");
-            Serial.println(rom_menu.c_str());
+            // String rom_menu = getDirAsMenu("Select ROM File", "/");
+            // Serial.println(rom_menu.c_str());
+            listAllFiles();
             break;
         }
         case 2:
