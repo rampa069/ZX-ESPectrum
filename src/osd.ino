@@ -100,9 +100,6 @@ unsigned short do_Menu(String menu) {
     drawOSD();
     Serial.println("Draw Menu");
     drawMenu(menu, focus);
-    Serial.println("VGA Show");
-    vga.show();
-    delay(50);
     while (1) {
         if (checkAndCleanKey(KEY_UP)) {
             focus_new = focus - 1;
@@ -122,8 +119,8 @@ unsigned short do_Menu(String menu) {
             focus = focus_new;
             drawOSD();
             drawMenu(menu, focus);
-            vga.show();
         }
+        vga.show();
         delay(50);
     }
 }
