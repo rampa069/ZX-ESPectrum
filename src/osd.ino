@@ -119,8 +119,8 @@ unsigned short do_Menu(String menu) {
             focus = focus_new;
             drawOSD();
             drawMenu(menu, focus);
+            vga.show();
         }
-        vga.show();
         delay(50);
     }
 }
