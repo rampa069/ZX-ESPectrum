@@ -1,5 +1,7 @@
 // On Screen Display
 
+extern String getDirAsMenu(String title, String path);
+
 // Globals
 byte row_pos = 0;
 byte col_pos = 0;

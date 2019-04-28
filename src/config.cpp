@@ -1,6 +1,6 @@
 #pragma GCC diagnostic ignored "-Wall"
-#include "Arduino.h"
 #include "SPIFFS.h"
+#include <Arduino.h>
 #pragma GCC diagnostic warning "-Wall"
 
 const String boot_filename = "/boot.cfg";

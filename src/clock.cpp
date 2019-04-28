@@ -1,6 +1,6 @@
 #pragma GCC diagnostic ignored "-Wall"
-#include "Arduino.h"
 #include "Z80.h"
+#include <Arduino.h>
 #pragma GCC diagnostic warning "-Wall"
 
 #define CPU_SPEED 3580000

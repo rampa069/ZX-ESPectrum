@@ -9,12 +9,12 @@
 /***     Please, notify me, if you make any changes to this file          ***/
 /****************************************************************************/
 
+#pragma GCC diagnostic ignored "-Wall"
+#include "Z80.h"
+#include <Arduino.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#pragma GCC diagnostic ignored "-Wall"
-#include "Arduino.h"
-#include "Z80.h"
 #pragma GCC diagnostic warning "-Wall"
 
 #include "paledefs.h"

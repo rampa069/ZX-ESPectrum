@@ -10,13 +10,14 @@
 #pragma GCC diagnostic ignored "-Wall"
 #include <Arduino.h>
 #include <ESP32Lib.h>
+#include <FS.h>
 #include <Ressources/Font6x8.h>
+#include <SPIFFS.h>
 #include <esp_bt.h>
 #include <esp_task_wdt.h>
 #pragma GCC diagnostic warning "-Wall"
 
 #include "PS2Kbd.h"
-#include "datafs.h"
 #include "msg.h"
 #include "osd.h"
 #include "paledefs.h"
