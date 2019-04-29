@@ -90,7 +90,6 @@ void load_ram(String sna_file) {
 
     byte inter = lhandle.read();
     _zxCpu.iff2 = (inter & 0x04) ? 1 : 0;
-
     _zxCpu.r = lhandle.read();
 
     _zxCpu.registers.byte[Z80_F]=lhandle.read();

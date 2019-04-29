@@ -273,14 +273,13 @@ start_emulation:
 
                 registers = state->register_table;
                 //if (opcode == 0xd3)
-                  delayMicroseconds(1);
+                delayMicroseconds(1);
 
 emulate_next_opcode:
 
                 instruction = INSTRUCTION_TABLE[opcode];
 
 emulate_next_instruction:
-
                 elapsed_cycles += 4;
                 r++;
                 switch (instruction) {
@@ -2380,7 +2379,6 @@ emulate_next_instruction:
                                 Z80_OUTPUT_BYTE(n, A, A);
 
                                 elapsed_cycles += 4;
-
                                 break;
 
                         }
