@@ -1,9 +1,12 @@
 // OSD Headers
+#pragma once
 
 #include <FS.h>
 
 #define MENU_REDRAW true
 #define MENU_UPDATE false
+#define OSD_ERROR true
+#define OSD_NORMAL false
 
 const unsigned short SCR_W = 360; // X
 const unsigned short SCR_H = 200; // Y
@@ -18,6 +21,8 @@ extern boolean checkAndCleanKey(byte scancode);
 extern boolean isKeymapChanged();
 extern void updateKeymap();
 extern File open_read_file(String filename);
+extern String cfg_sna_file_list;
+extern boolean cfg_mode_sna;
 
 const String main_menu = "Main Menu\nChange ROM\nChange RAM\nReset\nReturn\n";
 const String reset_menu = "Reset Menu\nSoft reset\nHard reset\nCancel\n";

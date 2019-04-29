@@ -1,17 +1,23 @@
 #pragma GCC diagnostic ignored "-Wall"
-#include "Arduino.h"
-#include "SPIFFS.h"
+#include <Arduino.h>
+#include <SPIFFS.h>
 #pragma GCC diagnostic warning "-Wall"
+#include "Emulator/machines.h"
 
 const String boot_filename = "/boot.cfg";
 
 extern File open_read_file(String);
+extern String getAllFilesFrom(const String);
 
 boolean cfg_mode_sna = false;
 boolean cfg_debug_on = false;
 boolean cfg_slog_on = true;
-String cfg_ram_file = "none";
-String cfg_rom_file = "/zx48.rom";
+String cfg_ram_file = "noram";
+String cfg_rom_file = "norom";
+String cfg_rom_set = "noromset";
+byte cfg_machine_type = MACHINE_ZX48;
+String cfg_rom_file_list;
+String cfg_sna_file_list;
 
 void config_read() {
     String line;
@@ -40,6 +46,10 @@ void config_read() {
                 cfg_rom_file = "/rom/" + line.substring(line.lastIndexOf(':') + 1);
             } else if (line.startsWith("ram:")) {
                 cfg_ram_file = "/sna/" + line.substring(line.lastIndexOf(':') + 1);
+            } else if (line.startsWith("machine:")) {
+                cfg_machine_type = line.substring(line.lastIndexOf(':') + 1).toInt();
+            } else if (line.startsWith("romset:")) {
+                cfg_rom_set = line.substring(line.lastIndexOf(':') + 1);
             }
             line = "";
         } else {
@@ -47,4 +57,33 @@ void config_read() {
         }
     }
     cfg_f.close();
+
+    // ROM file selection
+    cfg_rom_file = "/rom/";
+    switch (cfg_machine_type) {
+    case MACHINE_ZX48:
+        cfg_rom_file += "48K/";
+        break;
+    case MACHINE_ZX128:
+        cfg_rom_file += "128K/";
+        break;
+    case MACHINE_PLUS2A:
+        cfg_rom_file += "PLUS2A/";
+        break;
+    case MACHINE_PLUS3:
+        cfg_rom_file += "PLUS3/";
+        break;
+    case MACHINE_PLUS3E:
+        cfg_rom_file += "PLUS3E/";
+        break;
+    }
+    cfg_rom_file += cfg_rom_set;
+    cfg_rom_file += "/0.rom";
+
+    // Rom file list;
+    cfg_rom_file_list = getAllFilesFrom("/rom");
+    Serial.println(cfg_rom_file_list);
+    cfg_sna_file_list = "Select snapshot to run\n";
+    cfg_sna_file_list += getAllFilesFrom("/sna");
+    Serial.println(cfg_sna_file_list);
 }

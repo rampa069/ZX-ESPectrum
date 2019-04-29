@@ -1,0 +1,5 @@
+#define MACHINE_ZX48 0
+#define MACHINE_ZX128 1
+#define MACHINE_PLUS2A 2
+#define MACHINE_PLUS3 3
+#define MACHINE_PLUS3E 4

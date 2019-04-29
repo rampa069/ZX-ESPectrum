@@ -1,3 +1,6 @@
+#include "Emulator/msg.h"
+#include "Emulator/osd.h"
+
 // On Screen Display
 
 // Globals
@@ -23,19 +26,49 @@ void osdAt(byte row, byte col) {
 }
 
 void drawOSD() {
-    Serial.println("Drawing OSD");
     unsigned short x = scrAlignCenterX(OSD_W);
     unsigned short y = scrAlignCenterY(OSD_H);
-    Serial.printf("OSD X:%d Y:%d W:%d H:%d\n", x, y, OSD_W, OSD_H);
     vga.fillRect(x, y, OSD_W, OSD_H, zxcolor(1, 0));
     vga.rect(x, y, OSD_W, OSD_H, zxcolor(0, 0));
     vga.rect(x + 1, y + 1, OSD_W - 2, OSD_H - 2, zxcolor(7, 0));
     vga.setTextColor(zxcolor(0, 0), zxcolor(5, 1));
     vga.setFont(Font6x8);
     osdHome();
-    vga.print("* ZX-ESPectrum v1.0|Rampa & Queru 2019 *");
+    vga.print(OSD_TITLE.c_str());
     osdAt(17, 0);
-    vga.print("           LIVE FREE OR DIE!!           ");
+    vga.print(OSD_BOTTOM.c_str());
+}
+
+// Shows a red panel with error text
+void errorPanel(String errormsg) {
+    unsigned short x = scrAlignCenterX(OSD_W);
+    unsigned short y = scrAlignCenterY(OSD_H);
+    if (cfg_slog_on)
+        Serial.println(errormsg);
+    vga.fillRect(x, y, OSD_W, OSD_H, zxcolor(0, 0));
+    vga.rect(x, y, OSD_W, OSD_H, zxcolor(7, 0));
+    vga.rect(x + 1, y + 1, OSD_W - 2, OSD_H - 2, zxcolor(2, 1));
+    vga.setFont(Font6x8);
+    osdHome();
+    vga.setTextColor(zxcolor(7, 1), zxcolor(2, 1));
+    vga.print(ERROR_TITLE.c_str());
+    osdAt(2, 0);
+    vga.setTextColor(zxcolor(7, 1), zxcolor(0, 0));
+    vga.println(errormsg.c_str());
+    osdAt(17, 0);
+    vga.setTextColor(zxcolor(7, 1), zxcolor(2, 1));
+    vga.print(ERROR_BOTTOM.c_str());
+}
+
+// Error panel and infinite loop
+void errorHalt(String errormsg) {
+    xULAStop = true;
+    while (!xULAStopped) {
+        delay(20);
+    }
+    errorPanel(errormsg);
+    while (1)
+        delay(500);
 }
 
 void menuPrintRow(String line, byte cols) {
@@ -135,9 +168,16 @@ void do_OSD() {
         case 1:
             // Change ROM
             break;
-        case 2:
+        case 2: {
             // Change RAM
+            unsigned short snanum = do_Menu(cfg_sna_file_list);
+            if (snanum > 0) {
+                cfg_ram_file = "/sna/" + menuGetRow(cfg_sna_file_list, snanum);
+                cfg_mode_sna = true;
+                load_ram(cfg_ram_file);
+            }
             break;
+        }
         case 3:
             // Reset
             switch (do_Menu(reset_menu)) {

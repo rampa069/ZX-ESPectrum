@@ -1,15 +1,16 @@
-#include "Arduino.h"
-#include "FS.h"
 #include "Emulator/Keyboard/PS2Kbd.h"
-#include "SPIFFS.h"
-#include "Emulator/z80emu/z80emu.h"
 #include "Emulator/msg.h"
+#include "Emulator/z80emu/z80emu.h"
+#include <Arduino.h>
+#include <FS.h>
+#include <SPIFFS.h>
 
 extern byte *bank0;
 extern byte borderTemp;
-extern boolean cfg_slog_on;
-extern void log(String);
 extern Z80_STATE _zxCpu;
+extern void errorHalt(String errormsg);
+extern boolean cfg_slog_on;
+
 void zx_reset();
 
 byte specrom[16384];
@@ -17,11 +18,28 @@ byte specrom[16384];
 typedef int32_t dword;
 typedef signed char offset;
 
-void  mount_spiffs() {
-    while (!SPIFFS.begin()) {
-        log(MSG_MOUNT_FAIL);
-        sleep(5);
+void mount_spiffs() {
+    if (!SPIFFS.begin())
+        errorHalt(ERR_MOUNT_FAIL);
+}
+
+String getAllFilesFrom(const String path) {
+    File root = SPIFFS.open("/");
+    File file = root.openNextFile();
+    String listing;
+    Serial.println("Listing all files from: " + path);
+
+    while (file) {
+        file = root.openNextFile();
+        String filename = file.name();
+        if (filename.startsWith(path) && !filename.startsWith(path + "/.")) {
+            Serial.println("Found: " + filename);
+            listing.concat(filename.substring(path.length() + 1));
+            listing.concat("\n");
+        }
     }
+
+    return listing;
 }
 
 void listAllFiles() {
@@ -41,63 +59,64 @@ void listAllFiles() {
 File open_read_file(String filename) {
     File f;
     mount_spiffs();
-    log(MSG_LOADING + filename);
-    f = SPIFFS.open(filename, FILE_READ);
-    while (!f) {
-        log(MSG_READ_FILE_FAIL + filename);
-        sleep(10);
-        f = SPIFFS.open(filename, FILE_READ);
+    if (cfg_slog_on)
+        Serial.println(MSG_LOADING + filename);
+    if (!SPIFFS.exists(filename)) {
+        errorHalt(ERR_READ_FILE + "\n" + filename);
     }
+    f = SPIFFS.open(filename, FILE_READ);
     return f;
 }
 
 void load_ram(String sna_file) {
     File lhandle;
     uint16_t size_read;
-    byte sp_h,sp_l;
+    byte sp_h, sp_l;
     zx_reset();
-    log(MSG_FREE_HEAP_BEFORE + "SNA: " + (String)system_get_free_heap_size());
+#pragma GCC diagnostic ignored "-Wall"
+    if (cfg_slog_on)
+        Serial.println(MSG_FREE_HEAP_BEFORE + "SNA: " + (String)system_get_free_heap_size());
+#pragma GCC diagnostic warning "-Wall"
 
     lhandle = open_read_file(sna_file);
     size_read = 0;
     // Read in the registers
     _zxCpu.i = lhandle.read();
-    _zxCpu.registers.byte[Z80_L]=lhandle.read();
-    _zxCpu.registers.byte[Z80_H]=lhandle.read();
-    _zxCpu.registers.byte[Z80_E]=lhandle.read();
-    _zxCpu.registers.byte[Z80_D]=lhandle.read();
-    _zxCpu.registers.byte[Z80_C]=lhandle.read();
-    _zxCpu.registers.byte[Z80_B]=lhandle.read();
-    _zxCpu.registers.byte[Z80_F]=lhandle.read();
-    _zxCpu.registers.byte[Z80_A]=lhandle.read();
+    _zxCpu.registers.byte[Z80_L] = lhandle.read();
+    _zxCpu.registers.byte[Z80_H] = lhandle.read();
+    _zxCpu.registers.byte[Z80_E] = lhandle.read();
+    _zxCpu.registers.byte[Z80_D] = lhandle.read();
+    _zxCpu.registers.byte[Z80_C] = lhandle.read();
+    _zxCpu.registers.byte[Z80_B] = lhandle.read();
+    _zxCpu.registers.byte[Z80_F] = lhandle.read();
+    _zxCpu.registers.byte[Z80_A] = lhandle.read();
 
-    _zxCpu.alternates[Z80_HL]=_zxCpu.registers.word[Z80_HL];
-    _zxCpu.alternates[Z80_DE]=_zxCpu.registers.word[Z80_DE];
-    _zxCpu.alternates[Z80_BC]=_zxCpu.registers.word[Z80_BC];
-    _zxCpu.alternates[Z80_AF]=_zxCpu.registers.word[Z80_AF];
+    _zxCpu.alternates[Z80_HL] = _zxCpu.registers.word[Z80_HL];
+    _zxCpu.alternates[Z80_DE] = _zxCpu.registers.word[Z80_DE];
+    _zxCpu.alternates[Z80_BC] = _zxCpu.registers.word[Z80_BC];
+    _zxCpu.alternates[Z80_AF] = _zxCpu.registers.word[Z80_AF];
 
-    _zxCpu.registers.byte[Z80_L]=lhandle.read();
-    _zxCpu.registers.byte[Z80_H]=lhandle.read();
-    _zxCpu.registers.byte[Z80_E]=lhandle.read();
-    _zxCpu.registers.byte[Z80_D]=lhandle.read();
-    _zxCpu.registers.byte[Z80_C]=lhandle.read();
-    _zxCpu.registers.byte[Z80_B]=lhandle.read();
-    _zxCpu.registers.byte[Z80_IYL]=lhandle.read();
-    _zxCpu.registers.byte[Z80_IYH]=lhandle.read();
-    _zxCpu.registers.byte[Z80_IXL]=lhandle.read();
-    _zxCpu.registers.byte[Z80_IXH]=lhandle.read();
-
+    _zxCpu.registers.byte[Z80_L] = lhandle.read();
+    _zxCpu.registers.byte[Z80_H] = lhandle.read();
+    _zxCpu.registers.byte[Z80_E] = lhandle.read();
+    _zxCpu.registers.byte[Z80_D] = lhandle.read();
+    _zxCpu.registers.byte[Z80_C] = lhandle.read();
+    _zxCpu.registers.byte[Z80_B] = lhandle.read();
+    _zxCpu.registers.byte[Z80_IYL] = lhandle.read();
+    _zxCpu.registers.byte[Z80_IYH] = lhandle.read();
+    _zxCpu.registers.byte[Z80_IXL] = lhandle.read();
+    _zxCpu.registers.byte[Z80_IXH] = lhandle.read();
 
     byte inter = lhandle.read();
     _zxCpu.iff2 = (inter & 0x04) ? 1 : 0;
     _zxCpu.r = lhandle.read();
 
-    _zxCpu.registers.byte[Z80_F]=lhandle.read();
-    _zxCpu.registers.byte[Z80_A]=lhandle.read();
+    _zxCpu.registers.byte[Z80_F] = lhandle.read();
+    _zxCpu.registers.byte[Z80_A] = lhandle.read();
 
-    sp_l=lhandle.read();
-    sp_h=lhandle.read();
-    _zxCpu.registers.word[Z80_SP]=sp_l + sp_h * 0x100;
+    sp_l = lhandle.read();
+    sp_h = lhandle.read();
+    _zxCpu.registers.word[Z80_SP] = sp_l + sp_h * 0x100;
 
     _zxCpu.im = lhandle.read();
     byte bordercol = lhandle.read();
@@ -123,10 +142,13 @@ void load_ram(String sna_file) {
     _zxCpu.pc = retaddr;
     //_zxCpu.pc=0x8400;
 
-
-    log(MSG_FREE_HEAP_AFTER + "SNA: " + (String)system_get_free_heap_size());
-    Serial.printf("Ret address: %x Stack: %x AF: %x Border: %x\n" , retaddr,_zxCpu.registers.word[Z80_SP],_zxCpu.registers.word[Z80_AF],borderTemp);
-    SPIFFS.end();
+#pragma GCC diagnostic ignored "-Wall"
+    if (cfg_slog_on) {
+        Serial.println(MSG_FREE_HEAP_AFTER + "SNA: " + (String)system_get_free_heap_size());
+        Serial.printf("Ret address: %x Stack: %x AF: %x Border: %x\n", retaddr, _zxCpu.registers.word[Z80_SP],
+                      _zxCpu.registers.word[Z80_AF], borderTemp);
+    }
+#pragma GCC diagnostic warning "-Wall"
 }
 
 void load_rom(String rom_file) {
