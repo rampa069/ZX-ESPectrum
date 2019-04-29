@@ -50,7 +50,7 @@ void drawMenu(String menu, byte focus) {
     Serial.printf("%d cols, %d real_rows and %d rows\n", cols, real_rows, rows);
     // White background
     Serial.printf("White bg x:%d, y:%d, w:%d, h:%d\n", x, y, w, h);
-    vga.fillRect(x, y, w, h, zxcolor(7, 1));
+    // vga.fillRect(x, y, w, h, zxcolor(7, 1));
     // Black border
     Serial.printf("Black border x:%d, y:%d, w:%d, h:%d\n", x, y, w, h);
     vga.rect(x, y, w, h, zxcolor(0, 0));
@@ -116,7 +116,7 @@ unsigned short do_Menu(String menu) {
 
         if (focus_new != focus) {
             focus = focus_new;
-            drawOSD();
+            // drawOSD();
             drawMenu(menu, focus);
             // vga.show();
         }
