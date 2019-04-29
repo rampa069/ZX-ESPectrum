@@ -9,3 +9,8 @@ platformio.ini
 .gcc-flags.json
 /work
 .piolibdeps/
+!data/sna/sppong.sna
+!data/sna/sintetiza.sna
+!data/sna/beep.sna
+!data/sna/fantasy.sna
+!data/sna/diag.sna
