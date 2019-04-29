@@ -242,7 +242,7 @@ unsigned int zxcolor(int c, int bright) {
 
 /* Load zx keyboard lines from PS/2 */
 void do_keyboard() {
-    if (!strcmp(keymap, oldKeymap)) {
+    //if (!strcmp(keymap, oldKeymap)) {
         bitWrite(z80ports_in[0], 0, keymap[0x12]);
         bitWrite(z80ports_in[0], 1, keymap[0x1a]);
         bitWrite(z80ports_in[0], 2, keymap[0x22]);
@@ -290,8 +290,8 @@ void do_keyboard() {
         bitWrite(z80ports_in[7], 2, keymap[0x3a]);
         bitWrite(z80ports_in[7], 3, keymap[0x31]);
         bitWrite(z80ports_in[7], 4, keymap[0x32]);
-    }
-    strcpy(oldKeymap, keymap);
+    //}
+    //strcpy(oldKeymap, keymap);
 }
 
 /* +-------------+

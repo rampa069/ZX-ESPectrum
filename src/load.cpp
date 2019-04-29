@@ -17,10 +17,24 @@ byte specrom[16384];
 typedef int32_t dword;
 typedef signed char offset;
 
-void mount_spiffs() {
+void  mount_spiffs() {
     while (!SPIFFS.begin()) {
         log(MSG_MOUNT_FAIL);
         sleep(5);
+    }
+}
+
+void listAllFiles() {
+    mount_spiffs();
+    File root = SPIFFS.open("/");
+    Serial.println("fs opened");
+    File file = root.openNextFile();
+    Serial.println("fs openednextfile");
+
+    while (file) {
+        Serial.print("FILE: ");
+        Serial.println(file.name());
+        file = root.openNextFile();
     }
 }
 
@@ -113,11 +127,14 @@ void load_ram(String sna_file) {
 
     log(MSG_FREE_HEAP_AFTER + "SNA: " + (String)system_get_free_heap_size());
     Serial.printf("Ret address: %x Stack: %x AF: %x Border: %x\n" , retaddr,_zxCpu.registers.word[Z80_SP],_zxCpu.registers.word[Z80_AF],borderTemp);
+    SPIFFS.end();
 }
 
 void load_rom(String rom_file) {
     File rom_f = open_read_file(rom_file);
     for (int i = 0; i < rom_f.size(); i++) {
         specrom[i] = (byte)rom_f.read();
+
     }
+    SPIFFS.end();
 }

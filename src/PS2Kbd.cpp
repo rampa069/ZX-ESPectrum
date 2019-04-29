@@ -1,7 +1,9 @@
 #pragma GCC diagnostic ignored "-Wall"
 #include <Arduino.h>
 #pragma GCC diagnostic warning "-Wall"
+
 #include "paledefs.h"
+#include "Emulator/Keyboard/PS2Kbd.h"
 
 unsigned int shift = 0;
 byte lastcode = 0;
@@ -9,12 +11,13 @@ boolean keyup = false;
 boolean shift_presed = false;
 boolean symbol_pressed = false;
 byte rc = 0;
-byte keymap[256];
-byte oldKeymap[256];
+
+//static volatile char keymap[256];
+//static volatile char oldKeymap[256];
 
 extern boolean debug_keyboard;
 
-void kb_interruptHandler(void) {
+void IRAM_ATTR kb_interruptHandler(void) {
     static uint8_t bitcount = 0;
     static uint8_t incoming = 0;
     static uint32_t prev_ms = 0;
