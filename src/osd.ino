@@ -168,9 +168,16 @@ void do_OSD() {
         case 1:
             // Change ROM
             break;
-        case 2:
+        case 2: {
             // Change RAM
+            unsigned short snanum = do_Menu(cfg_sna_file_list);
+            if (snanum > 0) {
+                cfg_ram_file = "/sna/" + menuGetRow(cfg_sna_file_list, snanum);
+                cfg_mode_sna = true;
+                load_ram(cfg_ram_file);
+            }
             break;
+        }
         case 3:
             // Reset
             switch (do_Menu(reset_menu)) {

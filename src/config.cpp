@@ -7,6 +7,7 @@
 const String boot_filename = "/boot.cfg";
 
 extern File open_read_file(String);
+extern String getAllFilesFrom(const String);
 
 boolean cfg_mode_sna = false;
 boolean cfg_debug_on = false;
@@ -15,6 +16,8 @@ String cfg_ram_file = "noram";
 String cfg_rom_file = "norom";
 String cfg_rom_set = "noromset";
 byte cfg_machine_type = MACHINE_ZX48;
+String cfg_rom_file_list;
+String cfg_sna_file_list;
 
 void config_read() {
     String line;
@@ -76,4 +79,11 @@ void config_read() {
     }
     cfg_rom_file += cfg_rom_set;
     cfg_rom_file += "/0.rom";
+
+    // Rom file list;
+    cfg_rom_file_list = getAllFilesFrom("/rom");
+    Serial.println(cfg_rom_file_list);
+    cfg_sna_file_list = "Select snapshot to run\n";
+    cfg_sna_file_list += getAllFilesFrom("/sna");
+    Serial.println(cfg_sna_file_list);
 }

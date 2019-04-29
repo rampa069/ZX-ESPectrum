@@ -23,6 +23,25 @@ void mount_spiffs() {
         errorHalt(ERR_MOUNT_FAIL);
 }
 
+String getAllFilesFrom(const String path) {
+    File root = SPIFFS.open("/");
+    File file = root.openNextFile();
+    String listing;
+    Serial.println("Listing all files from: " + path);
+
+    while (file) {
+        file = root.openNextFile();
+        String filename = file.name();
+        if (filename.startsWith(path) && !filename.startsWith(path + "/.")) {
+            Serial.println("Found: " + filename);
+            listing.concat(filename.substring(path.length() + 1));
+            listing.concat("\n");
+        }
+    }
+
+    return listing;
+}
+
 File open_read_file(String filename) {
     File f;
     mount_spiffs();
