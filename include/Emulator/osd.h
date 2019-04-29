@@ -2,6 +2,9 @@
 
 #include <FS.h>
 
+#define MENU_REDRAW true
+#define MENU_UPDATE false
+
 const unsigned short SCR_W = 360; // X
 const unsigned short SCR_H = 200; // Y
 const unsigned short OSD_W = 248; // X

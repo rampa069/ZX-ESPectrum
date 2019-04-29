@@ -38,8 +38,14 @@ void drawOSD() {
     vga.print("           LIVE FREE OR DIE!!           ");
 }
 
-void drawMenu(String menu, byte focus) {
-    Serial.printf("Drawing menu, focus on: %d\n", focus);
+void menuPrintRow(String line, byte cols) {
+    vga.print(" ");
+    vga.print(line.c_str());
+    for (byte i = line.length(); i < (cols - 1); i++)
+        vga.print(" ");
+}
+
+void drawMenu(String menu, byte focus, boolean new_draw) {
     const byte cols = menuColMax(menu) + 2;
     const unsigned short real_rows = menuRowCount(menu);
     const byte rows = menuVirtualRows(menu);
@@ -47,45 +53,36 @@ void drawMenu(String menu, byte focus) {
     const byte h = (rows * OSD_FONT_H) + 2;
     const unsigned short x = scrAlignCenterX(w);
     const unsigned short y = scrAlignCenterY(h);
-    Serial.printf("%d cols, %d real_rows and %d rows\n", cols, real_rows, rows);
-    // White background
-    Serial.printf("White bg x:%d, y:%d, w:%d, h:%d\n", x, y, w, h);
-    // vga.fillRect(x, y, w, h, zxcolor(7, 1));
-    // Black border
-    Serial.printf("Black border x:%d, y:%d, w:%d, h:%d\n", x, y, w, h);
-    vga.rect(x, y, w, h, zxcolor(0, 0));
 
-    Serial.printf("Iterating %d rows\n", rows);
-    for (byte row = 0; row < rows; row++) {
-        Serial.printf("Row %d: ", row);
-        vga.setCursor(x + 1, y + 1 + (row * OSD_FONT_H));
-        if (row == 0) {
-            Serial.println("Title row");
-            vga.setTextColor(zxcolor(7, 1), zxcolor(0, 1));
-        } else if (row == focus) {
-            Serial.println("Focus row");
-            vga.setTextColor(zxcolor(0, 1), zxcolor(5, 1));
-        } else {
-            Serial.println("Normal row");
-            vga.setTextColor(zxcolor(0, 1), zxcolor(7, 1));
-        }
-        String line = menuGetRow(menu, row);
-        Serial.printf("Printing row %d '%s' len:%d to cols:%d\n", row, line.c_str(), line.length(), cols);
-        vga.print(" ");
-        vga.print(line.c_str());
-        for (byte i = line.length(); i < (cols - 1); i++)
-            vga.print(" ");
+    if (new_draw) {
+        // Black border
+        vga.rect(x, y, w, h, zxcolor(0, 0));
     }
 
-    // Rainbow
-    unsigned short rb_y = y + 8;
-    unsigned short rb_paint_x = x + w - 20;
-    byte rb_colors[] = {2, 6, 4, 5};
-    for (byte c = 0; c < 4; c++) {
-        for (byte i = 0; i < 3; i++) {
-            vga.line(rb_paint_x + i, rb_y, rb_paint_x + 4 + i, rb_y - 8, zxcolor(rb_colors[c], 0));
+    for (byte row = 0; row < rows; row++) {
+        vga.setCursor(x + 1, y + 1 + (row * OSD_FONT_H));
+        if (row == 0) {
+            if (new_draw) {
+                vga.setTextColor(zxcolor(7, 1), zxcolor(0, 1));
+                menuPrintRow(menuGetRow(menu, row), cols);
+                // Rainbow
+                unsigned short rb_y = y + 8;
+                unsigned short rb_paint_x = x + w - 20;
+                byte rb_colors[] = {2, 6, 4, 5};
+                for (byte c = 0; c < 4; c++) {
+                    for (byte i = 0; i < 3; i++) {
+                        vga.line(rb_paint_x + i, rb_y, rb_paint_x + 4 + i, rb_y - 8, zxcolor(rb_colors[c], 0));
+                    }
+                    rb_paint_x += 3;
+                }
+            }
+        } else if (row == focus) {
+            vga.setTextColor(zxcolor(0, 1), zxcolor(5, 1));
+            menuPrintRow(menuGetRow(menu, row), cols);
+        } else {
+            vga.setTextColor(zxcolor(0, 1), zxcolor(7, 1));
+            menuPrintRow(menuGetRow(menu, row), cols);
         }
-        rb_paint_x += 3;
     }
 }
 
@@ -98,7 +95,7 @@ unsigned short do_Menu(String menu) {
     Serial.println("Draw OSD");
     drawOSD();
     Serial.println("Draw Menu");
-    drawMenu(menu, focus);
+    drawMenu(menu, focus, MENU_REDRAW);
     while (1) {
         if (checkAndCleanKey(KEY_UP)) {
             focus_new = focus - 1;
@@ -116,9 +113,7 @@ unsigned short do_Menu(String menu) {
 
         if (focus_new != focus) {
             focus = focus_new;
-            // drawOSD();
-            drawMenu(menu, focus);
-            // vga.show();
+            drawMenu(menu, focus, MENU_UPDATE);
         }
         delay(50);
     }
