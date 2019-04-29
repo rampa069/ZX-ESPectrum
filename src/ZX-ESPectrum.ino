@@ -38,13 +38,13 @@ extern void load_ram(String);
 // EXTERN METHODS
 void load_rom(String);
 void load_ram(String);
-void log(String);
 void zx_setup(void); /* Reset registers to the initial values */
 void zx_loop();
 
 void setup_cpuspeed();
 void config_read();
 void do_OSD();
+void errorHalt(String);
 
 // GLOBALS
 byte *bank0;
@@ -68,8 +68,10 @@ void setup() {
 
     config_read();
 
-    log(MSG_CHIP_SETUP);
-    log(MSG_VGA_INIT);
+    if (cfg_slog_on) {
+        Serial.println(MSG_CHIP_SETUP);
+        Serial.println(MSG_VGA_INIT);
+    }
     // vga.setFrameBufferCount(1);
     vga.init(vga.MODE360x200, redPin, greenPin, bluePin, hsyncPin, vsyncPin);
     vga.clear(vga.RGB(0x000000));
@@ -83,13 +85,17 @@ void setup() {
     //
     bank0 = (byte *)malloc(49152);
     if (bank0 == NULL)
-        log(MSG_BANK_FAIL + "0");
-    log(MSG_FREE_HEAP_AFTER + "bank 0: " + system_get_free_heap_size() + "b");
+        errorHalt(ERR_BANK_FAIL + "0");
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+    if (cfg_slog_on)
+        Serial.println(MSG_FREE_HEAP_AFTER + "bank 0: " + system_get_free_heap_size() + "b");
+#pragma GCC diagnostic warning "-Wall"
 
     setup_cpuspeed();
 
     // START Z80
-    log(MSG_Z80_RESET);
+    if (cfg_slog_on)
+        Serial.println(MSG_Z80_RESET);
     zx_setup();
 
     // make sure keyboard ports are FF
@@ -97,8 +103,11 @@ void setup() {
         z80ports_in[t] = 0xff;
     }
 
-    log(MSG_EXEC_ON_CORE + xPortGetCoreID());
-    log(MSG_FREE_HEAP_AFTER + "Z80 reset: " + system_get_free_heap_size());
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+    if (cfg_slog_on)
+        Serial.println(MSG_EXEC_ON_CORE + xPortGetCoreID());
+    Serial.println(MSG_FREE_HEAP_AFTER + "Z80 reset: " + system_get_free_heap_size());
+#pragma GCC diagnostic warning "-Wall"
 
     xTaskCreatePinnedToCore(videoTask,   /* Function to implement the task */
                             "videoTask", /* Name of the task */

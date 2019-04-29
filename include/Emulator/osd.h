@@ -1,9 +1,12 @@
 // OSD Headers
+#pragma once
 
 #include <FS.h>
 
 #define MENU_REDRAW true
 #define MENU_UPDATE false
+#define OSD_ERROR true
+#define OSD_NORMAL false
 
 const unsigned short SCR_W = 360; // X
 const unsigned short SCR_H = 200; // Y
