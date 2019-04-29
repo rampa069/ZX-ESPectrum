@@ -11,5 +11,5 @@ const byte KEY_ENTER = 0x5A;
 
 void kb_begin();
 extern byte lastcode;
-extern char keymap[];
-extern char oldKeymap[];
+//extern char keymap[];
+//extern char oldKeymap[];

@@ -34,6 +34,8 @@ extern int _total;
 extern int _next_total;
 extern void load_rom(String);
 extern void load_ram(String);
+byte keymap [256];
+byte oldKeymap [256];
 
 // EXTERN METHODS
 void load_rom(String);
@@ -55,6 +57,7 @@ unsigned int flashing = 0;
 byte lastAudio = 0;
 boolean xULAStop = false;
 boolean xULAStopped = false;
+boolean writeScreen = false;
 byte tick;
 
 // SETUP *************************************
@@ -100,7 +103,7 @@ void setup() {
 
     // make sure keyboard ports are FF
     for (int t = 0; t < 32; t++) {
-        z80ports_in[t] = 0xff;
+        z80ports_in[t] = 0x1f;
     }
 
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
@@ -162,6 +165,7 @@ void videoTask(void *parameter) {
 
                     byte_offset = (vga_lin - 3) * 32 + ff; //*2+1;
 
+
                     color_attrib = bank0[0x1800 + (calcY(byte_offset) / 8) * 32 + ff]; // get 1 of 768 attrib values
                     pixel_map = bank0[byte_offset];
                     calc_y = calcY(byte_offset);
@@ -181,10 +185,12 @@ void videoTask(void *parameter) {
                             zx_back_color = tmp_color;
                         }
 
+                        writeScreen=true;
                         if ((pixel_map & bitpos) != 0)
                             vga.dotFast(zx_vidcalc + 52, calc_y + 3, zx_fore_color);
-                        else
+                          else
                             vga.dotFast(zx_vidcalc + 52, calc_y + 3, zx_back_color);
+                        writeScreen = false;
                     }
                 }
             }
@@ -251,7 +257,13 @@ unsigned int zxcolor(int c, int bright) {
 
 /* Load zx keyboard lines from PS/2 */
 void do_keyboard() {
-    if (!strcmp(keymap, oldKeymap)) {
+
+
+    if (memcmp(keymap,oldKeymap,256) == 0){
+        return ;
+      }
+        else {
+
         bitWrite(z80ports_in[0], 0, keymap[0x12]);
         bitWrite(z80ports_in[0], 1, keymap[0x1a]);
         bitWrite(z80ports_in[0], 2, keymap[0x22]);
@@ -299,8 +311,10 @@ void do_keyboard() {
         bitWrite(z80ports_in[7], 2, keymap[0x3a]);
         bitWrite(z80ports_in[7], 3, keymap[0x31]);
         bitWrite(z80ports_in[7], 4, keymap[0x32]);
-    }
-    strcpy(oldKeymap, keymap);
+        memcpy(oldKeymap,keymap,256);
+
+      }
+
 }
 
 /* +-------------+

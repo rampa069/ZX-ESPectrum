@@ -42,6 +42,20 @@ String getAllFilesFrom(const String path) {
     return listing;
 }
 
+void listAllFiles() {
+    mount_spiffs();
+    File root = SPIFFS.open("/");
+    Serial.println("fs opened");
+    File file = root.openNextFile();
+    Serial.println("fs openednextfile");
+
+    while (file) {
+        Serial.print("FILE: ");
+        Serial.println(file.name());
+        file = root.openNextFile();
+    }
+}
+
 File open_read_file(String filename) {
     File f;
     mount_spiffs();
@@ -95,7 +109,6 @@ void load_ram(String sna_file) {
 
     byte inter = lhandle.read();
     _zxCpu.iff2 = (inter & 0x04) ? 1 : 0;
-
     _zxCpu.r = lhandle.read();
 
     _zxCpu.registers.byte[Z80_F] = lhandle.read();
@@ -142,5 +155,7 @@ void load_rom(String rom_file) {
     File rom_f = open_read_file(rom_file);
     for (int i = 0; i < rom_f.size(); i++) {
         specrom[i] = (byte)rom_f.read();
+
     }
+    SPIFFS.end();
 }

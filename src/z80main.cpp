@@ -8,7 +8,7 @@
 #include "Emulator/z80Input.h"
 #include "Emulator/Keyboard/PS2Kbd.h"
 
-#define CYCLES_PER_STEP 71600
+#define CYCLES_PER_STEP 69888//71600
 #define RAM_AVAILABLE 0xC000
 
 Sound::Ay3_8912_state _ay3_8912;
@@ -19,6 +19,8 @@ extern byte specrom[16394];
 extern byte borderTemp;
 extern byte z80ports_in[128];
 extern byte tick;
+extern boolean writeScreen;
+
 
 CONTEXT _zxContext;
 static uint16_t _attributeCount;
@@ -54,7 +56,7 @@ void zx_setup()
 
 void zx_reset()
 {
-    memset(z80ports_in, 0xFF, 128);
+    memset(z80ports_in, 0x1F, 128);
     borderTemp=7;
     Z80Reset(&_zxCpu);
 }
@@ -72,8 +74,9 @@ int32_t zx_loop()
     ts2=millis();
 
 
-    //if ((ts2-ts1) < 20)
-      //delay(20-(ts2-ts1));
+    if ((ts2-ts1) < 20)
+      delay(20-(ts2-ts1));
+
       //while (tick==0)
        //delayMicroseconds(1);
 
@@ -111,10 +114,12 @@ extern "C" uint16_t readword(uint16_t addr)
 
 extern "C" void writebyte(uint16_t addr, uint8_t data)
 {
-    if (addr >= (uint16_t)0x4000 && addr <= (uint16_t)0x8000)
+    if (addr >= (uint16_t)0x4000 && addr <= (uint16_t)0x7FFF)
     {
-            while (tick==0)
-             delayMicroseconds(1);
+          while (writeScreen)
+          {
+            delayMicroseconds(1);
+          }
 
             bank0[addr-0x4000] = data;
     }
@@ -148,9 +153,26 @@ extern "C" uint8_t input(uint8_t portLow, uint8_t portHigh)
           case 0xdf: kbdarrno = 5;break;
           case 0xbf: kbdarrno = 6;break;
           case 0x7f: kbdarrno = 7;break;
-        }
-        return(z80ports_in[kbdarrno]);
 
+
+          case 0x00:
+                        {
+                                uint8_t result = z80ports_in[7];
+                                result &= z80ports_in[6];
+                                result &= z80ports_in[5];
+                                result &= z80ports_in[4];
+                                result &= z80ports_in[3];
+                                result &= z80ports_in[2];
+                                result &= z80ports_in[1];
+                                result &= z80ports_in[0];
+                                Serial.printf("Port 0 value: %x\n", result );
+                                return  result;
+
+                        }
+
+
+        }
+        return (z80ports_in[kbdarrno]);
 			}
 
 
