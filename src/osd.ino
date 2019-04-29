@@ -131,6 +131,7 @@ unsigned short do_Menu(String menu) {
 // OSD Main Loop
 void do_OSD() {
     if (checkAndCleanKey(KEY_F1)) {
+        listAllFiles();
         Serial.println(OSD_ON);
         xULAStop = true;
         while (!xULAStopped) {
@@ -141,13 +142,11 @@ void do_OSD() {
         Serial.printf("Main menu rows: %d\n", menuRowCount(main_menu));
         Serial.printf("Main menu max col: %d\n", menuColMax(main_menu));
         switch (do_Menu(main_menu)) {
-        case 1: {
+        case 1:
             // Change ROM
             // String rom_menu = getDirAsMenu("Select ROM File", "/");
             // Serial.println(rom_menu.c_str());
-            listAllFiles();
             break;
-        }
         case 2:
             // Change RAM
             break;

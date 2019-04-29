@@ -43,6 +43,8 @@ byte Z80_RDMEM(uint16_t A);
 void Z80_WRMEM(uint16_t A, byte V);
 void config_read();
 void do_OSD();
+extern void mount_spiffs();
+extern void listAllFiles();
 
 // GLOBALS
 byte *bank0;
@@ -63,10 +65,7 @@ void setup() {
     esp_bt_controller_mem_release(ESP_BT_MODE_BTDM);
     // esp_wifi_set_mode(WIFI_MODE_NULL);
 
-    if (!SPIFFS.begin()) {
-        Serial.begin(115200);
-        Serial.println(MSG_MOUNT_FAIL);
-    }
+    mount_spiffs();
     config_read();
 
     Serial.println(MSG_CHIP_SETUP);

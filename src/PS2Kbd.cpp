@@ -14,7 +14,7 @@ byte oldKeymap[256];
 
 extern boolean debug_keyboard;
 
-void kb_interruptHandler(void) {
+void IRAM_ATTR kb_interruptHandler(void) {
     static uint8_t bitcount = 0;
     static uint8_t incoming = 0;
     static uint32_t prev_ms = 0;

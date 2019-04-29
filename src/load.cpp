@@ -18,7 +18,13 @@ byte specrom[16384];
 typedef int32_t dword;
 typedef signed char offset;
 
-void listAllFiles() {
+void IRAM_ATTR mount_spiffs() {
+    if (!SPIFFS.begin()) {
+        Serial.println(MSG_MOUNT_FAIL);
+    }
+}
+
+void IRAM_ATTR listAllFiles() {
     File root = SPIFFS.open("/");
     File file = root.openNextFile();
 
