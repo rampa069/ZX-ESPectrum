@@ -12,8 +12,8 @@ boolean shift_presed = false;
 boolean symbol_pressed = false;
 byte rc = 0;
 
-//static volatile char keymap[256];
-//static volatile char oldKeymap[256];
+extern byte keymap[256];
+extern byte oldKeymap[256];
 
 extern boolean debug_keyboard;
 
@@ -47,6 +47,7 @@ void IRAM_ATTR kb_interruptHandler(void) {
                 if (keymap[incoming] == 0) {
                     keymap[incoming] = 1;
                 } else {
+                    //Serial.println("WARNING: Keyboard cleaned");
                     for (int gg = 0; gg < 256; gg++)
                         keymap[gg] = 1;
                 }
@@ -70,10 +71,10 @@ void kb_begin() {
     digitalWrite(KEYBOARD_DATA, true);
     digitalWrite(KEYBOARD_CLK, true);
     attachInterrupt(digitalPinToInterrupt(KEYBOARD_CLK), kb_interruptHandler, FALLING);
-    for (int gg = 0; gg < 256; gg++) {
-        keymap[gg] = 1;
-        oldKeymap[gg] = 1;
-    }
+
+    memset(keymap,1,sizeof(keymap));
+    memset(oldKeymap,1,sizeof(oldKeymap));
+    //}
 }
 
 // Check if keymatrix is changed

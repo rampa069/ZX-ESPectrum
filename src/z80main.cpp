@@ -140,17 +140,37 @@ extern "C" uint8_t input(uint8_t portLow, uint8_t portHigh)
         switch (portHigh)
         {
 
-          case 0xfe: kbdarrno = 0;break;
-          case 0xfd: kbdarrno = 1;break;
-          case 0xfb: kbdarrno = 2;break;
-          case 0xf7: kbdarrno = 3;break;
-          case 0xef: kbdarrno = 4;break;
-          case 0xdf: kbdarrno = 5;break;
-          case 0xbf: kbdarrno = 6;break;
-          case 0x7f: kbdarrno = 7;break;
-        }
-        return(z80ports_in[kbdarrno]);
+        case 0xFE:
+              return z80ports_in[0];
+        case 0xFD:
+              return z80ports_in[1];
+        case 0xFB:
+              return z80ports_in[2];
+        case 0xF7:
+              return z80ports_in[3];
+        case 0xEF:
+              return z80ports_in[4];
+        case 0xDF:
+              return z80ports_in[5];
+        case 0xBF:
+              return z80ports_in[6];
+        case 0x7F:
+              return z80ports_in[7];
+        case 0x00:
+                        {
+                                uint8_t result = z80ports_in[0];
+                                result &= z80ports_in[1];
+                                result &= z80ports_in[2];
+                                result &= z80ports_in[3];
+                                result &= z80ports_in[4];
+                                result &= z80ports_in[5];
+                                result &= z80ports_in[6];
+                                result &= z80ports_in[7];
+                                return result;
+                        }
 
+
+        }
 			}
 
 

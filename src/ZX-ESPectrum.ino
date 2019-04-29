@@ -34,6 +34,8 @@ extern int _total;
 extern int _next_total;
 extern void load_rom(String);
 extern void load_ram(String);
+byte keymap [256];
+byte oldKeymap [256];
 
 // EXTERN METHODS
 void load_rom(String);
@@ -242,56 +244,66 @@ unsigned int zxcolor(int c, int bright) {
 
 /* Load zx keyboard lines from PS/2 */
 void do_keyboard() {
-    //if (!strcmp(keymap, oldKeymap)) {
-        bitWrite(z80ports_in[0], 0, keymap[0x12]);
-        bitWrite(z80ports_in[0], 1, keymap[0x1a]);
-        bitWrite(z80ports_in[0], 2, keymap[0x22]);
-        bitWrite(z80ports_in[0], 3, keymap[0x21]);
-        bitWrite(z80ports_in[0], 4, keymap[0x2a]);
+    byte tmp_ports_in[7];
 
-        bitWrite(z80ports_in[1], 0, keymap[0x1c]);
-        bitWrite(z80ports_in[1], 1, keymap[0x1b]);
-        bitWrite(z80ports_in[1], 2, keymap[0x23]);
-        bitWrite(z80ports_in[1], 3, keymap[0x2b]);
-        bitWrite(z80ports_in[1], 4, keymap[0x34]);
+    if (memcmp(keymap,oldKeymap,256) == 0){
+        return ;
+      }
+        else {
 
-        bitWrite(z80ports_in[2], 0, keymap[0x15]);
-        bitWrite(z80ports_in[2], 1, keymap[0x1d]);
-        bitWrite(z80ports_in[2], 2, keymap[0x24]);
-        bitWrite(z80ports_in[2], 3, keymap[0x2d]);
-        bitWrite(z80ports_in[2], 4, keymap[0x2c]);
+        bitWrite(tmp_ports_in[0], 0, keymap[0x12]);
+        bitWrite(tmp_ports_in[0], 1, keymap[0x1a]);
+        bitWrite(tmp_ports_in[0], 2, keymap[0x22]);
+        bitWrite(tmp_ports_in[0], 3, keymap[0x21]);
+        bitWrite(tmp_ports_in[0], 4, keymap[0x2a]);
 
-        bitWrite(z80ports_in[3], 0, keymap[0x16]);
-        bitWrite(z80ports_in[3], 1, keymap[0x1e]);
-        bitWrite(z80ports_in[3], 2, keymap[0x26]);
-        bitWrite(z80ports_in[3], 3, keymap[0x25]);
-        bitWrite(z80ports_in[3], 4, keymap[0x2e]);
+        bitWrite(tmp_ports_in[1], 0, keymap[0x1c]);
+        bitWrite(tmp_ports_in[1], 1, keymap[0x1b]);
+        bitWrite(tmp_ports_in[1], 2, keymap[0x23]);
+        bitWrite(tmp_ports_in[1], 3, keymap[0x2b]);
+        bitWrite(tmp_ports_in[1], 4, keymap[0x34]);
 
-        bitWrite(z80ports_in[4], 0, keymap[0x45]);
-        bitWrite(z80ports_in[4], 1, keymap[0x46]);
-        bitWrite(z80ports_in[4], 2, keymap[0x3e]);
-        bitWrite(z80ports_in[4], 3, keymap[0x3d]);
-        bitWrite(z80ports_in[4], 4, keymap[0x36]);
+        bitWrite(tmp_ports_in[2], 0, keymap[0x15]);
+        bitWrite(tmp_ports_in[2], 1, keymap[0x1d]);
+        bitWrite(tmp_ports_in[2], 2, keymap[0x24]);
+        bitWrite(tmp_ports_in[2], 3, keymap[0x2d]);
+        bitWrite(tmp_ports_in[2], 4, keymap[0x2c]);
 
-        bitWrite(z80ports_in[5], 0, keymap[0x4d]);
-        bitWrite(z80ports_in[5], 1, keymap[0x44]);
-        bitWrite(z80ports_in[5], 2, keymap[0x43]);
-        bitWrite(z80ports_in[5], 3, keymap[0x3c]);
-        bitWrite(z80ports_in[5], 4, keymap[0x35]);
+        bitWrite(tmp_ports_in[3], 0, keymap[0x16]);
+        bitWrite(tmp_ports_in[3], 1, keymap[0x1e]);
+        bitWrite(tmp_ports_in[3], 2, keymap[0x26]);
+        bitWrite(tmp_ports_in[3], 3, keymap[0x25]);
+        bitWrite(tmp_ports_in[3], 4, keymap[0x2e]);
 
-        bitWrite(z80ports_in[6], 0, keymap[0x5a]);
-        bitWrite(z80ports_in[6], 1, keymap[0x4b]);
-        bitWrite(z80ports_in[6], 2, keymap[0x42]);
-        bitWrite(z80ports_in[6], 3, keymap[0x3b]);
-        bitWrite(z80ports_in[6], 4, keymap[0x33]);
+        bitWrite(tmp_ports_in[4], 0, keymap[0x45]);
+        bitWrite(tmp_ports_in[4], 1, keymap[0x46]);
+        bitWrite(tmp_ports_in[4], 2, keymap[0x3e]);
+        bitWrite(tmp_ports_in[4], 3, keymap[0x3d]);
+        bitWrite(tmp_ports_in[4], 4, keymap[0x36]);
 
-        bitWrite(z80ports_in[7], 0, keymap[0x29]);
-        bitWrite(z80ports_in[7], 1, keymap[0x14]);
-        bitWrite(z80ports_in[7], 2, keymap[0x3a]);
-        bitWrite(z80ports_in[7], 3, keymap[0x31]);
-        bitWrite(z80ports_in[7], 4, keymap[0x32]);
-    //}
-    //strcpy(oldKeymap, keymap);
+        bitWrite(tmp_ports_in[5], 0, keymap[0x4d]);
+        bitWrite(tmp_ports_in[5], 1, keymap[0x44]);
+        bitWrite(tmp_ports_in[5], 2, keymap[0x43]);
+        bitWrite(tmp_ports_in[5], 3, keymap[0x3c]);
+        bitWrite(tmp_ports_in[5], 4, keymap[0x35]);
+
+        bitWrite(tmp_ports_in[6], 0, keymap[0x5a]);
+        bitWrite(tmp_ports_in[6], 1, keymap[0x4b]);
+        bitWrite(tmp_ports_in[6], 2, keymap[0x42]);
+        bitWrite(tmp_ports_in[6], 3, keymap[0x3b]);
+        bitWrite(tmp_ports_in[6], 4, keymap[0x33]);
+
+        bitWrite(tmp_ports_in[7], 0, keymap[0x29]);
+        bitWrite(tmp_ports_in[7], 1, keymap[0x14]);
+        bitWrite(tmp_ports_in[7], 2, keymap[0x3a]);
+        bitWrite(tmp_ports_in[7], 3, keymap[0x31]);
+        bitWrite(tmp_ports_in[7], 4, keymap[0x32]);
+        memcpy(z80ports_in,tmp_ports_in,8);
+
+        memcpy(oldKeymap,keymap,256);
+
+      }
+
 }
 
 /* +-------------+
