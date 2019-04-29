@@ -165,7 +165,7 @@ extern "C" uint8_t input(uint8_t portLow, uint8_t portHigh)
                                 result &= z80ports_in[2];
                                 result &= z80ports_in[1];
                                 result &= z80ports_in[0];
-                                Serial.printf("Port 0 value: %x\n", result );
+                                //Serial.printf("Port 0 value: %x\n", result );
                                 return  result;
 
                         }
