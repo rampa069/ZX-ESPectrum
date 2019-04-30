@@ -194,7 +194,7 @@ void do_OSD() {
                 zx_reset();
                 cfg_mode_sna = false;
                 cfg_ram_file = 'none';
-                //config_save();
+                config_save();
                 break;
             }
         }

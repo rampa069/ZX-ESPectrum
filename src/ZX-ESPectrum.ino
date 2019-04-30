@@ -34,6 +34,7 @@ extern CONTEXT _zxContext;
 extern Z80_STATE _zxCpu;
 extern int _total;
 extern int _next_total;
+
 void load_rom(String);
 void load_ram(String);
 byte keymap[256];
@@ -48,6 +49,9 @@ void setup_cpuspeed();
 void config_read();
 void do_OSD();
 void errorHalt(String);
+void mount_spiffs();
+
+
 
 // GLOBALS
 byte *bank0;
@@ -70,8 +74,9 @@ void setup() {
     esp_bt_controller_mem_release(ESP_BT_MODE_BTDM);
     // esp_wifi_set_mode(WIFI_MODE_NULL);
 
+    mount_spiffs();
     config_read();
-
+    
     if (cfg_slog_on) {
         Serial.println(MSG_CHIP_SETUP);
         Serial.println(MSG_VGA_INIT);

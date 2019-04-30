@@ -59,7 +59,6 @@ String getAllFilesFrom(const String path) {
 }
 
 void listAllFiles() {
-    mount_spiffs();
     File root = SPIFFS.open("/");
     Serial.println("fs opened");
     File file = root.openNextFile();
@@ -76,7 +75,6 @@ void listAllFiles() {
 
 File open_read_file(String filename) {
     File f;
-    mount_spiffs();
     filename.replace("\n", " ");
     filename.trim();
     if (cfg_slog_on)
@@ -179,15 +177,15 @@ void load_rom(String rom_file) {
     for (int i = 0; i < rom_f.size(); i++) {
         specrom[i] = (byte)rom_f.read();
     }
-    vTaskDelay(2);
-    SPIFFS.end();
+    rom_f.close();
     vTaskDelay(2);
 
 }
 
 // Dump actual config to FS
-void config_save() {
-    File f = SPIFFS.open("/boot.cfg", "w+");
+void IRAM_ATTR config_save() {
+    Serial.printf("Saving config file.....\n" );
+    File f = SPIFFS.open("/boot.cfg", FILE_WRITE);
     f.printf("machine:%u\n", cfg_machine_type);
     f.printf("romset:%s\n", cfg_rom_set.c_str());
     f.print("mode:");
@@ -213,6 +211,7 @@ void config_save() {
         f.print("slog:false\n");
     }
     f.close();
+    vTaskDelay(5);
 }
 
 // Read config from FS
