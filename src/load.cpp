@@ -27,13 +27,11 @@ String getAllFilesFrom(const String path) {
     File root = SPIFFS.open("/");
     File file = root.openNextFile();
     String listing;
-    Serial.println("Listing all files from: " + path);
 
     while (file) {
         file = root.openNextFile();
         String filename = file.name();
         if (filename.startsWith(path) && !filename.startsWith(path + "/.")) {
-            Serial.println("Found: " + filename);
             listing.concat(filename.substring(path.length() + 1));
             listing.concat("\n");
         }
@@ -59,12 +57,14 @@ void listAllFiles() {
 File open_read_file(String filename) {
     File f;
     mount_spiffs();
+    filename.replace("\n", " ");
+    filename.trim();
     if (cfg_slog_on)
         Serial.println(MSG_LOADING + filename);
-    if (!SPIFFS.exists(filename)) {
+    if (!SPIFFS.exists(filename.c_str())) {
         errorHalt(ERR_READ_FILE + "\n" + filename);
     }
-    f = SPIFFS.open(filename, FILE_READ);
+    f = SPIFFS.open(filename.c_str(), FILE_READ);
     return f;
 }
 
@@ -155,7 +155,6 @@ void load_rom(String rom_file) {
     File rom_f = open_read_file(rom_file);
     for (int i = 0; i < rom_f.size(); i++) {
         specrom[i] = (byte)rom_f.read();
-
     }
     SPIFFS.end();
 }

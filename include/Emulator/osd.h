@@ -23,6 +23,7 @@ extern void updateKeymap();
 extern File open_read_file(String filename);
 extern String cfg_sna_file_list;
 extern boolean cfg_mode_sna;
+extern void config_save();
 
 const String main_menu = "Main Menu\nChange ROM\nChange RAM\nReset\nReturn\n";
 const String reset_menu = "Reset Menu\nSoft reset\nHard reset\nCancel\n";

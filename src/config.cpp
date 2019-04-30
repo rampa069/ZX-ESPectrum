@@ -23,7 +23,7 @@ String cfg_sna_file_list;
 void config_save() {
     File f = SPIFFS.open("/boot.cfg", "w+");
     f.printf("machine:%u\n", cfg_machine_type);
-    f.printf("romset:%s\n", cfg_rom_set);
+    f.printf("romset:%s\n", cfg_rom_set.c_str());
     f.print("mode:");
     if (cfg_mode_sna) {
         f.print("sna\n");
@@ -31,6 +31,22 @@ void config_save() {
         f.print("basic\n");
     }
     f.print("ram:");
+    String ram_file = cfg_ram_file;
+    if (cfg_ram_file.lastIndexOf("/") >= 0) {
+        ram_file = cfg_ram_file.substring((cfg_ram_file.lastIndexOf("/") + 1));
+    }
+    f.println(ram_file.c_str());
+    if (cfg_debug_on) {
+        f.print("debug:true\n");
+    } else {
+        f.print("debug:false\n");
+    }
+    if (cfg_slog_on) {
+        f.print("slog:true\n");
+    } else {
+        f.print("slog:false\n");
+    }
+    f.close();
 }
 
 // Read config from FS
@@ -48,7 +64,7 @@ void config_read() {
     for (int i = 0; i < cfg_f.size(); i++) {
         char c = (char)cfg_f.read();
         if (c == '\n') {
-            Serial.printf("CFG LINE --> %s\n", line.c_str());
+            Serial.println("CFG LINE " + line);
             if (line.compareTo("debug:true") == 0) {
                 cfg_debug_on = true;
             } else if (line.compareTo("slog:false") == 0) {
@@ -97,6 +113,5 @@ void config_read() {
 
     // Rom file list;
     cfg_rom_file_list = getAllFilesFrom("/rom");
-    cfg_sna_file_list = "Select snapshot to run\n";
-    cfg_sna_file_list += getAllFilesFrom("/sna");
+    cfg_sna_file_list = "Select snapshot to run\n" + getAllFilesFrom("/sna");
 }

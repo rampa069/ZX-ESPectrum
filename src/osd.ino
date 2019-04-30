@@ -174,7 +174,9 @@ void do_OSD() {
             if (snanum > 0) {
                 cfg_ram_file = "/sna/" + menuGetRow(cfg_sna_file_list, snanum);
                 cfg_mode_sna = true;
+                zx_setup();
                 load_ram(cfg_ram_file);
+                config_save();
             }
             break;
         }
@@ -190,6 +192,9 @@ void do_OSD() {
             case 2:
                 // Hard
                 zx_setup();
+                cfg_mode_sna = false;
+                cfg_ram_file = 'none';
+                config_save();
                 break;
             }
         }

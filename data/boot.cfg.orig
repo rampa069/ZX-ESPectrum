@@ -3,4 +3,4 @@ romset:ZX
 mode:basic
 ram:none
 debug:false
-slog:true
+slog:false
