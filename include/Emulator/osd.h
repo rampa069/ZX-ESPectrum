@@ -1,7 +1,7 @@
 // OSD Headers
 #pragma once
 
-#include <FS.h>
+//#include <FS.h>
 
 #define MENU_REDRAW true
 #define MENU_UPDATE false
@@ -17,13 +17,13 @@ const byte OSD_FONT_W = 6;
 const byte OSD_FONT_H = 8;
 const char ASCII_NL = 10;
 
-extern boolean checkAndCleanKey(byte scancode);
-extern boolean isKeymapChanged();
-extern void updateKeymap();
-extern File open_read_file(String filename);
+boolean checkAndCleanKey(byte scancode);
+boolean isKeymapChanged();
+void updateKeymap();
+//File open_read_file(String filename);
 extern String cfg_sna_file_list;
 extern boolean cfg_mode_sna;
-extern void config_save();
+void config_save();
 
 const String main_menu = "Main Menu\nChange ROM\nChange RAM\nReset\nReturn\n";
 const String reset_menu = "Reset Menu\nSoft reset\nHard reset\nCancel\n";

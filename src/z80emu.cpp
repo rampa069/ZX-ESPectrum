@@ -182,8 +182,8 @@ int Z80Interrupt (Z80_STATE *state, int data_on_bus, void *context)
                                 SP -= 2;
                                 Z80_WRITE_WORD_INTERRUPT(SP, state->pc);
                                 state->pc = 0x0038;
-                                return elapsed_cycles + 13;
-
+                                //return elapsed_cycles + 13;
+                               return elapsed_cycles + 7;
                         }
 
                         case Z80_INTERRUPT_MODE_2:

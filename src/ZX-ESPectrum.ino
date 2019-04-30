@@ -11,13 +11,14 @@
 #include "Emulator/osd.h"
 #include "Emulator/z80emu/z80emu.h"
 #include "Emulator/z80user.h"
-#include "FS.h"
-#include "SPIFFS.h"
+//#include "FS.h"
+//#include "SPIFFS.h"
 #include "paledefs.h"
 #include <ESP32Lib.h>
 #include <Ressources/Font6x8.h>
 #include <bt.h>
 #include <esp_task_wdt.h>
+
 
 //
 // types
@@ -33,17 +34,16 @@ extern CONTEXT _zxContext;
 extern Z80_STATE _zxCpu;
 extern int _total;
 extern int _next_total;
-extern void load_rom(String);
-extern void load_ram(String);
+void load_rom(String);
+void load_ram(String);
 byte keymap[256];
 byte oldKeymap[256];
 
 // EXTERN METHODS
-void load_rom(String);
-void load_ram(String);
+
 void zx_setup(void); /* Reset registers to the initial values */
 void zx_loop();
-
+void zx_reset();
 void setup_cpuspeed();
 void config_read();
 void do_OSD();
@@ -79,6 +79,7 @@ void setup() {
     // vga.setFrameBufferCount(1);
     vga.init(vga.MODE360x200, redPin, greenPin, bluePin, hsyncPin, vsyncPin);
     vga.clear(vga.RGB(0x000000));
+    Serial.printf("%x\n",vga.RGB(192,{192},{192}));
 
     pinMode(SOUND_PIN, OUTPUT);
     digitalWrite(SOUND_PIN, LOW);
@@ -116,7 +117,7 @@ void setup() {
 
     xTaskCreatePinnedToCore(videoTask,   /* Function to implement the task */
                             "videoTask", /* Name of the task */
-                            2048,        /* Stack size in words */
+                            1024,        /* Stack size in words */
                             NULL,        /* Task input parameter */
                             20,          /* Priority of the task */
                             NULL,        /* Task handle. */
@@ -198,13 +199,15 @@ void videoTask(void *parameter) {
         }
         tick = 1;
         ts2 = millis();
+        //Serial.println(uxTaskGetStackHighWaterMark(NULL));
 
-        TIMERG0.wdt_wprotect = TIMG_WDT_WKEY_VALUE;
-        TIMERG0.wdt_feed = 1;
-        TIMERG0.wdt_wprotect = 0;
-        if (ts2 - ts1 < 20)
-            delay(20 - (ts2 - ts1));
     }
+    TIMERG0.wdt_wprotect = TIMG_WDT_WKEY_VALUE;
+    TIMERG0.wdt_feed = 1;
+    TIMERG0.wdt_wprotect = 0;
+    if (ts2 - ts1 < 20)
+        delay(20 - (ts2 - ts1));
+        //vTaskDelay(1);
 }
 
 // SPECTRUM SCREEN DISPLAY
@@ -221,6 +224,7 @@ int calcX(int offset) { return (offset % 32) << 3; }
 
 unsigned int zxcolor(int c, int bright) {
     byte rgbLevel = 255;
+    byte vga_color;
 
     if (bright > 0)
         rgbLevel = 255;
@@ -254,6 +258,7 @@ unsigned int zxcolor(int c, int bright) {
         return 0x0f;
         break; // white
     }
+    return vga_color;
 }
 
 /* Load zx keyboard lines from PS/2 */
@@ -327,6 +332,6 @@ void loop() {
         TIMERG0.wdt_wprotect = TIMG_WDT_WKEY_VALUE;
         TIMERG0.wdt_feed = 1;
         TIMERG0.wdt_wprotect = 0;
-        vTaskDelay(0); // important to avoid task watchdog timeouts - change this to slow down emu
+        vTaskDelay(1); // important to avoid task watchdog timeouts - change this to slow down emu
     }
 }

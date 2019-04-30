@@ -13,5 +13,5 @@ upload_port = /dev/ttyUSB0
 upload_protocol = esptool
 
 monitor_speed = 115200
-build_flags = -w -O3
-board_build.partitions = no_ota.csv
+build_flags = -w -O3 -DBOARD_HAS_PSRAM
+board_build.partitions = noota_3g.csv
