@@ -19,6 +19,21 @@ byte cfg_machine_type = MACHINE_ZX48;
 String cfg_rom_file_list;
 String cfg_sna_file_list;
 
+// Dump actual config to FS
+void config_save() {
+    File f = SPIFFS.open("/boot.cfg", "w+");
+    f.printf("machine:%u\n", cfg_machine_type);
+    f.printf("romset:%s\n", cfg_rom_set);
+    f.print("mode:");
+    if (cfg_mode_sna) {
+        f.print("sna\n");
+    } else {
+        f.print("basic\n");
+    }
+    f.print("ram:");
+}
+
+// Read config from FS
 void config_read() {
     String line;
     File cfg_f;
@@ -82,8 +97,6 @@ void config_read() {
 
     // Rom file list;
     cfg_rom_file_list = getAllFilesFrom("/rom");
-    Serial.println(cfg_rom_file_list);
     cfg_sna_file_list = "Select snapshot to run\n";
     cfg_sna_file_list += getAllFilesFrom("/sna");
-    Serial.println(cfg_sna_file_list);
 }
