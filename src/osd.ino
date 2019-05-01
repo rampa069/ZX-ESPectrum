@@ -157,7 +157,7 @@ void do_OSD() {
     static byte last_sna_row = 0;
     if (checkAndCleanKey(KEY_F12)) {
         last_sna_row++;
-        if (last_sna_row > menuRowCount(cfg_sna_file_list)) {
+        if (last_sna_row > menuRowCount(cfg_sna_file_list) - 1) {
             last_sna_row = 1;
         }
         cfg_ram_file = "/sna/" + menuGetRow(cfg_sna_file_list, last_sna_row);

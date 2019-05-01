@@ -20,7 +20,7 @@ const char ASCII_NL = 10;
 boolean checkAndCleanKey(byte scancode);
 boolean isKeymapChanged();
 void updateKeymap();
-//File open_read_file(String filename);
+// File open_read_file(String filename);
 extern String cfg_sna_file_list;
 extern boolean cfg_mode_sna;
 void config_save();
@@ -85,7 +85,7 @@ String menuGetRow(String menu, unsigned short row) {
             last = i + 1;
         }
     }
-    return "MENU ERROR!";
+    return "MENU ERROR! (Unknown row?)";
 }
 
 unsigned short menuPixelWidth(char *menu) { return (menuColMax(menu) * OSD_FONT_W) + 2; }
