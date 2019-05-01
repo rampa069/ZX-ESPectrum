@@ -1,7 +1,7 @@
 #include "Emulator/Keyboard/PS2Kbd.h"
+#include "Emulator/machines.h"
 #include "Emulator/msg.h"
 #include "Emulator/z80emu/z80emu.h"
-#include "Emulator/machines.h"
 
 #include <Arduino.h>
 #include <FS.h>
@@ -13,13 +13,12 @@ extern Z80_STATE _zxCpu;
 void errorHalt(String errormsg);
 extern boolean cfg_slog_on;
 
-
 boolean cfg_mode_sna = false;
 boolean cfg_debug_on = false;
 boolean cfg_slog_on = true;
 String cfg_ram_file = "noram";
-String cfg_rom_file = "norom";
-String cfg_rom_set = "noromset";
+String cfg_rom_file = "0.rom";
+String cfg_rom_set = "ZX";
 byte cfg_machine_type = MACHINE_ZX48;
 String cfg_rom_file_list;
 String cfg_sna_file_list;
@@ -33,12 +32,11 @@ byte specrom[16384];
 typedef int32_t dword;
 typedef signed char offset;
 
-void mount_spiffs() {
+void IRAM_ATTR mount_spiffs() {
     if (!SPIFFS.begin())
         errorHalt(ERR_MOUNT_FAIL);
 
     vTaskDelay(2);
-
 }
 
 String getAllFilesFrom(const String path) {
@@ -70,10 +68,10 @@ void listAllFiles() {
         file = root.openNextFile();
     }
     vTaskDelay(2);
-
 }
 
-File open_read_file(String filename) {
+File IRAM_ATTR open_read_file(String filename) {
+    mount_spiffs();
     File f;
     filename.replace("\n", " ");
     filename.trim();
@@ -88,7 +86,7 @@ File open_read_file(String filename) {
     return f;
 }
 
-void load_ram(String sna_file) {
+void IRAM_ATTR load_ram(String sna_file) {
     File lhandle;
     uint16_t size_read;
     byte sp_h, sp_l;
@@ -179,7 +177,6 @@ void load_rom(String rom_file) {
     }
     rom_f.close();
     vTaskDelay(2);
-
 }
 
 // Dump actual config to FS
