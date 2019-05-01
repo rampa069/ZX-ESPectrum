@@ -333,9 +333,15 @@ void do_keyboard() {
     bitWrite(z80ports_in[7], 4, keymap[0x32]);
 
     // Kempston joystick
-    
+    z80ports_in[0x1f]=0;
+    bitWrite(z80ports_in[0x1f], 0, !keymap[0x74]);
+    bitWrite(z80ports_in[0x1f], 1, !keymap[0x6b]);
+    bitWrite(z80ports_in[0x1f], 2, !keymap[0x72]);
+    bitWrite(z80ports_in[0x1f], 3, !keymap[0x75]);
+    bitWrite(z80ports_in[0x1f], 4, !keymap[0x73]);
 
-    if (!keymap[0x75])
+
+    /*if (!keymap[0x75])
         kempston=kempston+8;
 
     if (!keymap[0x72])
@@ -350,7 +356,7 @@ void do_keyboard() {
     if (!keymap[0x73])
         kempston=kempston+16;
 
-        z80ports_in[31]=kempston;
+        z80ports_in[31]=kempston; */
 }
 
 /* +-------------+

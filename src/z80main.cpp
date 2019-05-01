@@ -159,7 +159,7 @@ extern "C" uint8_t input(uint8_t portLow, uint8_t portHigh) {
     }
 
     // Kempston
-    if (portLow == 31) {
+    if (portLow == 0x1F) {
       return z80ports_in[31];
     }
     // Sound (AY-3-8912)
