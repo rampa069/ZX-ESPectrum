@@ -32,7 +32,7 @@ byte specrom[16384];
 typedef int32_t dword;
 typedef signed char offset;
 
-void mount_spiffs() {
+void IRAM_ATTR mount_spiffs() {
     if (!SPIFFS.begin())
         errorHalt(ERR_MOUNT_FAIL);
 
@@ -57,7 +57,6 @@ String getAllFilesFrom(const String path) {
 }
 
 void listAllFiles() {
-    mount_spiffs();
     File root = SPIFFS.open("/");
     Serial.println("fs opened");
     File file = root.openNextFile();
@@ -71,9 +70,9 @@ void listAllFiles() {
     vTaskDelay(2);
 }
 
-File open_read_file(String filename) {
-    File f;
+File IRAM_ATTR open_read_file(String filename) {
     mount_spiffs();
+    File f;
     filename.replace("\n", " ");
     filename.trim();
     if (cfg_slog_on)
@@ -87,7 +86,7 @@ File open_read_file(String filename) {
     return f;
 }
 
-void load_ram(String sna_file) {
+void IRAM_ATTR load_ram(String sna_file) {
     File lhandle;
     uint16_t size_read;
     byte sp_h, sp_l;
