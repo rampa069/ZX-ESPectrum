@@ -165,8 +165,7 @@ void do_OSD() {
         zx_reset();
         load_ram(cfg_ram_file);
         config_save();
-    }
-    if (checkAndCleanKey(KEY_F1)) {
+    } else if (checkAndCleanKey(KEY_F1)) {
         Serial.println(OSD_ON);
         xULAStop = true;
         while (!xULAStopped) {
