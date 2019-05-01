@@ -65,7 +65,15 @@ boolean writeScreen = false;
 byte tick;
 
 // SETUP *************************************
-VGA3Bit vga;
+
+#ifdef COLOUR_8
+    VGA3Bit vga;
+#endif
+
+#ifdef COLOUR_16
+    VGA14Bit vga;
+#endif
+
 
 void setup() {
     // Turn off peripherals to gain memory (?do they release properly)
@@ -75,15 +83,21 @@ void setup() {
 
     mount_spiffs();
     config_read();
-    
+
     if (cfg_slog_on) {
         Serial.println(MSG_CHIP_SETUP);
         Serial.println(MSG_VGA_INIT);
     }
-    // vga.setFrameBufferCount(1);
+
+#ifdef COLOUR_8
     vga.init(vga.MODE360x200, redPin, greenPin, bluePin, hsyncPin, vsyncPin);
-    vga.clear(vga.RGB(0x000000));
-    Serial.printf("%x\n", vga.RGB(192, {192}, {192}));
+#endif
+
+#ifdef COLOUR_16
+    vga.init(vga.MODE360x200, redPins, greenPins, bluePins, hsyncPin, vsyncPin);
+#endif
+
+    Serial.printf("%x\n", vga.RGBA(0xff,0xff,0xff,0xff));
 
     pinMode(SOUND_PIN, OUTPUT);
     digitalWrite(SOUND_PIN, LOW);
@@ -95,6 +109,7 @@ void setup() {
     bank0 = (byte *)malloc(49152);
     if (bank0 == NULL)
         errorHalt(ERR_BANK_FAIL + "0");
+
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
     if (cfg_slog_on)
         Serial.println(MSG_FREE_HEAP_AFTER + "bank 0: " + system_get_free_heap_size() + "b");
@@ -140,7 +155,7 @@ void videoTask(void *parameter) {
     unsigned int zx_vidcalc, calc_y;
     unsigned int old_border;
     unsigned int ts1, ts2;
-    byte zx_fore_color, zx_back_color, tmp_color;
+    word zx_fore_color, zx_back_color, tmp_color;
 
     while (1) {
         while (xULAStop) {
@@ -183,8 +198,8 @@ void videoTask(void *parameter) {
                         byte bitpos = (0x80 >> i);
                         bright = (color_attrib & 0B01000000) >> 6;
                         flash = (color_attrib & 0B10000000) >> 7;
-                        zx_fore_color = zxcolor(color_attrib & 0B00000111, bright);
-                        zx_back_color = zxcolor((color_attrib & 0B00111000) >> 3, bright);
+                        zx_fore_color = zxcolor((color_attrib & 0B00000111), bright);
+                        zx_back_color = zxcolor(((color_attrib & 0B00111000) >> 3), bright);
                         if (flash && (flashing > 16)) {
                             tmp_color = zx_fore_color;
                             zx_fore_color = zx_back_color;
@@ -226,41 +241,50 @@ int calcY(int offset) {
 int calcX(int offset) { return (offset % 32) << 3; }
 
 unsigned int zxcolor(int c, int bright) {
-    byte rgbLevel = 255;
-    byte vga_color;
+    word vga_color;
 
-    if (bright > 0)
-        rgbLevel = 255;
-    else
-        rgbLevel = 192;
 
     switch (c) {
 
     case 0:
-        return 0x08;
-        break; // black
+        vga_color=BLACK ;
+        break;
     case 1:
-        return 0x0c;
-        break; // blue
+        vga_color=BLUE;
+        break;
     case 2:
-        return 0x09;
-        break; // red
+        vga_color=RED;
+        break;
     case 3:
-        return 0x0d;
-        break; // magenta
+        vga_color=MAGENTA;
+        break;
     case 4:
-        return 0x0a;
-        break; // green
+        vga_color=GREEN;
+        break;
     case 5:
-        return 0x0e;
-        break; // cyan
+        vga_color=CYAN;
+        break;
     case 6:
-        return 0x0b;
-        break; // yellow
+        vga_color=YELLOW;
+        break;
     case 7:
-        return 0x0f;
-        break; // white
+        vga_color=WHITE;
+        break;
     }
+#ifdef COLOUR_16
+    if (bright && c !=0)
+    {
+      bitWrite(vga_color,0,1);
+      bitWrite(vga_color,1,1);
+      bitWrite(vga_color,2,1);
+      bitWrite(vga_color,5,1);
+      bitWrite(vga_color,6,1);
+      bitWrite(vga_color,7,1);
+      bitWrite(vga_color,10,1);
+      bitWrite(vga_color,10,1);
+    }
+
+#endif
     return vga_color;
 }
 
