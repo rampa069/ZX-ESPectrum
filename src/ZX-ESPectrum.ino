@@ -274,14 +274,17 @@ unsigned int zxcolor(int c, int bright) {
 #ifdef COLOUR_16
     if (bright && c !=0)
     {
-      bitWrite(vga_color,0,1);
+
+/*      bitWrite(vga_color,0,1);
       bitWrite(vga_color,1,1);
       bitWrite(vga_color,2,1);
       bitWrite(vga_color,5,1);
       bitWrite(vga_color,6,1);
       bitWrite(vga_color,7,1);
       bitWrite(vga_color,10,1);
-      bitWrite(vga_color,10,1);
+      bitWrite(vga_color,11,1);
+      */
+      vga_color |= 0xCE7;
     }
 
 #endif
