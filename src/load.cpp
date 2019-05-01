@@ -2,6 +2,7 @@
 #include "Emulator/machines.h"
 #include "Emulator/msg.h"
 #include "Emulator/z80emu/z80emu.h"
+#include "paledefs.h"
 
 #include <Arduino.h>
 #include <FS.h>
@@ -10,8 +11,10 @@
 extern byte *bank0;
 extern byte borderTemp;
 extern Z80_STATE _zxCpu;
-void errorHalt(String errormsg);
 extern boolean cfg_slog_on;
+
+void errorHalt(String errormsg);
+void IRAM_ATTR kb_interruptHandler(void);
 
 boolean cfg_mode_sna = false;
 boolean cfg_debug_on = false;
@@ -40,6 +43,7 @@ void IRAM_ATTR mount_spiffs() {
 }
 
 String getAllFilesFrom(const String path) {
+    detachInterrupt(digitalPinToInterrupt(KEYBOARD_CLK));
     File root = SPIFFS.open("/");
     File file = root.openNextFile();
     String listing;
@@ -53,10 +57,12 @@ String getAllFilesFrom(const String path) {
         }
     }
     vTaskDelay(2);
+    attachInterrupt(digitalPinToInterrupt(KEYBOARD_CLK), kb_interruptHandler, FALLING);
     return listing;
 }
 
 void listAllFiles() {
+    detachInterrupt(digitalPinToInterrupt(KEYBOARD_CLK));
     File root = SPIFFS.open("/");
     Serial.println("fs opened");
     File file = root.openNextFile();
@@ -68,6 +74,7 @@ void listAllFiles() {
         file = root.openNextFile();
     }
     vTaskDelay(2);
+    attachInterrupt(digitalPinToInterrupt(KEYBOARD_CLK), kb_interruptHandler, FALLING);
 }
 
 File IRAM_ATTR open_read_file(String filename) {
@@ -96,6 +103,7 @@ void IRAM_ATTR load_ram(String sna_file) {
         Serial.println(MSG_FREE_HEAP_BEFORE + "SNA: " + (String)system_get_free_heap_size());
 #pragma GCC diagnostic warning "-Wall"
 
+    detachInterrupt(digitalPinToInterrupt(KEYBOARD_CLK));
     lhandle = open_read_file(sna_file);
     vTaskDelay(10);
     size_read = 0;
@@ -168,20 +176,24 @@ void IRAM_ATTR load_ram(String sna_file) {
                       _zxCpu.registers.word[Z80_AF], borderTemp);
     }
 #pragma GCC diagnostic warning "-Wall"
+    attachInterrupt(digitalPinToInterrupt(KEYBOARD_CLK), kb_interruptHandler, FALLING);
 }
 
 void load_rom(String rom_file) {
+    detachInterrupt(digitalPinToInterrupt(KEYBOARD_CLK));
     File rom_f = open_read_file(rom_file);
     for (int i = 0; i < rom_f.size(); i++) {
         specrom[i] = (byte)rom_f.read();
     }
     rom_f.close();
     vTaskDelay(2);
+    attachInterrupt(digitalPinToInterrupt(KEYBOARD_CLK), kb_interruptHandler, FALLING);
 }
 
 // Dump actual config to FS
 void IRAM_ATTR config_save() {
-    Serial.printf("Saving config file.....\n" );
+    Serial.printf("Saving config file.....\n");
+    detachInterrupt(digitalPinToInterrupt(KEYBOARD_CLK));
     File f = SPIFFS.open("/boot.cfg", FILE_WRITE);
     f.printf("machine:%u\n", cfg_machine_type);
     f.printf("romset:%s\n", cfg_rom_set.c_str());
@@ -209,6 +221,7 @@ void IRAM_ATTR config_save() {
     }
     f.close();
     vTaskDelay(5);
+    attachInterrupt(digitalPinToInterrupt(KEYBOARD_CLK), kb_interruptHandler, FALLING);
 }
 
 // Read config from FS
@@ -222,6 +235,7 @@ void config_read() {
         delay(5);
 
     // Boot config file
+    detachInterrupt(digitalPinToInterrupt(KEYBOARD_CLK));
     cfg_f = open_read_file(boot_filename);
     for (int i = 0; i < cfg_f.size(); i++) {
         char c = (char)cfg_f.read();
@@ -276,4 +290,5 @@ void config_read() {
     // Rom file list;
     cfg_rom_file_list = getAllFilesFrom("/rom");
     cfg_sna_file_list = "Select snapshot to run\n" + getAllFilesFrom("/sna");
+    attachInterrupt(digitalPinToInterrupt(KEYBOARD_CLK), kb_interruptHandler, FALLING);
 }
