@@ -7,6 +7,15 @@
 byte row_pos = 0;
 byte col_pos = 0;
 
+// Change running snapshot
+void changeSna(unsigned int snanum) {
+    cfg_ram_file = "/sna/" + menuGetRow(cfg_sna_file_list, snanum);
+    cfg_mode_sna = true;
+    zx_reset();
+    load_ram(cfg_ram_file);
+    config_save();
+}
+
 // Cursor to OSD first row,col
 void osdHome() {
     Serial.printf("OSD HOME X:%d Y:%d\n", osdInsideX(), osdInsideY());
@@ -88,8 +97,12 @@ void drawMenu(String menu, byte focus, boolean new_draw) {
     const unsigned short y = scrAlignCenterY(h);
 
     if (new_draw) {
+        vga.setFont(Font6x8);
         // Black border
         vga.rect(x, y, w, h, zxcolor(0, 0));
+        for (byte i = 1; i < 5; i++) {
+            vga.rect(x - i, y - i, w + (i * 2), h + (i * 2), 0);
+        }
     }
 
     for (byte row = 0; row < rows; row++) {
@@ -125,9 +138,6 @@ unsigned short do_Menu(String menu) {
     unsigned short focus = 1;
     unsigned short focus_new = 1;
 
-    Serial.println("Draw OSD");
-    drawOSD();
-    Serial.println("Draw Menu");
     drawMenu(menu, focus, MENU_REDRAW);
     while (1) {
         if (checkAndCleanKey(KEY_UP)) {
@@ -156,25 +166,19 @@ unsigned short do_Menu(String menu) {
 void do_OSD() {
     static byte last_sna_row = 0;
     if (checkAndCleanKey(KEY_F12)) {
+        // Cycle over snapshots
         last_sna_row++;
         if (last_sna_row > menuRowCount(cfg_sna_file_list) - 1) {
             last_sna_row = 1;
         }
-        cfg_ram_file = "/sna/" + menuGetRow(cfg_sna_file_list, last_sna_row);
-        cfg_mode_sna = true;
-        zx_reset();
-        load_ram(cfg_ram_file);
-        config_save();
+        changeSna(last_sna_row);
     } else if (checkAndCleanKey(KEY_F1)) {
-        Serial.println(OSD_ON);
+        // Main menu
         xULAStop = true;
         while (!xULAStopped) {
             delay(20);
         }
-        Serial.println(ULA_OFF);
         // ULA Stopped
-        Serial.printf("Main menu rows: %d\n", menuRowCount(main_menu));
-        Serial.printf("Main menu max col: %d\n", menuColMax(main_menu));
         switch (do_Menu(main_menu)) {
         case 1:
             // Change ROM
@@ -183,11 +187,7 @@ void do_OSD() {
             // Change RAM
             unsigned short snanum = do_Menu(cfg_sna_file_list);
             if (snanum > 0) {
-                cfg_ram_file = "/sna/" + menuGetRow(cfg_sna_file_list, snanum);
-                cfg_mode_sna = true;
-                zx_reset();
-                load_ram(cfg_ram_file);
-                config_save();
+                changeSna(snanum);
             }
             break;
         }

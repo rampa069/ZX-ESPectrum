@@ -25,7 +25,7 @@ extern String cfg_sna_file_list;
 extern boolean cfg_mode_sna;
 void config_save();
 
-const String main_menu = "Main Menu\nChange ROM\nChange RAM\nReset\nReturn\n";
+const String main_menu = "Main Menu\nChange ROM\nChange RAM\nReset\nReturn\nHelp\n";
 const String reset_menu = "Reset Menu\nSoft reset\nHard reset\nCancel\n";
 
 // X origin to center an element with pixel_width
