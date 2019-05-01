@@ -154,6 +154,18 @@ unsigned short do_Menu(String menu) {
 
 // OSD Main Loop
 void do_OSD() {
+    static byte last_sna_row = 0;
+    if (checkAndCleanKey(KEY_F12)) {
+        last_sna_row++;
+        if (last_sna_row > menuRowCount(cfg_sna_file_list)) {
+            last_sna_row = 1;
+        }
+        cfg_ram_file = "/sna/" + menuGetRow(cfg_sna_file_list, last_sna_row);
+        cfg_mode_sna = true;
+        zx_reset();
+        load_ram(cfg_ram_file);
+        config_save();
+    }
     if (checkAndCleanKey(KEY_F1)) {
         Serial.println(OSD_ON);
         xULAStop = true;
