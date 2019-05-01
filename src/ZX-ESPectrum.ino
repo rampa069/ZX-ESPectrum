@@ -271,28 +271,19 @@ unsigned int zxcolor(int c, int bright) {
         vga_color=WHITE;
         break;
     }
+
 #ifdef COLOUR_16
     if (bright && c !=0)
-    {
-
-/*      bitWrite(vga_color,0,1);
-      bitWrite(vga_color,1,1);
-      bitWrite(vga_color,2,1);
-      bitWrite(vga_color,5,1);
-      bitWrite(vga_color,6,1);
-      bitWrite(vga_color,7,1);
-      bitWrite(vga_color,10,1);
-      bitWrite(vga_color,11,1);
-      */
-      vga_color |= 0xCE7;
-    }
-
+          vga_color |= 0xCE7;
 #endif
+
     return vga_color;
 }
 
 /* Load zx keyboard lines from PS/2 */
 void do_keyboard() {
+  byte kempston =0;
+
     bitWrite(z80ports_in[0], 0, keymap[0x12]);
     bitWrite(z80ports_in[0], 1, keymap[0x1a]);
     bitWrite(z80ports_in[0], 2, keymap[0x22]);
@@ -340,6 +331,26 @@ void do_keyboard() {
     bitWrite(z80ports_in[7], 2, keymap[0x3a]);
     bitWrite(z80ports_in[7], 3, keymap[0x31]);
     bitWrite(z80ports_in[7], 4, keymap[0x32]);
+
+    // Kempston joystick
+    
+
+    if (!keymap[0x75])
+        kempston=kempston+8;
+
+    if (!keymap[0x72])
+        kempston=kempston+4;
+
+    if (!keymap[0x6b])
+        kempston=kempston+2;
+
+    if (!keymap[0x74])
+        kempston=kempston+1;
+
+    if (!keymap[0x73])
+        kempston=kempston+16;
+
+        z80ports_in[31]=kempston;
 }
 
 /* +-------------+
