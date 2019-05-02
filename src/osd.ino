@@ -9,11 +9,15 @@ byte col_pos = 0;
 
 // Change running snapshot
 void changeSna(String sna_filename) {
+    stopULA();
+    osdCenteredMsg((String)MSG_LOADING + ": " + sna_filename, LEVEL_INFO);
     cfg_ram_file = "/sna/" + sna_filename;
     cfg_mode_sna = true;
     zx_reset();
     load_ram(cfg_ram_file);
+    osdCenteredMsg(MSG_SAVE_CONFIG, LEVEL_WARN);
     config_save();
+    startULA();
 }
 
 // Cursor to OSD first row,col
@@ -167,6 +171,41 @@ unsigned short do_Menu(String menu) {
     }
 }
 
+// Centered message
+void osdCenteredMsg(String msg, byte warn_level) {
+    const unsigned short w = (msg.length() + 2) * OSD_FONT_W;
+    const unsigned short h = OSD_FONT_H * 3;
+    const unsigned short x = scrAlignCenterX(w);
+    const unsigned short y = scrAlignCenterY(h);
+    unsigned short paper;
+    unsigned short ink;
+
+    switch (warn_level) {
+    case LEVEL_OK:
+        ink = zxcolor(0, 0);
+        paper = zxcolor(4, 0);
+        break;
+    case LEVEL_ERROR:
+        ink = zxcolor(7, 0);
+        paper = zxcolor(2, 0);
+        break;
+    case LEVEL_WARN:
+        ink = zxcolor(0, 0);
+        paper = zxcolor(6, 0);
+        break;
+    default:
+        ink = zxcolor(7, 0);
+        paper = zxcolor(1, 0);
+    }
+
+    vga.fillRect(x, y, w, h, paper);
+    vga.rect(x - 1, y - 1, w + 2, h + 2, ink);
+    vga.setTextColor(ink, paper);
+    vga.setFont(Font6x8);
+    vga.setCursor(x + OSD_FONT_W, y + OSD_FONT_H);
+    vga.print(msg.c_str());
+}
+
 // OSD Main Loop
 void do_OSD() {
     static byte last_sna_row = 0;
@@ -176,6 +215,7 @@ void do_OSD() {
         if (last_sna_row > menuRowCount(cfg_sna_file_list) - 1) {
             last_sna_row = 1;
         }
+
         changeSna(menuGetRow(cfg_sna_file_list, last_sna_row));
     } else if (checkAndCleanKey(KEY_F1)) {
         // Main menu

@@ -1,7 +1,8 @@
 #pragma once
 
 // General
-#define MSG_LOADING "Loading file: "
+#define MSG_LOADING "Loading file"
+#define MSG_SAVE_CONFIG "Saving config file"
 #define MSG_CHIP_SETUP "Chip setup"
 #define MSG_VGA_INIT "Initalizing VGA"
 #define MSG_FREE_HEAP_BEFORE "Free heap before "
@@ -25,5 +26,5 @@
 #define OSD_ON "OSD ON"
 #define OSD_OFF "OSD OFF"
 #define MENU_SNA_TITLE "Select Snapshot"
-#define MENU_MAIN "Main Menu\nChange ROM\nChange RAM\nReset\nReturn\nHelp\n"
+#define MENU_MAIN "Main Menu\nChange ROM\nChange RAM\nReset\nHelp\nReturn\n"
 #define MENU_RESET "Reset Menu\nSoft reset\nHard reset\nCancel\n"
