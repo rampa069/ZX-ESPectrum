@@ -1,32 +1,33 @@
 // OSD Headers
 #pragma once
 
-//#include <FS.h>
-
+// Defines
 #define MENU_REDRAW true
 #define MENU_UPDATE false
 #define OSD_ERROR true
 #define OSD_NORMAL false
+#define SCR_W 360
+#define SCR_H 200
+#define OSD_W 248
+#define OSD_H 152
+#define OSD_MARGIN 4
+#define OSD_FONT_W 6
+#define OSD_FONT_H 8
+#define ASCII_NL 10
 
-const unsigned short SCR_W = 360; // X
-const unsigned short SCR_H = 200; // Y
-const unsigned short OSD_W = 248; // X
-const unsigned short OSD_H = 152; // Y
-const byte OSD_MARGIN = 4;
-const byte OSD_FONT_W = 6;
-const byte OSD_FONT_H = 8;
-const char ASCII_NL = 10;
-
+// Globals
 boolean checkAndCleanKey(byte scancode);
 boolean isKeymapChanged();
 void updateKeymap();
-// File open_read_file(String filename);
-extern String cfg_sna_file_list;
-extern boolean cfg_mode_sna;
-void config_save();
 
-const String main_menu = "Main Menu\nChange ROM\nChange RAM\nReset\nReturn\nHelp\n";
-const String reset_menu = "Reset Menu\nSoft reset\nHard reset\nCancel\n";
+// Ext var
+extern boolean cfg_mode_sna;
+extern String cfg_sna_file_list;
+extern boolean xULAStop;
+extern boolean xULAStopped;
+
+// Ext method
+void config_save();
 
 // X origin to center an element with pixel_width
 unsigned short scrAlignCenterX(unsigned short pixel_width) { return (SCR_W / 2) - (pixel_width / 2); }
@@ -63,8 +64,9 @@ byte menuColMax(String menu) {
     unsigned short col_count = 0;
     for (unsigned short i = 0; i < menu.length(); i++) {
         if (menu.charAt(i) == ASCII_NL) {
-            if (col_count > max)
+            if (col_count > max) {
                 max = col_count;
+            }
             col_count = 0;
         }
         col_count++;
@@ -90,3 +92,24 @@ String menuGetRow(String menu, unsigned short row) {
 
 unsigned short menuPixelWidth(char *menu) { return (menuColMax(menu) * OSD_FONT_W) + 2; }
 unsigned short menuPixelHeight(char *menu) { return (menuRowCount(menu) * OSD_FONT_H) + 2; }
+
+// Stop ULA service
+void stopULA() {
+    xULAStop = true;
+    while (!xULAStopped) {
+        delay(5);
+    }
+}
+
+// Start ULA service
+void startULA() {
+    xULAStop = false;
+    while (xULAStopped) {
+        delay(5);
+    }
+}
+
+void stepULA() {
+    startULA();
+    stopULA();
+}

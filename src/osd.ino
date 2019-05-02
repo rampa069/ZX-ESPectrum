@@ -8,8 +8,8 @@ byte row_pos = 0;
 byte col_pos = 0;
 
 // Change running snapshot
-void changeSna(unsigned int snanum) {
-    cfg_ram_file = "/sna/" + menuGetRow(cfg_sna_file_list, snanum);
+void changeSna(String sna_filename) {
+    cfg_ram_file = "/sna/" + sna_filename;
     cfg_mode_sna = true;
     zx_reset();
     load_ram(cfg_ram_file);
@@ -43,9 +43,9 @@ void drawOSD() {
     vga.setTextColor(zxcolor(0, 0), zxcolor(5, 1));
     vga.setFont(Font6x8);
     osdHome();
-    vga.print(OSD_TITLE.c_str());
+    vga.print(OSD_TITLE);
     osdAt(17, 0);
-    vga.print(OSD_BOTTOM.c_str());
+    vga.print(OSD_BOTTOM);
 }
 
 // Shows a red panel with error text
@@ -60,13 +60,13 @@ void errorPanel(String errormsg) {
     vga.setFont(Font6x8);
     osdHome();
     vga.setTextColor(zxcolor(7, 1), zxcolor(2, 1));
-    vga.print(ERROR_TITLE.c_str());
+    vga.print(ERROR_TITLE);
     osdAt(2, 0);
     vga.setTextColor(zxcolor(7, 1), zxcolor(0, 0));
     vga.println(errormsg.c_str());
     osdAt(17, 0);
     vga.setTextColor(zxcolor(7, 1), zxcolor(2, 1));
-    vga.print(ERROR_BOTTOM.c_str());
+    vga.print(ERROR_BOTTOM);
 }
 
 // Error panel and infinite loop
@@ -88,28 +88,32 @@ void menuPrintRow(String line, byte cols) {
 }
 
 void drawMenu(String menu, byte focus, boolean new_draw) {
+    Serial.printf("DRAW MENU focus:%u new_draw:%s\n", focus, (new_draw ? "true" : "false"));
     const byte cols = menuColMax(menu) + 2;
+    Serial.printf("Max cols: %u\n", cols);
     const unsigned short real_rows = menuRowCount(menu);
+    Serial.printf("Real rows: %u\n", real_rows);
     const byte rows = menuVirtualRows(menu);
+    Serial.printf("Rows: %u\n", rows);
     const byte w = (cols * OSD_FONT_W) + 2;
     const byte h = (rows * OSD_FONT_H) + 2;
     const unsigned short x = scrAlignCenterX(w);
     const unsigned short y = scrAlignCenterY(h);
+    Serial.printf("Menu x:%u, y:%u, w:%u, h:%u\n", x, y, w, h);
 
     if (new_draw) {
+        // Launch ULA for a while
+
         vga.setFont(Font6x8);
-        // Black border
+        // Menu border
         vga.rect(x, y, w, h, zxcolor(0, 0));
-        for (byte i = 1; i < 5; i++) {
-            vga.rect(x - i, y - i, w + (i * 2), h + (i * 2), 0);
-        }
     }
 
     for (byte row = 0; row < rows; row++) {
         vga.setCursor(x + 1, y + 1 + (row * OSD_FONT_H));
         if (row == 0) {
             if (new_draw) {
-                vga.setTextColor(zxcolor(7, 1), zxcolor(0, 1));
+                vga.setTextColor(zxcolor(7, 0), zxcolor(0, 0));
                 menuPrintRow(menuGetRow(menu, row), cols);
                 // Rainbow
                 unsigned short rb_y = y + 8;
@@ -117,7 +121,7 @@ void drawMenu(String menu, byte focus, boolean new_draw) {
                 byte rb_colors[] = {2, 6, 4, 5};
                 for (byte c = 0; c < 4; c++) {
                     for (byte i = 0; i < 3; i++) {
-                        vga.line(rb_paint_x + i, rb_y, rb_paint_x + 4 + i, rb_y - 8, zxcolor(rb_colors[c], 0));
+                        vga.line(rb_paint_x + i, rb_y, rb_paint_x + 4 + i, rb_y - 8, zxcolor(rb_colors[c], 1));
                     }
                     rb_paint_x += 3;
                 }
@@ -138,6 +142,7 @@ unsigned short do_Menu(String menu) {
     unsigned short focus = 1;
     unsigned short focus_new = 1;
 
+    stepULA();
     drawMenu(menu, focus, MENU_REDRAW);
     while (1) {
         if (checkAndCleanKey(KEY_UP)) {
@@ -171,15 +176,11 @@ void do_OSD() {
         if (last_sna_row > menuRowCount(cfg_sna_file_list) - 1) {
             last_sna_row = 1;
         }
-        changeSna(last_sna_row);
+        changeSna(menuGetRow(cfg_sna_file_list, last_sna_row));
     } else if (checkAndCleanKey(KEY_F1)) {
         // Main menu
-        xULAStop = true;
-        while (!xULAStopped) {
-            delay(20);
-        }
-        // ULA Stopped
-        switch (do_Menu(main_menu)) {
+        stopULA(); // ULA Stopped
+        switch (do_Menu(MENU_MAIN)) {
         case 1:
             // Change ROM
             break;
@@ -187,13 +188,13 @@ void do_OSD() {
             // Change RAM
             unsigned short snanum = do_Menu(cfg_sna_file_list);
             if (snanum > 0) {
-                changeSna(snanum);
+                changeSna(menuGetRow(cfg_sna_file_list, snanum));
             }
             break;
         }
         case 3:
             // Reset
-            switch (do_Menu(reset_menu)) {
+            switch (do_Menu(MENU_RESET)) {
             case 1:
                 // Soft
                 zx_reset();
@@ -211,10 +212,6 @@ void do_OSD() {
         }
 
         // Exit
-        xULAStop = false;
-        while (xULAStopped) {
-            delay(20);
-        }
-        Serial.println(ULA_ON);
+        startULA();
     }
 }

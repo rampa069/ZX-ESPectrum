@@ -16,7 +16,7 @@
 #include "paledefs.h"
 #include <ESP32Lib.h>
 #include <Ressources/Font6x8.h>
-#include <bt.h>
+#include <esp_bt.h>
 #include <esp_task_wdt.h>
 
 //
@@ -50,8 +50,6 @@ void do_OSD();
 void errorHalt(String);
 void mount_spiffs();
 
-
-
 // GLOBALS
 volatile byte *bank0;
 volatile byte z80ports_in[128];
@@ -67,13 +65,12 @@ byte tick;
 // SETUP *************************************
 
 #ifdef COLOUR_8
-    VGA3Bit vga;
+VGA3Bit vga;
 #endif
 
 #ifdef COLOUR_16
-    VGA14Bit vga;
+VGA14Bit vga;
 #endif
-
 
 void setup() {
     // Turn off peripherals to gain memory (?do they release properly)
@@ -97,7 +94,7 @@ void setup() {
     vga.init(vga.MODE360x200, redPins, greenPins, bluePins, hsyncPin, vsyncPin);
 #endif
 
-    Serial.printf("%x\n", vga.RGBA(0xff,0xff,0xff,0xff));
+    Serial.printf("VGA RGB: %x\n", vga.RGBA(0xff, 0xff, 0xff, 0xff));
 
     pinMode(SOUND_PIN, OUTPUT);
     digitalWrite(SOUND_PIN, LOW);
@@ -108,11 +105,10 @@ void setup() {
     //
     bank0 = (byte *)malloc(49152);
     if (bank0 == NULL)
-        errorHalt(ERR_BANK_FAIL + "0");
+        errorHalt((String)ERR_BANK_FAIL + "0");
 
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-    if (cfg_slog_on)
-        Serial.println(MSG_FREE_HEAP_AFTER + "bank 0: " + system_get_free_heap_size() + "b");
+    Serial.printf("%s bank %u: %ub\n", MSG_FREE_HEAP_AFTER, 0, system_get_free_heap_size());
 #pragma GCC diagnostic warning "-Wall"
 
     setup_cpuspeed();
@@ -128,10 +124,8 @@ void setup() {
     }
 
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-    if (cfg_debug_on)
-        Serial.println(MSG_EXEC_ON_CORE + xPortGetCoreID());
-    if (cfg_slog_on)
-        Serial.println(MSG_FREE_HEAP_AFTER + "Z80 reset: " + system_get_free_heap_size());
+    Serial.printf("%s %u\n", MSG_EXEC_ON_CORE, xPortGetCoreID());
+    Serial.printf("%s Z80 RESET: %ub\n", MSG_FREE_HEAP_AFTER, system_get_free_heap_size());
 #pragma GCC diagnostic warning "-Wall"
 
     xTaskCreatePinnedToCore(videoTask,   /* Function to implement the task */
@@ -170,8 +164,6 @@ void videoTask(void *parameter) {
             flashing = 0;
 
         for (unsigned int vga_lin = 0; vga_lin < 200; vga_lin++) {
-            // unsigned int lin = vga_lin - 4;
-            // Serial.println(vga_lin);
             tick = 0;
             if (vga_lin < 4 || vga_lin > 194) {
                 for (int bor = 32; bor < 328; bor++)
@@ -218,7 +210,6 @@ void videoTask(void *parameter) {
         }
         tick = 1;
         ts2 = millis();
-        // Serial.println(uxTaskGetStackHighWaterMark(NULL));
     }
     TIMERG0.wdt_wprotect = TIMG_WDT_WKEY_VALUE;
     TIMERG0.wdt_feed = 1;
@@ -243,45 +234,43 @@ int calcX(int offset) { return (offset % 32) << 3; }
 unsigned int zxcolor(int c, int bright) {
     word vga_color;
 
-
     switch (c) {
 
     case 0:
-        vga_color=BLACK ;
+        vga_color = BLACK;
         break;
     case 1:
-        vga_color=BLUE;
+        vga_color = BLUE;
         break;
     case 2:
-        vga_color=RED;
+        vga_color = RED;
         break;
     case 3:
-        vga_color=MAGENTA;
+        vga_color = MAGENTA;
         break;
     case 4:
-        vga_color=GREEN;
+        vga_color = GREEN;
         break;
     case 5:
-        vga_color=CYAN;
+        vga_color = CYAN;
         break;
     case 6:
-        vga_color=YELLOW;
+        vga_color = YELLOW;
         break;
     case 7:
-        vga_color=WHITE;
+        vga_color = WHITE;
         break;
     }
 #ifdef COLOUR_16
-    if (bright && c !=0)
-    {
-      bitWrite(vga_color,0,1);
-      bitWrite(vga_color,1,1);
-      bitWrite(vga_color,2,1);
-      bitWrite(vga_color,5,1);
-      bitWrite(vga_color,6,1);
-      bitWrite(vga_color,7,1);
-      bitWrite(vga_color,10,1);
-      bitWrite(vga_color,10,1);
+    if (bright && c != 0) {
+        bitWrite(vga_color, 0, 1);
+        bitWrite(vga_color, 1, 1);
+        bitWrite(vga_color, 2, 1);
+        bitWrite(vga_color, 5, 1);
+        bitWrite(vga_color, 6, 1);
+        bitWrite(vga_color, 7, 1);
+        bitWrite(vga_color, 10, 1);
+        bitWrite(vga_color, 10, 1);
     }
 
 #endif

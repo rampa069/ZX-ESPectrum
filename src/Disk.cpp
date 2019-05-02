@@ -1,39 +1,4 @@
-#include "Emulator/Keyboard/PS2Kbd.h"
-#include "Emulator/machines.h"
-#include "Emulator/msg.h"
-#include "Emulator/z80emu/z80emu.h"
-#include "paledefs.h"
-
-#include <Arduino.h>
-#include <FS.h>
-#include <SPIFFS.h>
-
-extern byte *bank0;
-extern byte borderTemp;
-extern Z80_STATE _zxCpu;
-extern boolean cfg_slog_on;
-
-void errorHalt(String errormsg);
-void IRAM_ATTR kb_interruptHandler(void);
-
-boolean cfg_mode_sna = false;
-boolean cfg_debug_on = false;
-boolean cfg_slog_on = true;
-String cfg_ram_file = "noram";
-String cfg_rom_file = "0.rom";
-String cfg_rom_set = "ZX";
-byte cfg_machine_type = MACHINE_ZX48;
-String cfg_rom_file_list;
-String cfg_sna_file_list;
-
-const String boot_filename = "/boot.cfg";
-
-void zx_reset();
-
-byte specrom[16384];
-
-typedef int32_t dword;
-typedef signed char offset;
+#include "Emulator/Disk.h"
 
 void IRAM_ATTR mount_spiffs() {
     if (!SPIFFS.begin())
@@ -43,7 +8,7 @@ void IRAM_ATTR mount_spiffs() {
 }
 
 String getAllFilesFrom(const String path) {
-    detachInterrupt(digitalPinToInterrupt(KEYBOARD_CLK));
+    KB_INT_STOP;
     File root = SPIFFS.open("/");
     File file = root.openNextFile();
     String listing;
@@ -57,12 +22,12 @@ String getAllFilesFrom(const String path) {
         }
     }
     vTaskDelay(2);
-    attachInterrupt(digitalPinToInterrupt(KEYBOARD_CLK), kb_interruptHandler, FALLING);
+    KB_INT_START;
     return listing;
 }
 
 void listAllFiles() {
-    detachInterrupt(digitalPinToInterrupt(KEYBOARD_CLK));
+    KB_INT_STOP;
     File root = SPIFFS.open("/");
     Serial.println("fs opened");
     File file = root.openNextFile();
@@ -74,7 +39,7 @@ void listAllFiles() {
         file = root.openNextFile();
     }
     vTaskDelay(2);
-    attachInterrupt(digitalPinToInterrupt(KEYBOARD_CLK), kb_interruptHandler, FALLING);
+    KB_INT_START;
 }
 
 File IRAM_ATTR open_read_file(String filename) {
@@ -83,9 +48,9 @@ File IRAM_ATTR open_read_file(String filename) {
     filename.replace("\n", " ");
     filename.trim();
     if (cfg_slog_on)
-        Serial.println(MSG_LOADING + filename);
+        Serial.printf("%s '%s'\n", MSG_LOADING, filename.c_str());
     if (!SPIFFS.exists(filename.c_str())) {
-        errorHalt(ERR_READ_FILE + "\n" + filename);
+        errorHalt((String)ERR_READ_FILE + "\n" + filename);
     }
     f = SPIFFS.open(filename.c_str(), FILE_READ);
     vTaskDelay(2);
@@ -99,11 +64,10 @@ void IRAM_ATTR load_ram(String sna_file) {
     byte sp_h, sp_l;
     zx_reset();
 #pragma GCC diagnostic ignored "-Wall"
-    if (cfg_slog_on)
-        Serial.println(MSG_FREE_HEAP_BEFORE + "SNA: " + (String)system_get_free_heap_size());
+    Serial.printf("%s SNA: %ub\n", MSG_FREE_HEAP_BEFORE, system_get_free_heap_size());
 #pragma GCC diagnostic warning "-Wall"
 
-    detachInterrupt(digitalPinToInterrupt(KEYBOARD_CLK));
+    KB_INT_STOP;
     lhandle = open_read_file(sna_file);
     vTaskDelay(10);
     size_read = 0;
@@ -171,30 +135,30 @@ void IRAM_ATTR load_ram(String sna_file) {
 
 #pragma GCC diagnostic ignored "-Wall"
     if (cfg_slog_on) {
-        Serial.println(MSG_FREE_HEAP_AFTER + "SNA: " + (String)system_get_free_heap_size());
+        Serial.printf("%s SNA: %u\n", MSG_FREE_HEAP_AFTER, system_get_free_heap_size());
         Serial.printf("Ret address: %x Stack: %x AF: %x Border: %x\n", retaddr, _zxCpu.registers.word[Z80_SP],
                       _zxCpu.registers.word[Z80_AF], borderTemp);
     }
 #pragma GCC diagnostic warning "-Wall"
-    attachInterrupt(digitalPinToInterrupt(KEYBOARD_CLK), kb_interruptHandler, FALLING);
+    KB_INT_START;
 }
 
 void load_rom(String rom_file) {
-    detachInterrupt(digitalPinToInterrupt(KEYBOARD_CLK));
+    KB_INT_STOP;
     File rom_f = open_read_file(rom_file);
     for (int i = 0; i < rom_f.size(); i++) {
         specrom[i] = (byte)rom_f.read();
     }
     rom_f.close();
     vTaskDelay(2);
-    attachInterrupt(digitalPinToInterrupt(KEYBOARD_CLK), kb_interruptHandler, FALLING);
+    KB_INT_START;
 }
 
 // Dump actual config to FS
 void IRAM_ATTR config_save() {
-    Serial.printf("Saving config file.....\n");
-    detachInterrupt(digitalPinToInterrupt(KEYBOARD_CLK));
-    File f = SPIFFS.open("/boot.cfg", FILE_WRITE);
+    KB_INT_STOP;
+    Serial.printf("Saving config file '%s'...", DISK_BOOT_FILENAME);
+    File f = SPIFFS.open(DISK_BOOT_FILENAME, FILE_WRITE);
     f.printf("machine:%u\n", cfg_machine_type);
     f.printf("romset:%s\n", cfg_rom_set.c_str());
     f.print("mode:");
@@ -221,7 +185,30 @@ void IRAM_ATTR config_save() {
     }
     f.close();
     vTaskDelay(5);
-    attachInterrupt(digitalPinToInterrupt(KEYBOARD_CLK), kb_interruptHandler, FALLING);
+    Serial.println("OK");
+    KB_INT_START;
+}
+
+// Get all sna files
+String getSnaFileList() {
+    KB_INT_STOP;
+    Serial.printf("Reading dir: %s\n", DISK_SNA_DIR);
+    String filelist;
+    File snadir = SPIFFS.open(DISK_SNA_DIR);
+    if (!snadir || !snadir.isDirectory()) {
+        errorHalt(ERR_SNA_DIR_FAIL);
+    }
+    File file = snadir.openNextFile();
+    while (file) {
+        Serial.printf("Found sna: %s\n", file.name());
+        if (!file.isDirectory()) {
+            String filename = file.name();
+            filelist += filename.substring(filename.lastIndexOf("/") + 1);
+            filelist += "\n";
+        }
+        file = snadir.openNextFile();
+    }
+    return filelist;
 }
 
 // Read config from FS
@@ -235,8 +222,8 @@ void config_read() {
         delay(5);
 
     // Boot config file
-    detachInterrupt(digitalPinToInterrupt(KEYBOARD_CLK));
-    cfg_f = open_read_file(boot_filename);
+    KB_INT_STOP;
+    cfg_f = open_read_file(DISK_BOOT_FILENAME);
     for (int i = 0; i < cfg_f.size(); i++) {
         char c = (char)cfg_f.read();
         if (c == '\n') {
@@ -287,8 +274,7 @@ void config_read() {
     cfg_rom_file += cfg_rom_set;
     cfg_rom_file += "/0.rom";
 
-    // Rom file list;
-    cfg_rom_file_list = getAllFilesFrom("/rom");
-    cfg_sna_file_list = "Select snapshot to run\n" + getAllFilesFrom("/sna");
-    attachInterrupt(digitalPinToInterrupt(KEYBOARD_CLK), kb_interruptHandler, FALLING);
+    cfg_sna_file_list = (String)MENU_SNA_TITLE + "\n" + getSnaFileList();
+
+    KB_INT_START;
 }
