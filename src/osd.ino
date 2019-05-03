@@ -16,45 +16,40 @@ void do_OSD() {
     } else if (checkAndCleanKey(KEY_F1)) {
         // Main menu
         stopULA(); // ULA Stopped
-        switch (do_Menu(MENU_MAIN)) {
-        case 1:
+        byte opt = do_Menu(MENU_MAIN);
+        if (opt == 1) {
             // Change ROM
-            break;
-        case 2: {
+        } else if (opt == 2) {
             // Change RAM
             unsigned short snanum = do_Menu(cfg_sna_file_list);
             if (snanum > 0) {
                 changeSna(menuGetRow(cfg_sna_file_list, snanum));
             }
-            break;
-        }
-        case 3:
+        } else if (opt == 3) {
             // Reset
-            switch (do_Menu(MENU_RESET)) {
-            case 1:
+            byte opt2 = do_Menu(MENU_RESET);
+            if (opt2 == 1) {
                 // Soft
                 zx_reset();
                 if (cfg_mode_sna)
                     load_ram(cfg_ram_file);
-                break;
-            case 2:
+            } else if (opt2 == 2) {
                 // Hard
-                zx_reset();
                 cfg_mode_sna = false;
                 cfg_ram_file = 'none';
                 config_save();
-                break;
+                zx_reset();
             }
-        case 4:
+        } else if (opt == 4) {
             // Help
             drawOSD();
             osdAt(2, 0);
             vga.setTextColor(zxcolor(7, 0), zxcolor(1, 0));
             vga.print(OSD_HELP);
-            while (!checkAndCleanKey(KEY_F1) && !checkAndCleanKey(KEY_ESC) && !checkAndCleanKey(KEY_ENTER))
+            while (!checkAndCleanKey(KEY_F1) && !checkAndCleanKey(KEY_ESC) && !checkAndCleanKey(KEY_ENTER)) {
                 vTaskDelay(5);
+            }
         }
-
         // Exit
         startULA();
     }

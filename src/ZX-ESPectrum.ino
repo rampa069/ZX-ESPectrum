@@ -328,23 +328,6 @@ void do_keyboard() {
     bitWrite(z80ports_in[0x1f], 2, !keymap[KEY_CURSOR_DOWN]);
     bitWrite(z80ports_in[0x1f], 3, !keymap[KEY_CURSOR_UP]);
     bitWrite(z80ports_in[0x1f], 4, !keymap[KEY_ALT_GR]);
-
-    /*if (!keymap[0x75])
-        kempston=kempston+8;
-
-    if (!keymap[0x72])
-        kempston=kempston+4;
-
-    if (!keymap[0x6b])
-        kempston=kempston+2;
-
-    if (!keymap[0x74])
-        kempston=kempston+1;
-
-    if (!keymap[0x73])
-        kempston=kempston+16;
-
-        z80ports_in[31]=kempston; */
 }
 
 /* +-------------+

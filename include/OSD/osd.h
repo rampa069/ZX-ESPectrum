@@ -23,8 +23,6 @@
 boolean checkAndCleanKey(byte scancode);
 boolean isKeymapChanged();
 void updateKeymap();
-byte row_pos = 0;
-byte col_pos = 0;
 
 // Ext var
 extern boolean cfg_mode_sna;
