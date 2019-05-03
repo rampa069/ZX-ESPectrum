@@ -31,4 +31,5 @@ void drawOSD() {
     vga.print(OSD_TITLE);
     osdAt(17, 0);
     vga.print(OSD_BOTTOM);
+    osdHome();
 }

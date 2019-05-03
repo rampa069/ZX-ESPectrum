@@ -45,6 +45,14 @@ void do_OSD() {
                 config_save();
                 break;
             }
+        case 4:
+            // Help
+            drawOSD();
+            osdAt(2, 0);
+            vga.setTextColor(zxcolor(7, 0), zxcolor(1, 0));
+            vga.print(OSD_HELP);
+            while (!checkAndCleanKey(KEY_F1) && !checkAndCleanKey(KEY_ESC) && !checkAndCleanKey(KEY_ENTER))
+                vTaskDelay(5);
         }
 
         // Exit
