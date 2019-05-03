@@ -117,11 +117,11 @@ unsigned short do_Menu(String menu) {
     stepULA();
     drawMenu(menu, focus, MENU_REDRAW);
     while (1) {
-        if (checkAndCleanKey(KEY_UP)) {
+        if (checkAndCleanKey(KEY_CURSOR_UP)) {
             focus_new = focus - 1;
             if (focus_new < 1)
                 focus_new = rows - 1;
-        } else if (checkAndCleanKey(KEY_DOWN)) {
+        } else if (checkAndCleanKey(KEY_CURSOR_DOWN)) {
             focus_new = focus + 1;
             if (focus_new >= rows)
                 focus_new = 1;
