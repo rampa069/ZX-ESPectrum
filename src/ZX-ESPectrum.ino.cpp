@@ -1,27 +1,23 @@
-// -------------------------------------------------------------------
-//  ESPectrum Emulator
-//  Ramón Martínez & Jorge fuertes 2019
-//  Though from ESP32 Spectrum Emulator (KOGEL esp32) Pete Todd 2017
-//  You are not allowed to distribute this software commercially
-//  lease, notify me, if you make any changes to this file
-// -------------------------------------------------------------------
-
+# 1 "/var/folders/gv/jmp9y6cj1qv6tg2tl0t1b6j80000gn/T/tmpTxn6p2"
+#include <Arduino.h>
+# 1 "/Users/queru/Documents/Desarrollo/spectrum/ZX-ESPectrum/src/ZX-ESPectrum.ino"
+# 9 "/Users/queru/Documents/Desarrollo/spectrum/ZX-ESPectrum/src/ZX-ESPectrum.ino"
 #include "Emulator/Keyboard/PS2Kbd.h"
 #include "Emulator/msg.h"
 #include "Emulator/z80emu/z80emu.h"
 #include "Emulator/z80user.h"
-//#include "FS.h"
-//#include "SPIFFS.h"
+
+
 #include "machinedefs.h"
 #include <ESP32Lib.h>
 #include <Ressources/Font6x8.h>
 #include <esp_bt.h>
 #include <esp_task_wdt.h>
 
-//
-// types
 
-// EXTERN VARS
+
+
+
 extern boolean writeScreen;
 extern boolean cfg_mode_sna;
 extern boolean cfg_slog_on;
@@ -38,9 +34,9 @@ void load_ram(String);
 volatile byte keymap[256];
 volatile byte oldKeymap[256];
 
-// EXTERN METHODS
 
-void zx_setup(void); /* Reset registers to the initial values */
+
+void zx_setup(void);
 void zx_loop();
 void zx_reset();
 void setup_cpuspeed();
@@ -49,7 +45,7 @@ void do_OSD();
 void errorHalt(String);
 void mount_spiffs();
 
-// GLOBALS
+
 volatile byte *bank0;
 volatile byte z80ports_in[128];
 byte borderTemp = 7;
@@ -61,7 +57,7 @@ boolean xULAStopped = false;
 boolean writeScreen = false;
 byte tick;
 
-// SETUP *************************************
+
 
 #ifdef COLOUR_8
 VGA3Bit vga;
@@ -70,12 +66,19 @@ VGA3Bit vga;
 #ifdef COLOUR_16
 VGA14Bit vga;
 #endif
-
+void setup();
+void videoTask(void *parameter);
+byte calcY(byte offset);
+byte calcX(byte offset);
+unsigned int zxcolor(int c, int bright);
+void do_keyboard();
+void loop();
+#line 74 "/Users/queru/Documents/Desarrollo/spectrum/ZX-ESPectrum/src/ZX-ESPectrum.ino"
 void setup() {
-    // Turn off peripherals to gain memory (?do they release properly)
+
     esp_bt_controller_deinit();
     esp_bt_controller_mem_release(ESP_BT_MODE_BTDM);
-    // esp_wifi_set_mode(WIFI_MODE_NULL);
+
 
     mount_spiffs();
     config_read();
@@ -100,8 +103,8 @@ void setup() {
 
     kb_begin();
 
-    // ALLOCATE MEMORY
-    //
+
+
     bank0 = (byte *)malloc(49152);
     if (bank0 == NULL)
         errorHalt((String)ERR_BANK_FAIL + "0");
@@ -112,12 +115,12 @@ void setup() {
 
     setup_cpuspeed();
 
-    // START Z80
+
     if (cfg_slog_on)
         Serial.println(MSG_Z80_RESET);
     zx_setup();
 
-    // make sure keyboard ports are FF
+
     for (int t = 0; t < 32; t++) {
         z80ports_in[t] = 0x1f;
     }
@@ -127,20 +130,20 @@ void setup() {
     Serial.printf("%s Z80 RESET: %ub\n", MSG_FREE_HEAP_AFTER, system_get_free_heap_size());
 #pragma GCC diagnostic warning "-Wall"
 
-    xTaskCreatePinnedToCore(videoTask,   /* Function to implement the task */
-                            "videoTask", /* Name of the task */
-                            1024,        /* Stack size in words */
-                            NULL,        /* Task input parameter */
-                            20,          /* Priority of the task */
-                            NULL,        /* Task handle. */
-                            0);          /* Core where the task should run */
+    xTaskCreatePinnedToCore(videoTask,
+                            "videoTask",
+                            1024,
+                            NULL,
+                            20,
+                            NULL,
+                            0);
 
     load_rom(cfg_rom_file);
     if (cfg_mode_sna)
         load_ram(cfg_ram_file);
 }
 
-// VIDEO core 0 *************************************
+
 
 void videoTask(void *parameter) {
     unsigned int ff, i, byte_offset;
@@ -173,16 +176,16 @@ void videoTask(void *parameter) {
                     vga.dotFast(bor + 276, vga_lin, zxcolor(borderTemp, 0));
                 }
 
-                for (ff = 0; ff < 32; ff++) // foreach byte in line
+                for (ff = 0; ff < 32; ff++)
                 {
 
-                    byte_offset = (vga_lin - 3) * 32 + ff; //*2+1;
+                    byte_offset = (vga_lin - 3) * 32 + ff;
 
-                    color_attrib = bank0[0x1800 + (calcY(byte_offset) / 8) * 32 + ff]; // get 1 of 768 attrib values
+                    color_attrib = bank0[0x1800 + (calcY(byte_offset) / 8) * 32 + ff];
                     pixel_map = bank0[byte_offset];
                     calc_y = calcY(byte_offset);
 
-                    for (i = 0; i < 8; i++) // foreach pixel within a byte
+                    for (i = 0; i < 8; i++)
                     {
 
                         zx_vidcalc = ff * 8 + i;
@@ -215,19 +218,19 @@ void videoTask(void *parameter) {
     TIMERG0.wdt_wprotect = 0;
     if (ts2 - ts1 < 20)
         delay(20 - (ts2 - ts1));
-    // vTaskDelay(1);
+
 }
 
-// SPECTRUM SCREEN DISPLAY
-//
-/* Calculate Y coordinate (0-192) from Spectrum screen memory location */
+
+
+
 byte calcY(byte offset) {
-    return ((offset >> 11) << 6)                                            // sector start
-           + ((offset % 2048) >> 8)                                         // pixel rows
-           + ((((offset % 2048) >> 5) - ((offset % 2048) >> 8 << 3)) << 3); // character rows
+    return ((offset >> 11) << 6)
+           + ((offset % 2048) >> 8)
+           + ((((offset % 2048) >> 5) - ((offset % 2048) >> 8 << 3)) << 3);
 }
 
-/* Calculate X coordinate (0-255) from Spectrum screen memory location */
+
 byte calcX(byte offset) { return (offset % 32) << 3; }
 
 unsigned int zxcolor(int c, int bright) {
@@ -269,7 +272,7 @@ unsigned int zxcolor(int c, int bright) {
     return vga_color;
 }
 
-/* Load zx keyboard lines from PS/2 */
+
 void do_keyboard() {
     byte kempston = 0;
 
@@ -321,45 +324,91 @@ void do_keyboard() {
     bitWrite(z80ports_in[7], 3, keymap[0x31]);
     bitWrite(z80ports_in[7], 4, keymap[0x32]);
 
-    // Kempston joystick
+
     z80ports_in[0x1f] = 0;
     bitWrite(z80ports_in[0x1f], 0, !keymap[0x74]);
     bitWrite(z80ports_in[0x1f], 1, !keymap[0x6b]);
     bitWrite(z80ports_in[0x1f], 2, !keymap[0x72]);
     bitWrite(z80ports_in[0x1f], 3, !keymap[0x75]);
     bitWrite(z80ports_in[0x1f], 4, !keymap[0x73]);
-
-    /*if (!keymap[0x75])
-        kempston=kempston+8;
-
-    if (!keymap[0x72])
-        kempston=kempston+4;
-
-    if (!keymap[0x6b])
-        kempston=kempston+2;
-
-    if (!keymap[0x74])
-        kempston=kempston+1;
-
-    if (!keymap[0x73])
-        kempston=kempston+16;
-
-        z80ports_in[31]=kempston; */
+# 348 "/Users/queru/Documents/Desarrollo/spectrum/ZX-ESPectrum/src/ZX-ESPectrum.ino"
 }
 
-/* +-------------+
- | LOOP core 1 |
- +-------------+
- */
+
+
+
+
 void loop() {
     while (1) {
         do_keyboard();
         do_OSD();
-        // Z80Emulate(&_zxCpu, _next_total - _total, &_zxContext);
+
         zx_loop();
         TIMERG0.wdt_wprotect = TIMG_WDT_WKEY_VALUE;
         TIMERG0.wdt_feed = 1;
         TIMERG0.wdt_wprotect = 0;
-        vTaskDelay(1); // important to avoid task watchdog timeouts - change this to slow down emu
+        vTaskDelay(1);
+    }
+}
+# 1 "/Users/queru/Documents/Desarrollo/spectrum/ZX-ESPectrum/src/osd.ino"
+#include "OSD/osd.h"
+
+
+
+
+void do_OSD() {
+    static byte last_sna_row = 0;
+    if (checkAndCleanKey(KEY_F12)) {
+
+        last_sna_row++;
+        if (last_sna_row > menuRowCount(cfg_sna_file_list) - 1) {
+            last_sna_row = 1;
+        }
+
+        changeSna(menuGetRow(cfg_sna_file_list, last_sna_row));
+    } else if (checkAndCleanKey(KEY_F1)) {
+
+        stopULA();
+        switch (do_Menu(MENU_MAIN)) {
+        case 1:
+
+            break;
+        case 2: {
+
+            unsigned short snanum = do_Menu(cfg_sna_file_list);
+            if (snanum > 0) {
+                changeSna(menuGetRow(cfg_sna_file_list, snanum));
+            }
+            break;
+        }
+        case 3:
+
+            switch (do_Menu(MENU_RESET)) {
+            case 1:
+
+                zx_reset();
+                if (cfg_mode_sna)
+                    load_ram(cfg_ram_file);
+                break;
+            case 2:
+
+                zx_reset();
+                cfg_mode_sna = false;
+                cfg_ram_file = 'none';
+                config_save();
+                break;
+            }
+        case 4:
+
+            drawOSD();
+            osdAt(2, 0);
+            vga.setTextColor(zxcolor(7, 0), zxcolor(1, 0));
+            vga.print(OSD_HELP);
+            while (!checkAndCleanKey(KEY_F1) && !checkAndCleanKey(KEY_ESC) && !checkAndCleanKey(KEY_ENTER))
+                vTaskDelay(5);
+        }
+
+
+        startULA();
     }
 }
