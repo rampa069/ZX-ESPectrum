@@ -68,7 +68,7 @@ void IRAM_ATTR load_ram(String sna_file) {
     rom_latch=1;
     paging_lock=1;
 #pragma GCC diagnostic ignored "-Wall"
-    Serial.printf("%s SNA: %ub\n", MSG_FREE_HEAP_BEFORE, system_get_free_heap_size());
+    Serial.printf("%s SNA: %ub\n", MSG_FREE_HEAP_BEFORE, ESP.getFreeHeap());
 #pragma GCC diagnostic warning "-Wall"
 
     KB_INT_STOP;
@@ -139,7 +139,7 @@ void IRAM_ATTR load_ram(String sna_file) {
 
 #pragma GCC diagnostic ignored "-Wall"
     if (cfg_slog_on) {
-        Serial.printf("%s SNA: %u\n", MSG_FREE_HEAP_AFTER, system_get_free_heap_size());
+        Serial.printf("%s SNA: %u\n", MSG_FREE_HEAP_AFTER, ESP.getFreeHeap());
         Serial.printf("Ret address: %x Stack: %x AF: %x Border: %x\n", retaddr, _zxCpu.registers.word[Z80_SP],
                       _zxCpu.registers.word[Z80_AF], borderTemp);
     }
@@ -226,8 +226,8 @@ void config_read() {
     String line;
     File cfg_f;
 
-    if (cfg_slog_on)
-        Serial.begin(115200);
+    //if (cfg_slog_on)
+    //    Serial.begin(115200);
     while (!Serial)
         delay(5);
 

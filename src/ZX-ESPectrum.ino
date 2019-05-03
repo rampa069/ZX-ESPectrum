@@ -78,27 +78,42 @@ void setup() {
     esp_bt_controller_deinit();
     esp_bt_controller_mem_release(ESP_BT_MODE_BTDM);
     // esp_wifi_set_mode(WIFI_MODE_NULL);
+
+    Serial.begin(115200);
+
+    #ifdef COLOUR_8
+        vga.init(vga.MODE360x200, redPin, greenPin, bluePin, hsyncPin, vsyncPin);
+    #endif
+
+    #ifdef COLOUR_16
+        vga.init(vga.MODE360x200, redPins, greenPins, bluePins, hsyncPin, vsyncPin);
+    #endif
+
+        vga.clear(0);
+
+
     Serial.printf("HEAP BEGIN %d\n",ESP.getFreeHeap());
 
-    rom0=  (byte *)malloc(16384);
-    rom1=  (byte *)malloc(16384);
+    //rom0=  (byte *)malloc(16384);
+    rom0= (byte *) heap_caps_malloc(16384, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+    rom1= (byte *) heap_caps_malloc(16384, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+
 
     Serial.printf("HEAP after rom: %d\n",ESP.getFreeHeap());
 
-
-    ram0=  (byte *)malloc(16384);
-    ram1=  (byte *)malloc(16384);
-    ram2=  (byte *)malloc(16384);
-    ram3=  (byte *)malloc(16384);
-    ram4=  (byte *)malloc(16384);
-    ram5=  (byte *)malloc(16384);
-    ram6=  (byte *)malloc(16384);
-    ram7=  (byte *)malloc(16384);
-
-    Serial.printf("HEAP END %d \n",ESP.getFreeHeap());
+    ram0= (byte *) heap_caps_malloc(16384, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+    ram1= (byte *) heap_caps_malloc(16384, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+    ram2= (byte *) heap_caps_malloc(16384, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+    ram3= (byte *) heap_caps_malloc(16384, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+    ram4= (byte *) heap_caps_malloc(16384, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+    ram5= (byte *) heap_caps_malloc(16384, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+    ram6= (byte *) heap_caps_malloc(16384, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+    ram7= (byte *) heap_caps_malloc(16384, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
 
 
-    Serial.println("Memory init complete");
+    Serial.printf("HEAP after ram %d \n",ESP.getFreeHeap());
+    Serial.println(MALLOC_CAP_SPIRAM);
+
 
     mount_spiffs();
     config_read();
@@ -111,16 +126,6 @@ void setup() {
 
 
 
-#ifdef COLOUR_8
-    vga.init(vga.MODE360x200, redPin, greenPin, bluePin, hsyncPin, vsyncPin);
-#endif
-
-#ifdef COLOUR_16
-    vga.init(vga.MODE360x200, redPins, greenPins, bluePins, hsyncPin, vsyncPin);
-#endif
-
-    vga.clear(0);
-
 
     pinMode(SOUND_PIN, OUTPUT);
     digitalWrite(SOUND_PIN, LOW);
@@ -129,7 +134,7 @@ void setup() {
 
 
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-    Serial.printf("%s bank %u: %ub\n", MSG_FREE_HEAP_AFTER, 0, system_get_free_heap_size());
+    Serial.printf("%s bank %u: %ub\n", MSG_FREE_HEAP_AFTER, 0, ESP.getFreeHeap());
 #pragma GCC diagnostic warning "-Wall"
 
     setup_cpuspeed();
@@ -146,7 +151,7 @@ void setup() {
 
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
     Serial.printf("%s %u\n", MSG_EXEC_ON_CORE, xPortGetCoreID());
-    Serial.printf("%s Z80 RESET: %ub\n", MSG_FREE_HEAP_AFTER, system_get_free_heap_size());
+    Serial.printf("%s Z80 RESET: %ub\n", MSG_FREE_HEAP_AFTER, ESP.getFreeHeap());
 #pragma GCC diagnostic warning "-Wall"
 
     xTaskCreatePinnedToCore(videoTask,   /* Function to implement the task */
