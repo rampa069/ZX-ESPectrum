@@ -1,4 +1,4 @@
-# 1 "/var/folders/gv/jmp9y6cj1qv6tg2tl0t1b6j80000gn/T/tmpTxn6p2"
+# 1 "/var/folders/gv/jmp9y6cj1qv6tg2tl0t1b6j80000gn/T/tmpPQcTm1"
 #include <Arduino.h>
 # 1 "/Users/queru/Documents/Desarrollo/spectrum/ZX-ESPectrum/src/ZX-ESPectrum.ino"
 # 9 "/Users/queru/Documents/Desarrollo/spectrum/ZX-ESPectrum/src/ZX-ESPectrum.ino"
@@ -68,8 +68,8 @@ VGA14Bit vga;
 #endif
 void setup();
 void videoTask(void *parameter);
-byte calcY(byte offset);
-byte calcX(byte offset);
+int calcY(int offset);
+int calcX(int offset);
 unsigned int zxcolor(int c, int bright);
 void do_keyboard();
 void loop();
@@ -224,14 +224,14 @@ void videoTask(void *parameter) {
 
 
 
-byte calcY(byte offset) {
+int calcY(int offset) {
     return ((offset >> 11) << 6)
            + ((offset % 2048) >> 8)
            + ((((offset % 2048) >> 5) - ((offset % 2048) >> 8 << 3)) << 3);
 }
 
 
-byte calcX(byte offset) { return (offset % 32) << 3; }
+int calcX(int offset) { return (offset % 32) << 3; }
 
 unsigned int zxcolor(int c, int bright) {
     word vga_color;

@@ -221,14 +221,14 @@ void videoTask(void *parameter) {
 // SPECTRUM SCREEN DISPLAY
 //
 /* Calculate Y coordinate (0-192) from Spectrum screen memory location */
-byte calcY(byte offset) {
+int calcY(int offset) {
     return ((offset >> 11) << 6)                                            // sector start
            + ((offset % 2048) >> 8)                                         // pixel rows
            + ((((offset % 2048) >> 5) - ((offset % 2048) >> 8 << 3)) << 3); // character rows
 }
 
 /* Calculate X coordinate (0-255) from Spectrum screen memory location */
-byte calcX(byte offset) { return (offset % 32) << 3; }
+int calcX(int offset) { return (offset % 32) << 3; }
 
 unsigned int zxcolor(int c, int bright) {
     word vga_color;
