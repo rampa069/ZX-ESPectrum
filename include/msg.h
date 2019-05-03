@@ -25,9 +25,12 @@
 #define OSD_BOTTOM "           LIVE FREE OR DIE!!           "
 #define OSD_ON "OSD ON"
 #define OSD_OFF "OSD OFF"
+#define OSD_DEMO_MODE_ON "Demo Mode ON"
+#define OSD_DEMO_MODE_OFF "Demo Mode OFF"
 #define MENU_SNA_TITLE "Select Snapshot"
-#define MENU_MAIN "Main Menu\nChange ROM\nChange RAM\nReset\nHelp\nReturn\n"
+#define MENU_MAIN "Main Menu\nChange ROM\nChange RAM\nReset\nDemo Mode\nHelp\nReturn\n"
 #define MENU_RESET "Reset Menu\nSoft reset\nHard reset\nCancel\n"
+#define MENU_DEMO "Demo mode\nOFF\n 1 minute\n 3 minutes\n 5 minutes\n15 minutes\n30 minutes\n 1 hour\n"
 #define OSD_HELP                                                                                                       \
     " F1 Main menu:\n"                                                                                                 \
     "    Cursor to move.\n"                                                                                            \

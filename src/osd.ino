@@ -31,16 +31,46 @@ void do_OSD() {
             if (opt2 == 1) {
                 // Soft
                 zx_reset();
-                if (cfg_mode_sna)
+                if (cfg_ram_file != NO_RAM_FILE)
                     load_ram(cfg_ram_file);
             } else if (opt2 == 2) {
                 // Hard
-                cfg_mode_sna = false;
-                cfg_ram_file = 'none';
+                cfg_ram_file = NO_RAM_FILE;
                 config_save();
                 zx_reset();
             }
         } else if (opt == 4) {
+            // Demo mode
+            byte opt2 = do_Menu(MENU_DEMO);
+            if (opt2 == 1) {
+                cfg_demo_on = false;
+                osdCenteredMsg(OSD_DEMO_MODE_OFF, LEVEL_WARN);
+            } else {
+                cfg_demo_on = true;
+                osdCenteredMsg(OSD_DEMO_MODE_ON, LEVEL_OK);
+                switch (opt2) {
+                case 2:
+                    cfg_demo_every = 60000;
+                    break;
+                case 3:
+                    cfg_demo_every = 180000;
+                    break;
+                case 4:
+                    cfg_demo_every = 300000;
+                    break;
+                case 5:
+                    cfg_demo_every = 900000;
+                    break;
+                case 6:
+                    cfg_demo_every = 1800000;
+                    break;
+                case 7:
+                    cfg_demo_every = 3600000;
+                    break;
+                }
+            }
+            vTaskDelay(500);
+        } else if (opt == 5) {
             // Help
             drawOSD();
             osdAt(2, 0);

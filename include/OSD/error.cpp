@@ -38,11 +38,11 @@ void osdCenteredMsg(String msg, byte warn_level) {
 
     switch (warn_level) {
     case LEVEL_OK:
-        ink = zxcolor(0, 0);
+        ink = zxcolor(7, 1);
         paper = zxcolor(4, 0);
         break;
     case LEVEL_ERROR:
-        ink = zxcolor(7, 0);
+        ink = zxcolor(7, 1);
         paper = zxcolor(2, 0);
         break;
     case LEVEL_WARN:
@@ -55,7 +55,7 @@ void osdCenteredMsg(String msg, byte warn_level) {
     }
 
     vga.fillRect(x, y, w, h, paper);
-    vga.rect(x - 1, y - 1, w + 2, h + 2, ink);
+    // vga.rect(x - 1, y - 1, w + 2, h + 2, ink);
     vga.setTextColor(ink, paper);
     vga.setFont(Font6x8);
     vga.setCursor(x + OSD_FONT_W, y + OSD_FONT_H);

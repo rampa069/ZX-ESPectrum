@@ -7,12 +7,11 @@
 // -------------------------------------------------------------------
 
 #include "Emulator/Keyboard/PS2Kbd.h"
-#include "Emulator/msg.h"
 #include "Emulator/z80emu/z80emu.h"
 #include "Emulator/z80user.h"
-//#include "FS.h"
-//#include "SPIFFS.h"
+#include "dirdefs.h"
 #include "machinedefs.h"
+#include "msg.h"
 #include <ESP32Lib.h>
 #include <Ressources/Font6x8.h>
 #include <esp_bt.h>
@@ -23,9 +22,7 @@
 
 // EXTERN VARS
 extern boolean writeScreen;
-extern boolean cfg_mode_sna;
 extern boolean cfg_slog_on;
-extern boolean cfg_debug_on;
 extern String cfg_ram_file;
 extern String cfg_rom_file;
 extern CONTEXT _zxContext;
@@ -136,7 +133,7 @@ void setup() {
                             0);          /* Core where the task should run */
 
     load_rom(cfg_rom_file);
-    if (cfg_mode_sna)
+    if (cfg_ram_file != NO_RAM_FILE)
         load_ram(cfg_ram_file);
 }
 

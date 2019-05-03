@@ -18,6 +18,7 @@
 #define LEVEL_OK 1
 #define LEVEL_WARN 2
 #define LEVEL_ERROR 3
+#define NO_RAM_FILE "none"
 
 // Globals
 boolean checkAndCleanKey(byte scancode);
@@ -25,8 +26,9 @@ boolean isKeymapChanged();
 void updateKeymap();
 
 // Ext var
-extern boolean cfg_mode_sna;
 extern String cfg_sna_file_list;
+extern boolean cfg_demo_on;
+extern boolean cfg_demo_every;
 extern boolean xULAStop;
 extern boolean xULAStopped;
 

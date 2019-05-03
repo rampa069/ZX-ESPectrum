@@ -135,7 +135,7 @@ void IRAM_ATTR load_ram(String sna_file) {
 
 #pragma GCC diagnostic ignored "-Wall"
     if (cfg_slog_on) {
-        Serial.printf("%s SNA: %u\n", MSG_FREE_HEAP_AFTER, system_get_free_heap_size());
+        Serial.printf("%s SNA: %ub\n", MSG_FREE_HEAP_AFTER, system_get_free_heap_size());
         Serial.printf("Ret address: %x Stack: %x AF: %x Border: %x\n", retaddr, _zxCpu.registers.word[Z80_SP],
                       _zxCpu.registers.word[Z80_AF], borderTemp);
     }
@@ -161,28 +161,8 @@ void IRAM_ATTR config_save() {
     File f = SPIFFS.open(DISK_BOOT_FILENAME, FILE_WRITE);
     f.printf("machine:%u\n", cfg_machine_type);
     f.printf("romset:%s\n", cfg_rom_set.c_str());
-    f.print("mode:");
-    if (cfg_mode_sna) {
-        f.print("sna\n");
-    } else {
-        f.print("basic\n");
-    }
-    f.print("ram:");
-    String ram_file = cfg_ram_file;
-    if (cfg_ram_file.lastIndexOf("/") >= 0) {
-        ram_file = cfg_ram_file.substring((cfg_ram_file.lastIndexOf("/") + 1));
-    }
-    f.println(ram_file.c_str());
-    if (cfg_debug_on) {
-        f.print("debug:true\n");
-    } else {
-        f.print("debug:false\n");
-    }
-    if (cfg_slog_on) {
-        f.print("slog:true\n");
-    } else {
-        f.print("slog:false\n");
-    }
+    f.printf("ram:%s\n", cfg_ram_file.c_str());
+    f.printf("slog:%s\n", (cfg_slog_on ? "true" : "false"));
     f.close();
     vTaskDelay(5);
     Serial.println("OK");
@@ -216,10 +196,12 @@ void config_read() {
     String line;
     File cfg_f;
 
-    if (cfg_slog_on)
+    if (cfg_slog_on) {
         Serial.begin(115200);
-    while (!Serial)
-        delay(5);
+        while (!Serial) {
+            delay(5);
+        }
+    }
 
     // Boot config file
     KB_INT_STOP;
@@ -228,14 +210,10 @@ void config_read() {
         char c = (char)cfg_f.read();
         if (c == '\n') {
             Serial.println("CFG LINE " + line);
-            if (line.compareTo("debug:true") == 0) {
-                cfg_debug_on = true;
-            } else if (line.compareTo("slog:false") == 0) {
+            if (line.compareTo("slog:false") == 0) {
                 cfg_slog_on = false;
                 if (Serial)
                     Serial.end();
-            } else if (line.compareTo("mode:sna") == 0) {
-                cfg_mode_sna = true;
             } else if (line.startsWith("rom:")) {
                 cfg_rom_file = "/rom/" + line.substring(line.lastIndexOf(':') + 1);
             } else if (line.startsWith("ram:")) {
