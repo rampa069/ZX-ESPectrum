@@ -1,4 +1,6 @@
 #include "Emulator/Disk.h"
+#include "Emulator/Memory.h"
+#include "Emulator/z80main.h"
 
 void IRAM_ATTR mount_spiffs() {
     if (!SPIFFS.begin())
@@ -117,21 +119,21 @@ void IRAM_ATTR load_ram(String sna_file) {
     _zxCpu.iff1 = _zxCpu.iff2;
 
     uint16_t thestack = _zxCpu.registers.word[Z80_SP];
-    uint16_t buf_p = 0;
+    uint16_t buf_p = 0x4000;
     while (lhandle.available()) {
-        bank0[buf_p] = lhandle.read();
+        writebyte(buf_p,lhandle.read());
         buf_p++;
     }
     lhandle.close();
 
     uint16_t offset = thestack - 0x4000;
-    uint16_t retaddr = bank0[offset] + 0x100 * bank0[offset + 1];
+    uint16_t retaddr = ram5[offset] + 0x100 * ram5[offset + 1];
 
     _zxCpu.registers.word[Z80_SP]++;
     _zxCpu.registers.word[Z80_SP]++;
 
     _zxCpu.pc = retaddr;
-    //_zxCpu.pc=0x8400;
+
 
 #pragma GCC diagnostic ignored "-Wall"
     if (cfg_slog_on) {
@@ -145,9 +147,15 @@ void IRAM_ATTR load_ram(String sna_file) {
 
 void load_rom(String rom_file) {
     KB_INT_STOP;
-    File rom_f = open_read_file(rom_file);
+    //File rom_f = open_read_file(rom_file);
+    File rom_f = open_read_file("/rom/PLUS2A/ZX/0.rom");
     for (int i = 0; i < rom_f.size(); i++) {
-        specrom[i] = (byte)rom_f.read();
+        rom0[i] = (byte)rom_f.read();
+    }
+    rom_f.close();
+    rom_f = open_read_file("/rom/PLUS2A/ZX/1.rom");
+    for (int i = 0; i < rom_f.size(); i++) {
+        rom1[i] = (byte)rom_f.read();
     }
     rom_f.close();
     vTaskDelay(2);

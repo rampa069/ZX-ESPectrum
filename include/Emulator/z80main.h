@@ -11,4 +11,7 @@ void zx_setup();
 int32_t zx_loop();
 void zx_reset();
 
+extern "C" uint8_t readbyte(uint16_t addr);
+extern "C" void writebyte(uint16_t addr, uint8_t data);
+
 #endif

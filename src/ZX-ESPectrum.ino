@@ -8,19 +8,19 @@
 
 #include "Emulator/Keyboard/PS2Kbd.h"
 #include "Emulator/msg.h"
+#include "Emulator/Memory.h"
 #include "Emulator/osd.h"
 #include "Emulator/z80emu/z80emu.h"
 #include "Emulator/z80user.h"
-//#include "FS.h"
-//#include "SPIFFS.h"
+
 #include "paledefs.h"
 #include <ESP32Lib.h>
 #include <Ressources/Font6x8.h>
 #include <esp_bt.h>
 #include <esp_task_wdt.h>
+#include "sdkconfig.h"
+#include "esp_attr.h"
 
-//
-// types
 
 // EXTERN VARS
 extern boolean writeScreen;
@@ -50,8 +50,9 @@ void do_OSD();
 void errorHalt(String);
 void mount_spiffs();
 
+
 // GLOBALS
-volatile byte *bank0;
+//volatile byte *bank0;
 volatile byte z80ports_in[128];
 byte borderTemp = 7;
 byte soundTemp = 0;
@@ -77,14 +78,38 @@ void setup() {
     esp_bt_controller_deinit();
     esp_bt_controller_mem_release(ESP_BT_MODE_BTDM);
     // esp_wifi_set_mode(WIFI_MODE_NULL);
+    Serial.printf("HEAP BEGIN %d\n",ESP.getFreeHeap());
+
+    rom0=  (byte *)malloc(16384);
+    rom1=  (byte *)malloc(16384);
+
+    Serial.printf("HEAP after rom: %d\n",ESP.getFreeHeap());
+
+
+    ram0=  (byte *)malloc(16384);
+    ram1=  (byte *)malloc(16384);
+    ram2=  (byte *)malloc(16384);
+    ram3=  (byte *)malloc(16384);
+    ram4=  (byte *)malloc(16384);
+    ram5=  (byte *)malloc(16384);
+    ram6=  (byte *)malloc(16384);
+    ram7=  (byte *)malloc(16384);
+
+    Serial.printf("HEAP END %d \n",ESP.getFreeHeap());
+
+
+    Serial.println("Memory init complete");
 
     mount_spiffs();
     config_read();
+
 
     if (cfg_slog_on) {
         Serial.println(MSG_CHIP_SETUP);
         Serial.println(MSG_VGA_INIT);
     }
+
+
 
 #ifdef COLOUR_8
     vga.init(vga.MODE360x200, redPin, greenPin, bluePin, hsyncPin, vsyncPin);
@@ -94,18 +119,14 @@ void setup() {
     vga.init(vga.MODE360x200, redPins, greenPins, bluePins, hsyncPin, vsyncPin);
 #endif
 
-    Serial.printf("VGA RGB: %x\n", vga.RGBA(0xff, 0xff, 0xff, 0xff));
+    vga.clear(0);
+
 
     pinMode(SOUND_PIN, OUTPUT);
     digitalWrite(SOUND_PIN, LOW);
 
     kb_begin();
 
-    // ALLOCATE MEMORY
-    //
-    bank0 = (byte *)malloc(49152);
-    if (bank0 == NULL)
-        errorHalt((String)ERR_BANK_FAIL + "0");
 
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
     Serial.printf("%s bank %u: %ub\n", MSG_FREE_HEAP_AFTER, 0, system_get_free_heap_size());
@@ -151,7 +172,9 @@ void videoTask(void *parameter) {
     unsigned int ts1, ts2;
     word zx_fore_color, zx_back_color, tmp_color;
 
+
     while (1) {
+
         while (xULAStop) {
             xULAStopped = true;
             delay(5);
@@ -179,8 +202,15 @@ void videoTask(void *parameter) {
 
                     byte_offset = (vga_lin - 3) * 32 + ff; //*2+1;
 
-                    color_attrib = bank0[0x1800 + (calcY(byte_offset) / 8) * 32 + ff]; // get 1 of 768 attrib values
-                    pixel_map = bank0[byte_offset];
+                    if (!video_latch)
+                    {
+                      color_attrib = ram5[0x1800 + (calcY(byte_offset) / 8) * 32 + ff]; // get 1 of 768 attrib values
+                      pixel_map = ram5[byte_offset];
+                    }
+                    else {
+                      color_attrib = ram7[0x1800 + (calcY(byte_offset) / 8) * 32 + ff]; // get 1 of 768 attrib values
+                      pixel_map = ram7[byte_offset];
+                    }
                     calc_y = calcY(byte_offset);
 
                     for (i = 0; i < 8; i++) // foreach pixel within a byte
@@ -214,6 +244,7 @@ void videoTask(void *parameter) {
     TIMERG0.wdt_wprotect = TIMG_WDT_WKEY_VALUE;
     TIMERG0.wdt_feed = 1;
     TIMERG0.wdt_wprotect = 0;
+    Serial.printf("ULA: %d\n",ts2-ts1);
     if (ts2 - ts1 < 20)
         delay(20 - (ts2 - ts1));
     // vTaskDelay(1);
@@ -330,22 +361,7 @@ void do_keyboard() {
     bitWrite(z80ports_in[0x1f], 3, !keymap[0x75]);
     bitWrite(z80ports_in[0x1f], 4, !keymap[0x73]);
 
-    /*if (!keymap[0x75])
-        kempston=kempston+8;
 
-    if (!keymap[0x72])
-        kempston=kempston+4;
-
-    if (!keymap[0x6b])
-        kempston=kempston+2;
-
-    if (!keymap[0x74])
-        kempston=kempston+1;
-
-    if (!keymap[0x73])
-        kempston=kempston+16;
-
-        z80ports_in[31]=kempston; */
 }
 
 /* +-------------+

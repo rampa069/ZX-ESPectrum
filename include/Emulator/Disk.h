@@ -16,13 +16,12 @@
 #include <SPIFFS.h>
 
 // Extern vars
-extern byte *bank0;
 extern byte borderTemp;
 extern Z80_STATE _zxCpu;
 extern boolean cfg_slog_on;
 
 // Globals
-byte specrom[16384];
+
 byte cfg_machine_type = MACHINE_ZX48;
 String cfg_ram_file = "noram";
 String cfg_rom_file = "0.rom";

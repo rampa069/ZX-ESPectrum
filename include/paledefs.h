@@ -5,8 +5,8 @@
 #define KEYBOARD_DATA 25
 #define KEYBOARD_CLK 26
 
-//#define  COLOUR_8
-#define COLOUR_16
+#define  COLOUR_8
+//#define COLOUR_16
 
 #ifdef COLOUR_8
 const int redPin = 14;

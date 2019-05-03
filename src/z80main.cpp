@@ -4,6 +4,7 @@
 #include <string.h>
 
 #include "Emulator/Keyboard/PS2Kbd.h"
+#include "Emulator/Memory.h"
 #include "Emulator/z80Input.h"
 #include "Emulator/z80main.h"
 
@@ -13,8 +14,6 @@
 Sound::Ay3_8912_state _ay3_8912;
 Z80_STATE _zxCpu;
 
-extern byte *bank0;
-extern byte specrom[16394];
 extern byte borderTemp;
 extern byte z80ports_in[128];
 extern byte tick;
@@ -52,6 +51,11 @@ void zx_setup() {
 void zx_reset() {
     memset(z80ports_in, 0x1F, 128);
     borderTemp = 7;
+    bank_latch=0;
+    video_latch=0;
+    rom_latch=0;
+    paging_lock=0;
+
     Z80Reset(&_zxCpu);
 }
 
@@ -82,28 +86,65 @@ int32_t zx_loop() {
 }
 
 extern "C" uint8_t readbyte(uint16_t addr) {
-    uint8_t res;
-    if (addr >= (uint16_t)0x4000) {
-        res = bank0[addr - 0x4000];
-    } else {
-        res = specrom[addr];
-    }
-    return res;
+  switch (addr)
+  {
+    case 0x0000 ... 0x3fff: if (!rom_latch)
+                              return rom0[addr] ;
+                            else
+                              return rom1[addr] ;
+                            break;
+    case 0x4000 ... 0x7fff: return ram5[addr-0x4000];break;
+    case 0x8000 ... 0xbfff: return ram2[addr-0x8000];break;
+    case 0xc000 ... 0xffff: switch(bank_latch)
+                            {
+                              case 0: return ram0[addr-0xc000];break;
+                              case 1: return ram1[addr-0xc000];break;
+                              case 2: return ram2[addr-0xc000];break;
+                              case 3: return ram3[addr-0xc000];break;
+                              case 4: return ram4[addr-0xc000];break;
+                              case 5: return ram5[addr-0xc000];break;
+                              case 6: return ram6[addr-0xc000];break;
+                              case 7: return ram7[addr-0xc000];break;
+                            }
+                            //Serial.printf("Address: %x Returned address %x  Bank: %x\n",addr,addr-0xc000,bank_latch);
+                            break;
+  }
 }
 
 extern "C" uint16_t readword(uint16_t addr) { return ((readbyte(addr + 1) << 8) | readbyte(addr)); }
 
 extern "C" void writebyte(uint16_t addr, uint8_t data) {
-    if (addr >= (uint16_t)0x4000 && addr <= (uint16_t)0x7FFF) {
-        while (writeScreen) {
-            delayMicroseconds(1);
-        }
 
-        bank0[addr - 0x4000] = data;
+  //  if (addr >= (uint16_t)0x4000 && addr <= (uint16_t)0x7FFF)
+  //  {
+  //      while (writeScreen) {
+  //          delayMicroseconds(1);
+  //      }
+    //if (addr >= 0x8000)
+    //   Serial.printf("Address: %x  Bank: %x\n",addr,bank_latch);
+
+    switch (addr)
+    {
+      case 0x0000 ... 0x3fff: return;
+      case 0x4000 ... 0x7fff: ram5[addr-0x4000] = data;break;
+      case 0x8000 ... 0xbfff: ram2[addr-0x8000] = data;break;
+      case 0xc000 ... 0xffff: switch(bank_latch)
+                              {
+                                case 0:ram0[addr-0xc000] = data;break;
+                                case 1:ram1[addr-0xc000] = data;break;
+                                case 2:ram2[addr-0xc000] = data;break;
+                                case 3:ram3[addr-0xc000] = data;break;
+                                case 4:ram4[addr-0xc000] = data;break;
+                                case 5:ram5[addr-0xc000] = data;break;
+                                case 6:ram6[addr-0xc000] = data;break;
+                                case 7:ram7[addr-0xc000] = data;break;
+                              }
+                              //Serial.println("plin");
+                              break;
+
     }
-    if (addr >= (uint16_t)0x4000) {
-        bank0[addr - 0x4000] = data;
-    }
+    return;
+
 }
 
 extern "C" void writeword(uint16_t addr, uint16_t data) {
@@ -166,6 +207,7 @@ extern "C" uint8_t input(uint8_t portLow, uint8_t portHigh) {
     if (portLow == 0xFD) {
         switch (portHigh) {
         case 0xFF:
+            //Serial.println("Read AY register");
             return _ay3_8912.getRegisterData();
         }
     }
@@ -173,10 +215,12 @@ extern "C" uint8_t input(uint8_t portLow, uint8_t portHigh) {
     uint8_t data = zx_data;
     data |= (0xe0); /* Set bits 5-7 - as reset above */
     data &= ~0x40;
+    Serial.printf("Port %x%x  Data %x\n", portHigh,portLow,data);
     return data;
 }
 
 extern "C" void output(uint8_t portLow, uint8_t portHigh, uint8_t data) {
+    uint8_t tmp_data=data;
     switch (portLow) {
     case 0xFE: {
         // border color (no bright colors)
@@ -195,14 +239,32 @@ extern "C" void output(uint8_t portLow, uint8_t portHigh, uint8_t data) {
         // Sound (AY-3-8912)
         switch (portHigh) {
         case 0xFF:
-            _ay3_8912.selectRegister(data);
+            //Serial.println("Select AY register");
+            _ay3_8912.selectRegister(data);break;
         case 0xBF:
-            _ay3_8912.setRegisterData(data);
+             //Serial.println("Select AY register Data");
+            _ay3_8912.setRegisterData(data);break;
+        case 0x7F: if (paging_lock)
+                       return;
+                   paging_lock=bitRead(tmp_data,5);
+                   rom_latch=bitRead(tmp_data,4);
+                   video_latch=bitRead(tmp_data,3);
+                   bank_latch=tmp_data & 0x7;
+                   //Serial.printf("7FFD data: %x ROM latch: %x Video Latch: %x bank latch: %x page lock: %x\n",tmp_data,rom_latch,video_latch,bank_latch,paging_lock);
+                   break;
+
+        case 0x1F: if (paging_lock)
+                       return;
+                   paging_lock=bitRead(data,5);
+                   rom_latch=bitRead(data,4);
+                   bank_latch=data & 0x7;
+                   video_latch=bitRead(data,3);
+                   //Serial.printf("1FFD data: %x ROM latch: %x Video Latch: %x bank latch: %x\n",data,rom_latch,video_latch,bank_latch);
+                   break;
         }
     } break;
-
-    default:
-        zx_data = data;
+    //default:
+    //    zx_data = data;
         break;
     }
 }
