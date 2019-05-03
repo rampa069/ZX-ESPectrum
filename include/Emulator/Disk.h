@@ -35,6 +35,8 @@ boolean cfg_slog_on = true;
 void errorHalt(String errormsg);
 void IRAM_ATTR kb_interruptHandler(void);
 void zx_reset();
+void IRAM_ATTR load_ram_128(String sna_file);
+
 
 // Types
 typedef int32_t dword;

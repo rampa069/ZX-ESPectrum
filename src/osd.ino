@@ -198,8 +198,10 @@ void do_OSD() {
             case 1:
                 // Soft
                 zx_reset();
-                if (cfg_mode_sna)
-                    load_ram(cfg_ram_file);
+                //if (cfg_mode_sna)
+                    load_ram_128("/sna/abadia.sna");
+
+                    //load_ram(cfg_ram_file);
                 break;
             case 2:
                 // Hard

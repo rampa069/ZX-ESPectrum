@@ -28,6 +28,8 @@ extern boolean xULAStopped;
 
 // Ext method
 void config_save();
+void IRAM_ATTR load_ram_128(String sna_file);
+
 
 // X origin to center an element with pixel_width
 unsigned short scrAlignCenterX(unsigned short pixel_width) { return (SCR_W / 2) - (pixel_width / 2); }
