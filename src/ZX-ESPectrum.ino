@@ -8,7 +8,6 @@
 
 #include "Emulator/Keyboard/PS2Kbd.h"
 #include "Emulator/msg.h"
-#include "Emulator/osd.h"
 #include "Emulator/z80emu/z80emu.h"
 #include "Emulator/z80user.h"
 //#include "FS.h"
