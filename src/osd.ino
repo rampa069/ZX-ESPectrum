@@ -84,9 +84,6 @@ void do_OSD() {
     }
 
     if (cycle_sna || (demo_mode_on && ((millis() / 1000) - last_demo_ts) > demo_every)) {
-        Serial.printf("DEMO MODE: %s\n", (demo_mode_on ? "ON" : "OFF"));
-        Serial.printf("CYCLE SNA LAST:%u NOW:%u DIFF:%u EVERY: %u\n", last_demo_ts, (millis() / 1000),
-                      ((millis() / 1000) - last_demo_ts), demo_every);
         // Cycle over snapshots
         last_sna_row++;
         if (last_sna_row > menuRowCount(cfg_sna_file_list) - 1) {
