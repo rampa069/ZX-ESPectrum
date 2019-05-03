@@ -5,14 +5,12 @@
 // OSD Main Loop
 void do_OSD() {
     static byte last_sna_row = 0;
+    static boolean demo_mode_on = false;
+    static unsigned int last_demo_ts = millis() / 1000;
+    static unsigned int demo_every = 300;
+    boolean cycle_sna = false;
     if (checkAndCleanKey(KEY_F12)) {
-        // Cycle over snapshots
-        last_sna_row++;
-        if (last_sna_row > menuRowCount(cfg_sna_file_list) - 1) {
-            last_sna_row = 1;
-        }
-
-        changeSna(menuGetRow(cfg_sna_file_list, last_sna_row));
+        cycle_sna = true;
     } else if (checkAndCleanKey(KEY_F1)) {
         // Main menu
         stopULA(); // ULA Stopped
@@ -43,29 +41,30 @@ void do_OSD() {
             // Demo mode
             byte opt2 = do_Menu(MENU_DEMO);
             if (opt2 == 1) {
-                cfg_demo_on = false;
+                demo_mode_on = false;
                 osdCenteredMsg(OSD_DEMO_MODE_OFF, LEVEL_WARN);
             } else {
-                cfg_demo_on = true;
+                demo_mode_on = true;
+                last_demo_ts = millis() / 1000;
                 osdCenteredMsg(OSD_DEMO_MODE_ON, LEVEL_OK);
                 switch (opt2) {
                 case 2:
-                    cfg_demo_every = 60000;
+                    demo_every = 60;
                     break;
                 case 3:
-                    cfg_demo_every = 180000;
+                    demo_every = 180;
                     break;
                 case 4:
-                    cfg_demo_every = 300000;
+                    demo_every = 300;
                     break;
                 case 5:
-                    cfg_demo_every = 900000;
+                    demo_every = 900;
                     break;
                 case 6:
-                    cfg_demo_every = 1800000;
+                    demo_every = 1800;
                     break;
                 case 7:
-                    cfg_demo_every = 3600000;
+                    demo_every = 3600;
                     break;
                 }
             }
@@ -82,5 +81,19 @@ void do_OSD() {
         }
         // Exit
         startULA();
+    }
+
+    if (cycle_sna || (demo_mode_on && ((millis() / 1000) - last_demo_ts) > demo_every)) {
+        Serial.printf("DEMO MODE: %s\n", (demo_mode_on ? "ON" : "OFF"));
+        Serial.printf("CYCLE SNA LAST:%u NOW:%u DIFF:%u EVERY: %u\n", last_demo_ts, (millis() / 1000),
+                      ((millis() / 1000) - last_demo_ts), demo_every);
+        // Cycle over snapshots
+        last_sna_row++;
+        if (last_sna_row > menuRowCount(cfg_sna_file_list) - 1) {
+            last_sna_row = 1;
+        }
+        changeSna(menuGetRow(cfg_sna_file_list, last_sna_row));
+        last_demo_ts = millis() / 1000;
+        cycle_sna = false;
     }
 }

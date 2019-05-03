@@ -29,8 +29,6 @@ String cfg_rom_file = "0.rom";
 String cfg_rom_set = "ZX";
 String cfg_sna_file_list;
 boolean cfg_slog_on = true;
-boolean cfg_demo_on = false;
-unsigned short cfg_demo_every = 300000;
 
 // External methods
 void errorHalt(String errormsg);

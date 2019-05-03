@@ -20,11 +20,6 @@
 #define LEVEL_ERROR 3
 #define NO_RAM_FILE "none"
 
-// Globals
-boolean checkAndCleanKey(byte scancode);
-boolean isKeymapChanged();
-void updateKeymap();
-
 // Ext var
 extern String cfg_sna_file_list;
 extern boolean cfg_demo_on;
@@ -64,9 +59,11 @@ void changeSna(String sna_filename);
 void stopULA();
 void startULA();
 void stepULA();
-
 // Ext method
+boolean checkAndCleanKey(byte scancode);
+boolean isKeymapChanged();
 void config_save();
+void updateKeymap();
 
 // Include rest of OSD code
 #include "OSD/SNA_mng.cpp"
