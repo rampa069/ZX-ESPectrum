@@ -12,7 +12,7 @@
 #include "Emulator/z80user.h"
 //#include "FS.h"
 //#include "SPIFFS.h"
-#include "paledefs.h"
+#include "machinedefs.h"
 #include <ESP32Lib.h>
 #include <Ressources/Font6x8.h>
 #include <esp_bt.h>

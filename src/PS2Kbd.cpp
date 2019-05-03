@@ -2,8 +2,8 @@
 #include <Arduino.h>
 #pragma GCC diagnostic warning "-Wall"
 
-#include "paledefs.h"
 #include "Emulator/Keyboard/PS2Kbd.h"
+#include "machinedefs.h"
 
 unsigned int shift = 0;
 byte lastcode = 0;

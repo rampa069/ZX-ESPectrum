@@ -28,11 +28,3 @@
 #define MENU_SNA_TITLE "Select Snapshot"
 #define MENU_MAIN "Main Menu\nChange ROM\nChange RAM\nReset\nHelp\nReturn\n"
 #define MENU_RESET "Reset Menu\nSoft reset\nHard reset\nCancel\n"
-#define OSD_HELP                                                                                                       \
-    " F1 Main menu:\n"                                                                                                 \
-    "    Cursor to move.\n"                                                                                            \
-    "    Enter to select.\n"                                                                                           \
-    "    Esc/F1 to exit.\n"                                                                                            \
-    "F12 Cycle to next snapshot.\n\n"                                                                                  \
-    "Keyboard cursor is mapped to kempston\n"                                                                          \
-    "joystick. AltGr to fire.\n"

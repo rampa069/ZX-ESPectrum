@@ -10,7 +10,7 @@
 #include "Emulator/machines.h"
 #include "Emulator/msg.h"
 #include "Emulator/z80emu/z80emu.h"
-#include "paledefs.h"
+#include "machinedefs.h"
 #include <Arduino.h>
 #include <FS.h>
 #include <SPIFFS.h>
