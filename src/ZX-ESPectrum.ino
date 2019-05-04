@@ -7,13 +7,13 @@
 // -------------------------------------------------------------------
 
 #include "Emulator/Keyboard/PS2Kbd.h"
-#include "Emulator/msg.h"
-#include "Emulator/Memory.h"
-#include "Emulator/osd.h"
 #include "Emulator/z80emu/z80emu.h"
 #include "Emulator/z80user.h"
+#include "Emulator/Memory.h"
 
-#include "paledefs.h"
+#include "dirdefs.h"
+#include "machinedefs.h"
+#include "msg.h"
 #include <ESP32Lib.h>
 #include <Ressources/Font6x8.h>
 #include <esp_bt.h>
@@ -24,9 +24,7 @@
 
 // EXTERN VARS
 extern boolean writeScreen;
-extern boolean cfg_mode_sna;
 extern boolean cfg_slog_on;
-extern boolean cfg_debug_on;
 extern String cfg_ram_file;
 extern String cfg_rom_file;
 extern CONTEXT _zxContext;
@@ -36,6 +34,8 @@ extern int _next_total;
 
 void load_rom(String);
 void load_ram(String);
+void load_ram_128(String);
+
 volatile byte keymap[256];
 volatile byte oldKeymap[256];
 
@@ -178,9 +178,8 @@ void setup() {
                             0);          /* Core where the task should run */
 
     load_rom(cfg_rom_file);
-    if (cfg_mode_sna)
-        load_ram_128(cfg_ram_file);
-
+    if (cfg_ram_file != (String)NO_RAM_FILE)
+        load_ram_128("/sna/" + cfg_ram_file);
 }
 
 // VIDEO core 0 *************************************
@@ -376,13 +375,11 @@ void do_keyboard() {
 
     // Kempston joystick
     z80ports_in[0x1f] = 0;
-    bitWrite(z80ports_in[0x1f], 0, !keymap[0x74]);
-    bitWrite(z80ports_in[0x1f], 1, !keymap[0x6b]);
-    bitWrite(z80ports_in[0x1f], 2, !keymap[0x72]);
-    bitWrite(z80ports_in[0x1f], 3, !keymap[0x75]);
-    bitWrite(z80ports_in[0x1f], 4, !keymap[0x73]);
-
-
+    bitWrite(z80ports_in[0x1f], 0, !keymap[KEY_CURSOR_RIGHT]);
+    bitWrite(z80ports_in[0x1f], 1, !keymap[KEY_CURSOR_LEFT]);
+    bitWrite(z80ports_in[0x1f], 2, !keymap[KEY_CURSOR_DOWN]);
+    bitWrite(z80ports_in[0x1f], 3, !keymap[KEY_CURSOR_UP]);
+    bitWrite(z80ports_in[0x1f], 4, !keymap[KEY_ALT_GR]);
 }
 
 /* +-------------+

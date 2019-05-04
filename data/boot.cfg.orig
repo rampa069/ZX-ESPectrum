@@ -1,6 +1,4 @@
 machine:0
 romset:ZX
-mode:basic
 ram:none
-debug:false
 slog:false

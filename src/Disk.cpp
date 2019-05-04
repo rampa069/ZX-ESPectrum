@@ -55,6 +55,7 @@ File IRAM_ATTR open_read_file(String filename) {
     if (cfg_slog_on)
         Serial.printf("%s '%s'\n", MSG_LOADING, filename.c_str());
     if (!SPIFFS.exists(filename.c_str())) {
+        KB_INT_START;
         errorHalt((String)ERR_READ_FILE + "\n" + filename);
     }
     f = SPIFFS.open(filename.c_str(), FILE_READ);
@@ -73,7 +74,7 @@ void IRAM_ATTR load_ram(String sna_file) {
     paging_lock=1;
     bank_latch=0;
     video_latch=0;
-    
+
 #pragma GCC diagnostic ignored "-Wall"
     Serial.printf("%s SNA: %ub\n", MSG_FREE_HEAP_BEFORE, ESP.getFreeHeap());
 #pragma GCC diagnostic warning "-Wall"
@@ -307,28 +308,8 @@ void IRAM_ATTR config_save() {
     File f = SPIFFS.open(DISK_BOOT_FILENAME, FILE_WRITE);
     f.printf("machine:%u\n", cfg_machine_type);
     f.printf("romset:%s\n", cfg_rom_set.c_str());
-    f.print("mode:");
-    if (cfg_mode_sna) {
-        f.print("sna\n");
-    } else {
-        f.print("basic\n");
-    }
-    f.print("ram:");
-    String ram_file = cfg_ram_file;
-    if (cfg_ram_file.lastIndexOf("/") >= 0) {
-        ram_file = cfg_ram_file.substring((cfg_ram_file.lastIndexOf("/") + 1));
-    }
-    f.println(ram_file.c_str());
-    if (cfg_debug_on) {
-        f.print("debug:true\n");
-    } else {
-        f.print("debug:false\n");
-    }
-    if (cfg_slog_on) {
-        f.print("slog:true\n");
-    } else {
-        f.print("slog:false\n");
-    }
+    f.printf("ram:%s\n", cfg_ram_file.c_str());
+    f.printf("slog:%s\n", (cfg_slog_on ? "true" : "false"));
     f.close();
     vTaskDelay(5);
     Serial.println("OK");
@@ -374,18 +355,12 @@ void config_read() {
         char c = (char)cfg_f.read();
         if (c == '\n') {
             Serial.println("CFG LINE " + line);
-            if (line.compareTo("debug:true") == 0) {
-                cfg_debug_on = true;
-            } else if (line.compareTo("slog:false") == 0) {
+            if (line.compareTo("slog:false") == 0) {
                 cfg_slog_on = false;
                 if (Serial)
                     Serial.end();
-            } else if (line.compareTo("mode:sna") == 0) {
-                cfg_mode_sna = true;
-            } else if (line.startsWith("rom:")) {
-                cfg_rom_file = "/rom/" + line.substring(line.lastIndexOf(':') + 1);
             } else if (line.startsWith("ram:")) {
-                cfg_ram_file = "/sna/" + line.substring(line.lastIndexOf(':') + 1);
+                cfg_ram_file = line.substring(line.lastIndexOf(':') + 1);
             } else if (line.startsWith("machine:")) {
                 cfg_machine_type = line.substring(line.lastIndexOf(':') + 1).toInt();
             } else if (line.startsWith("romset:")) {
