@@ -30,7 +30,7 @@ void do_OSD() {
                 // Soft
                 zx_reset();
                 if (cfg_ram_file != (String)NO_RAM_FILE)
-                    load_ram(cfg_ram_file);
+                    load_ram("/sna/" + cfg_ram_file);
             } else if (opt2 == 2) {
                 // Hard
                 cfg_ram_file = (String)NO_RAM_FILE;
