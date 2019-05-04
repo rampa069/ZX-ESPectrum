@@ -108,6 +108,16 @@ void drawMenu(String menu, byte focus, boolean new_draw) {
     }
 }
 
+String getArchMenu() {
+    String menu = (String)MENU_ARCH + getFileEntriesFromDir(DISK_ROM_DIR);
+    return menu;
+}
+
+String getRomsetMenu(String arch) {
+    String menu = (String)MENU_ROMSET + getFileEntriesFromDir((String)DISK_ROM_DIR + "/" + arch);
+    return menu;
+}
+
 unsigned short do_Menu(String menu) {
     const unsigned short real_rows = menuRowCount(menu);
     const byte rows = menuVirtualRows(menu);

@@ -17,6 +17,19 @@ void do_OSD() {
         byte opt = do_Menu(MENU_MAIN);
         if (opt == 1) {
             // Change ROM
+            String arch_menu = getArchMenu();
+            byte arch_num = do_Menu(arch_menu);
+            if (arch_num > 0) {
+                String romset_menu = getRomsetMenu(menuGetRow(arch_menu, arch_num));
+                byte romset_num = do_Menu(romset_menu);
+                if (romset_num > 0) {
+                    cfg_arch = menuGetRow(arch_menu, arch_num);
+                    cfg_rom_set = menuGetRow(romset_menu, romset_num);
+                    load_rom(cfg_arch, cfg_rom_set);
+                    config_save();
+                    zx_reset();
+                }
+            }
         } else if (opt == 2) {
             // Change RAM
             unsigned short snanum = do_Menu(cfg_sna_file_list);

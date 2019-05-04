@@ -1,4 +1,3 @@
-
 [env:lolin32]
 platform = espressif32
 board = lolin32
@@ -13,5 +12,5 @@ upload_port = /dev/cu.SLAB_USBtoUART
 upload_protocol = esptool
 
 monitor_speed = 115200
-build_flags = -O3
-board_build.partitions = no_ota.csv
+board_build.partitions = noota_3g.csv
+build_flags = -w -O3

@@ -2,9 +2,6 @@
 #include "Emulator/Memory.h"
 #include "Emulator/z80main.h"
 
-
-
-
 void IRAM_ATTR mount_spiffs() {
     if (!SPIFFS.begin())
         errorHalt(ERR_MOUNT_FAIL);
@@ -68,12 +65,12 @@ void IRAM_ATTR load_ram(String sna_file) {
     File lhandle;
     uint16_t size_read;
     byte sp_h, sp_l;
-    //force 48K mode
+    // force 48K mode
     zx_reset();
-    rom_latch=1;
-    paging_lock=1;
-    bank_latch=0;
-    video_latch=0;
+    rom_latch = 1;
+    paging_lock = 1;
+    bank_latch = 0;
+    video_latch = 0;
 
 #pragma GCC diagnostic ignored "-Wall"
     Serial.printf("%s SNA: %ub\n", MSG_FREE_HEAP_BEFORE, ESP.getFreeHeap());
@@ -131,7 +128,7 @@ void IRAM_ATTR load_ram(String sna_file) {
     uint16_t thestack = _zxCpu.registers.word[Z80_SP];
     uint16_t buf_p = 0x4000;
     while (lhandle.available()) {
-        writebyte(buf_p,lhandle.read());
+        writebyte(buf_p, lhandle.read());
         buf_p++;
     }
     lhandle.close();
@@ -143,7 +140,6 @@ void IRAM_ATTR load_ram(String sna_file) {
     _zxCpu.registers.word[Z80_SP]++;
 
     _zxCpu.pc = retaddr;
-
 
 #pragma GCC diagnostic ignored "-Wall"
     if (cfg_slog_on) {
@@ -160,7 +156,7 @@ void IRAM_ATTR load_ram_128(String sna_file) {
     uint16_t size_read;
     byte sp_h, sp_l;
     zx_reset();
-    #pragma GCC diagnostic ignored "-Wall"
+#pragma GCC diagnostic ignored "-Wall"
     Serial.printf("%s SNA: %ub\n", MSG_FREE_HEAP_BEFORE, ESP.getFreeHeap());
 #pragma GCC diagnostic warning "-Wall"
 
@@ -213,91 +209,128 @@ void IRAM_ATTR load_ram_128(String sna_file) {
 
     _zxCpu.iff1 = _zxCpu.iff2;
 
-
     uint16_t buf_p;
-    for (buf_p=0x4000;buf_p<0x8000;buf_p++)
-     {
-        writebyte(buf_p,lhandle.read());
+    for (buf_p = 0x4000; buf_p < 0x8000; buf_p++) {
+        writebyte(buf_p, lhandle.read());
     }
-    for (buf_p=0x8000;buf_p<0xc000;buf_p++)
-     {
-        writebyte(buf_p,lhandle.read());
+    for (buf_p = 0x8000; buf_p < 0xc000; buf_p++) {
+        writebyte(buf_p, lhandle.read());
     }
-    //bank_latch=6;
-    for (buf_p=0xc000;buf_p<0xffff;buf_p++)
-     {
-        writebyte(buf_p,lhandle.read());
+    // bank_latch=6;
+    for (buf_p = 0xc000; buf_p < 0xffff; buf_p++) {
+        writebyte(buf_p, lhandle.read());
     }
-
 
     byte machine = lhandle.read();
     byte retaddr_l = lhandle.read();
     byte retaddr_h = lhandle.read();
     word retaddr = retaddr_l + retaddr_h * 0x100;
-    byte tmp_port=lhandle.read();
+    byte tmp_port = lhandle.read();
 
     byte tmp_byte;
-    for ( int a=0xc000;a<0xffff;a++)
-    {
-      bank_latch=0;
-      tmp_byte=readbyte(a);
-      bank_latch=tmp_port & 0x07;
-      writebyte(a,tmp_byte);
+    for (int a = 0xc000; a < 0xffff; a++) {
+        bank_latch = 0;
+        tmp_byte = readbyte(a);
+        bank_latch = tmp_port & 0x07;
+        writebyte(a, tmp_byte);
     }
 
-    byte tr_dos=lhandle.read();
-    byte tmp_latch=tmp_port&0x7;
-    for (int page = 0;page < 8;page++)
-    {
-      if (page !=tmp_latch && page !=2 && page !=5)
-      {
-        bank_latch=page;
-        Serial.printf("Page %d actual_latch: %d\n",page,bank_latch );
-        for (buf_p=0xc000;buf_p<0xFFFF;buf_p++)
-        {
-            writebyte(buf_p,lhandle.read());
+    byte tr_dos = lhandle.read();
+    byte tmp_latch = tmp_port & 0x7;
+    for (int page = 0; page < 8; page++) {
+        if (page != tmp_latch && page != 2 && page != 5) {
+            bank_latch = page;
+            Serial.printf("Page %d actual_latch: %d\n", page, bank_latch);
+            for (buf_p = 0xc000; buf_p < 0xFFFF; buf_p++) {
+                writebyte(buf_p, lhandle.read());
+            }
         }
-      }
     }
 
     lhandle.close();
 
+    video_latch = bitRead(tmp_port, 3);
+    rom_latch = bitRead(tmp_port, 4);
+    paging_lock = bitRead(tmp_port, 5);
+    bank_latch = tmp_latch;
 
-
-    video_latch=bitRead(tmp_port,3);
-    rom_latch=bitRead(tmp_port,4);
-    paging_lock=bitRead(tmp_port,5);
-    bank_latch=tmp_latch;
-
-    //sleep(5);
+    // sleep(5);
     _zxCpu.pc = retaddr;
-
 
 #pragma GCC diagnostic ignored "-Wall"
     if (cfg_slog_on) {
         Serial.printf("%s SNA: %u\n", MSG_FREE_HEAP_AFTER, ESP.getFreeHeap());
-        Serial.printf("Ret address: %x Stack: %x AF: %x Border: %x bank_latch: %x rom_latch %x video_latch: %x last_port: %x\n", retaddr, _zxCpu.registers.word[Z80_SP],
-                      _zxCpu.registers.word[Z80_AF], borderTemp, bank_latch,rom_latch,video_latch,tmp_port);
+        Serial.printf(
+            "Ret address: %x Stack: %x AF: %x Border: %x bank_latch: %x rom_latch %x video_latch: %x last_port: %x\n",
+            retaddr, _zxCpu.registers.word[Z80_SP], _zxCpu.registers.word[Z80_AF], borderTemp, bank_latch, rom_latch,
+            video_latch, tmp_port);
     }
 #pragma GCC diagnostic warning "-Wall"
     KB_INT_START;
 }
 
-
-void load_rom(String rom_file) {
+String getFileEntriesFromDir(String path) {
     KB_INT_STOP;
-    //File rom_f = open_read_file(rom_file);
-    File rom_f = open_read_file("/rom/PLUS2A/ZX/0.rom");
-    for (int i = 0; i < rom_f.size(); i++) {
-        rom0[i] = (byte)rom_f.read();
+    Serial.printf("Getting entries from: %s\n", path.c_str());
+    String filelist;
+    File root = SPIFFS.open(path.c_str());
+    if (!root || !root.isDirectory()) {
+        errorHalt((String)ERR_DIR_OPEN + "\n" + root);
     }
-    rom_f.close();
-    rom_f = open_read_file("/rom/PLUS2A/ZX/1.rom");
-    for (int i = 0; i < rom_f.size(); i++) {
-        rom1[i] = (byte)rom_f.read();
+    File file = root.openNextFile();
+    while (file) {
+        Serial.printf("Found %s: %s...", (file.isDirectory() ? "DIR" : "FILE"), file.name());
+        String filename = file.name();
+        byte start = filename.indexOf("/", path.length()) + 1;
+        byte end = filename.indexOf("/", start);
+        filename = filename.substring(start, end);
+        Serial.printf("%s...", filename.c_str());
+        if (filename.startsWith(".")) {
+            Serial.println("HIDDEN");
+        } else {
+            if (filelist.indexOf(filename) < 0) {
+                Serial.println("ADDING");
+                filelist += filename + "\n";
+            } else {
+                Serial.println("EXISTS");
+            }
+        }
+        file = root.openNextFile();
     }
-    rom_f.close();
-    vTaskDelay(2);
+    KB_INT_START;
+    return filelist;
+}
+
+unsigned short countFileEntriesFromDir(String path) {
+    String entries = getFileEntriesFromDir(path);
+    unsigned short count = 0;
+    for (unsigned short i = 0; i < entries.length(); i++) {
+        if (entries.charAt(i) == ASCII_NL) {
+            count++;
+        }
+    }
+    return count;
+}
+
+void load_rom(String arch, String romset) {
+    KB_INT_STOP;
+    String path = "/rom/" + arch + "/" + romset;
+    byte n_roms = countFileEntriesFromDir(path);
+    for (byte f = 0; f < n_roms; f++) {
+        File rom_f = open_read_file(path + "/" + (String)f + ".rom");
+        for (int i = 0; i < rom_f.size(); i++) {
+            switch (f) {
+            case 0:
+                rom0[i] = (byte)rom_f.read();
+                break;
+            case 1:
+                rom1[i] = (byte)rom_f.read();
+                break;
+            }
+        }
+        rom_f.close();
+        vTaskDelay(2);
+    }
     KB_INT_START;
 }
 
@@ -306,7 +339,7 @@ void IRAM_ATTR config_save() {
     KB_INT_STOP;
     Serial.printf("Saving config file '%s'...", DISK_BOOT_FILENAME);
     File f = SPIFFS.open(DISK_BOOT_FILENAME, FILE_WRITE);
-    f.printf("machine:%u\n", cfg_machine_type);
+    f.printf("arch:%u\n", cfg_arch);
     f.printf("romset:%s\n", cfg_rom_set.c_str());
     f.printf("ram:%s\n", cfg_ram_file.c_str());
     f.printf("slog:%s\n", (cfg_slog_on ? "true" : "false"));
@@ -317,33 +350,14 @@ void IRAM_ATTR config_save() {
 }
 
 // Get all sna files
-String getSnaFileList() {
-    KB_INT_STOP;
-    Serial.printf("Reading dir: %s\n", DISK_SNA_DIR);
-    String filelist;
-    File snadir = SPIFFS.open(DISK_SNA_DIR);
-    if (!snadir || !snadir.isDirectory()) {
-        errorHalt(ERR_SNA_DIR_FAIL);
-    }
-    File file = snadir.openNextFile();
-    while (file) {
-        Serial.printf("Found sna: %s\n", file.name());
-        if (!file.isDirectory()) {
-            String filename = file.name();
-            filelist += filename.substring(filename.lastIndexOf("/") + 1);
-            filelist += "\n";
-        }
-        file = snadir.openNextFile();
-    }
-    return filelist;
-}
+String getSnaFileList() { return getFileEntriesFromDir(DISK_SNA_DIR); }
 
 // Read config from FS
 void config_read() {
     String line;
     File cfg_f;
 
-    //if (cfg_slog_on)
+    // if (cfg_slog_on)
     //    Serial.begin(115200);
     while (!Serial)
         delay(5);
@@ -361,8 +375,8 @@ void config_read() {
                     Serial.end();
             } else if (line.startsWith("ram:")) {
                 cfg_ram_file = line.substring(line.lastIndexOf(':') + 1);
-            } else if (line.startsWith("machine:")) {
-                cfg_machine_type = line.substring(line.lastIndexOf(':') + 1).toInt();
+            } else if (line.startsWith("arch:")) {
+                cfg_arch = line.substring(line.lastIndexOf(':') + 1).toInt();
             } else if (line.startsWith("romset:")) {
                 cfg_rom_set = line.substring(line.lastIndexOf(':') + 1);
             }
@@ -372,30 +386,6 @@ void config_read() {
         }
     }
     cfg_f.close();
-
-    // ROM file selection
-    cfg_rom_file = "/rom/";
-    switch (cfg_machine_type) {
-    case MACHINE_ZX48:
-        cfg_rom_file += "48K/";
-        break;
-    case MACHINE_ZX128:
-        cfg_rom_file += "128K/";
-        break;
-    case MACHINE_PLUS2A:
-        cfg_rom_file += "PLUS2A/";
-        break;
-    case MACHINE_PLUS3:
-        cfg_rom_file += "PLUS3/";
-        break;
-    case MACHINE_PLUS3E:
-        cfg_rom_file += "PLUS3E/";
-        break;
-    }
-    cfg_rom_file += cfg_rom_set;
-    cfg_rom_file += "/0.rom";
-
     cfg_sna_file_list = (String)MENU_SNA_TITLE + "\n" + getSnaFileList();
-
     KB_INT_START;
 }

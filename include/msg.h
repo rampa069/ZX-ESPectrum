@@ -18,7 +18,7 @@
 #define ERR_READ_FILE "Cannot read file!"
 #define ERR_BANK_FAIL "Failed to allocate RAM bank "
 #define ERR_MOUNT_FAIL "Cannot mount internal memory!"
-#define ERR_SNA_DIR_FAIL "I can't open /sna dir!"
+#define ERR_DIR_OPEN "Cannot open directory!"
 
 // OSD
 #define OSD_TITLE "* ZX-ESPectrum v1.0|Rampa & Queru 2019 *"
@@ -31,6 +31,8 @@
 #define MENU_MAIN "Main Menu\nChange ROM\nChange RAM\nReset\nDemo Mode\nHelp\nReturn\n"
 #define MENU_RESET "Reset Menu\nSoft reset\nHard reset\nCancel\n"
 #define MENU_DEMO "Demo mode\nOFF\n 1 minute\n 3 minutes\n 5 minutes\n15 minutes\n30 minutes\n 1 hour\n"
+#define MENU_ARCH "Select Arch\n"
+#define MENU_ROMSET "Select Rom Set\n"
 #define OSD_HELP                                                                                                       \
     " F1 Main menu:\n"                                                                                                 \
     "    Cursor to move.\n"                                                                                            \

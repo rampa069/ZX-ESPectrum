@@ -64,6 +64,7 @@ boolean checkAndCleanKey(byte scancode);
 boolean isKeymapChanged();
 void config_save();
 void updateKeymap();
+String getFileEntriesFromDir(String path);
 
 // Include rest of OSD code
 #include "OSD/SNA_mng.cpp"

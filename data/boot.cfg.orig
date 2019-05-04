@@ -1,4 +1,4 @@
-machine:0
-romset:ZX
+arch:128K
+romset:SINCLAIR
 ram:none
-slog:false
+slog:true
