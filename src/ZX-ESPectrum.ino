@@ -51,6 +51,7 @@ void errorHalt(String);
 void mount_spiffs();
 
 
+
 // GLOBALS
 //volatile byte *bank0;
 volatile byte z80ports_in[128];
@@ -91,16 +92,22 @@ void setup() {
 
         vga.clear(0);
 
-
     Serial.printf("HEAP BEGIN %d\n",ESP.getFreeHeap());
 
     //rom0=  (byte *)malloc(16384);
+#ifdef BOARD_HAS_PSRAM
+
     rom0= (byte *) heap_caps_malloc(16384, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
     rom1= (byte *) heap_caps_malloc(16384, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+#else
+    rom0=  (byte *)malloc(16384);
+    rom1=  (byte *)malloc(16384);
+#endif
 
 
     Serial.printf("HEAP after rom: %d\n",ESP.getFreeHeap());
 
+#ifdef BOARD_HAS_PSRAM
     ram0= (byte *) heap_caps_malloc(16384, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
     ram1= (byte *) heap_caps_malloc(16384, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
     ram2= (byte *) heap_caps_malloc(16384, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
@@ -109,10 +116,18 @@ void setup() {
     ram5= (byte *) heap_caps_malloc(16384, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
     ram6= (byte *) heap_caps_malloc(16384, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
     ram7= (byte *) heap_caps_malloc(16384, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
-
+#else
+    ram0=  (byte *)malloc(16384);
+    ram1=  (byte *)malloc(16384);
+    ram2=  (byte *)malloc(16384);
+    ram3=  (byte *)malloc(16384);
+    ram4=  (byte *)malloc(16384);
+    ram5=  (byte *)malloc(16384);
+    ram6=  (byte *)malloc(16384);
+    ram7=  (byte *)malloc(16384);
+#endif
 
     Serial.printf("HEAP after ram %d \n",ESP.getFreeHeap());
-    Serial.println(MALLOC_CAP_SPIRAM);
 
 
     mount_spiffs();
@@ -164,7 +179,8 @@ void setup() {
 
     load_rom(cfg_rom_file);
     if (cfg_mode_sna)
-        load_ram(cfg_ram_file);
+        load_ram_128(cfg_ram_file);
+
 }
 
 // VIDEO core 0 *************************************

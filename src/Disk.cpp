@@ -2,6 +2,9 @@
 #include "Emulator/Memory.h"
 #include "Emulator/z80main.h"
 
+
+
+
 void IRAM_ATTR mount_spiffs() {
     if (!SPIFFS.begin())
         errorHalt(ERR_MOUNT_FAIL);
@@ -206,61 +209,70 @@ void IRAM_ATTR load_ram_128(String sna_file) {
     _zxCpu.iff1 = _zxCpu.iff2;
 
 
-    uint16_t buf_p = 0x4000;
-    while (lhandle.available() && buf_p < 0x8000) {
+    uint16_t buf_p;
+    for (buf_p=0x4000;buf_p<0x8000;buf_p++)
+     {
         writebyte(buf_p,lhandle.read());
-        buf_p++;
     }
-    buf_p = 0x8000;
-    while (lhandle.available() && buf_p < 0xc000) {
+    for (buf_p=0x8000;buf_p<0xc000;buf_p++)
+     {
         writebyte(buf_p,lhandle.read());
-        buf_p++;
     }
-    buf_p = 0xc000;
-    while (lhandle.available() && buf_p < 0xFFFF) {
+    //bank_latch=6;
+    for (buf_p=0xc000;buf_p<0xffff;buf_p++)
+     {
         writebyte(buf_p,lhandle.read());
-        buf_p++;
     }
 
+
+    byte machine = lhandle.read();
     byte retaddr_l = lhandle.read();
     byte retaddr_h = lhandle.read();
-
+    word retaddr = retaddr_l + retaddr_h * 0x100;
     byte tmp_port=lhandle.read();
 
+    byte tmp_byte;
+    for ( int a=0xc000;a<0xffff;a++)
+    {
+      bank_latch=0;
+      tmp_byte=readbyte(a);
+      bank_latch=tmp_port & 0x07;
+      writebyte(a,tmp_byte);
+    }
 
     byte tr_dos=lhandle.read();
     byte tmp_latch=tmp_port&0x7;
     for (int page = 0;page < 8;page++)
     {
-      if (page !=tmp_latch)
+      if (page !=tmp_latch && page !=2 && page !=5)
       {
         bank_latch=page;
         Serial.printf("Page %d actual_latch: %d\n",page,bank_latch );
-        buf_p = 0xc000;
-        while (lhandle.available()) {
+        for (buf_p=0xc000;buf_p<0xFFFF;buf_p++)
+        {
             writebyte(buf_p,lhandle.read());
-            buf_p++;
         }
       }
     }
 
     lhandle.close();
 
+
+
     video_latch=bitRead(tmp_port,3);
     rom_latch=bitRead(tmp_port,4);
     paging_lock=bitRead(tmp_port,5);
     bank_latch=tmp_latch;
 
-    word retaddr = retaddr_l + retaddr_h * 0x100;
-
+    //sleep(5);
     _zxCpu.pc = retaddr;
 
 
 #pragma GCC diagnostic ignored "-Wall"
     if (cfg_slog_on) {
         Serial.printf("%s SNA: %u\n", MSG_FREE_HEAP_AFTER, ESP.getFreeHeap());
-        Serial.printf("Ret address: %x Stack: %x AF: %x Border: %x bank_latch: %x rom_latch %x video_latch: %x\n", retaddr, _zxCpu.registers.word[Z80_SP],
-                      _zxCpu.registers.word[Z80_AF], borderTemp, bank_latch,rom_latch,video_latch);
+        Serial.printf("Ret address: %x Stack: %x AF: %x Border: %x bank_latch: %x rom_latch %x video_latch: %x last_port: %x\n", retaddr, _zxCpu.registers.word[Z80_SP],
+                      _zxCpu.registers.word[Z80_AF], borderTemp, bank_latch,rom_latch,video_latch,tmp_port);
     }
 #pragma GCC diagnostic warning "-Wall"
     KB_INT_START;

@@ -215,7 +215,7 @@ extern "C" uint8_t input(uint8_t portLow, uint8_t portHigh) {
     uint8_t data = zx_data;
     data |= (0xe0); /* Set bits 5-7 - as reset above */
     data &= ~0x40;
-    Serial.printf("Port %x%x  Data %x\n", portHigh,portLow,data);
+    //Serial.printf("Port %x%x  Data %x\n", portHigh,portLow,data);
     return data;
 }
 
