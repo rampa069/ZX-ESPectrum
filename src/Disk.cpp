@@ -67,9 +67,13 @@ void IRAM_ATTR load_ram(String sna_file) {
     File lhandle;
     uint16_t size_read;
     byte sp_h, sp_l;
+    //force 48K mode
     zx_reset();
     rom_latch=1;
     paging_lock=1;
+    bank_latch=0;
+    video_latch=0;
+    
 #pragma GCC diagnostic ignored "-Wall"
     Serial.printf("%s SNA: %ub\n", MSG_FREE_HEAP_BEFORE, ESP.getFreeHeap());
 #pragma GCC diagnostic warning "-Wall"
