@@ -50,6 +50,7 @@ File IRAM_ATTR open_read_file(String filename) {
     if (cfg_slog_on)
         Serial.printf("%s '%s'\n", MSG_LOADING, filename.c_str());
     if (!SPIFFS.exists(filename.c_str())) {
+        KB_INT_START;
         errorHalt((String)ERR_READ_FILE + "\n" + filename);
     }
     f = SPIFFS.open(filename.c_str(), FILE_READ);
@@ -214,10 +215,8 @@ void config_read() {
                 cfg_slog_on = false;
                 if (Serial)
                     Serial.end();
-            } else if (line.startsWith("rom:")) {
-                cfg_rom_file = "/rom/" + line.substring(line.lastIndexOf(':') + 1);
             } else if (line.startsWith("ram:")) {
-                cfg_ram_file = "/sna/" + line.substring(line.lastIndexOf(':') + 1);
+                cfg_ram_file = line.substring(line.lastIndexOf(':') + 1);
             } else if (line.startsWith("machine:")) {
                 cfg_machine_type = line.substring(line.lastIndexOf(':') + 1).toInt();
             } else if (line.startsWith("romset:")) {

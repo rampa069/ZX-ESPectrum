@@ -23,8 +23,11 @@ void errorPanel(String errormsg) {
 void errorHalt(String errormsg) {
     stopULA();
     errorPanel(errormsg);
-    while (1)
-        delay(500);
+    while (1) {
+        do_keyboard();
+        do_OSD();
+        delay(5);
+    }
 }
 
 // Centered message

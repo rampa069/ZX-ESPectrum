@@ -133,8 +133,8 @@ void setup() {
                             0);          /* Core where the task should run */
 
     load_rom(cfg_rom_file);
-    if (cfg_ram_file != NO_RAM_FILE)
-        load_ram(cfg_ram_file);
+    if (cfg_ram_file != (String)NO_RAM_FILE)
+        load_ram("/sna/" + cfg_ram_file);
 }
 
 // VIDEO core 0 *************************************

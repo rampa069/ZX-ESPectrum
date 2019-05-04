@@ -29,11 +29,11 @@ void do_OSD() {
             if (opt2 == 1) {
                 // Soft
                 zx_reset();
-                if (cfg_ram_file != NO_RAM_FILE)
+                if (cfg_ram_file != (String)NO_RAM_FILE)
                     load_ram(cfg_ram_file);
             } else if (opt2 == 2) {
                 // Hard
-                cfg_ram_file = NO_RAM_FILE;
+                cfg_ram_file = (String)NO_RAM_FILE;
                 config_save();
                 zx_reset();
             }
