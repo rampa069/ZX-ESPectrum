@@ -45,7 +45,6 @@ void listAllFiles() {
 }
 
 File IRAM_ATTR open_read_file(String filename) {
-    mount_spiffs();
     File f;
     filename.replace("\n", " ");
     filename.trim();
@@ -271,13 +270,15 @@ void IRAM_ATTR load_ram_128(String sna_file) {
 
 String getFileEntriesFromDir(String path) {
     KB_INT_STOP;
-    Serial.printf("Getting entries from: %s\n", path.c_str());
+    Serial.printf("Getting entries from: '%s'\n", path.c_str());
     String filelist;
     File root = SPIFFS.open(path.c_str());
     if (!root || !root.isDirectory()) {
         errorHalt((String)ERR_DIR_OPEN + "\n" + root);
     }
     File file = root.openNextFile();
+    if (!file)
+        Serial.println("No entries found!");
     while (file) {
         Serial.printf("Found %s: %s...", (file.isDirectory() ? "DIR" : "FILE"), file.name());
         String filename = file.name();
@@ -315,9 +316,12 @@ unsigned short countFileEntriesFromDir(String path) {
 void load_rom(String arch, String romset) {
     KB_INT_STOP;
     String path = "/rom/" + arch + "/" + romset;
+    Serial.printf("Loading ROMSET '%s'\n", path.c_str());
     byte n_roms = countFileEntriesFromDir(path);
+    Serial.printf("Processing %u ROMs\n", n_roms);
     for (byte f = 0; f < n_roms; f++) {
         File rom_f = open_read_file(path + "/" + (String)f + ".rom");
+        Serial.printf("Loading ROM '%s'\n", rom_f.name());
         for (int i = 0; i < rom_f.size(); i++) {
             switch (f) {
             case 0:
@@ -339,7 +343,7 @@ void IRAM_ATTR config_save() {
     KB_INT_STOP;
     Serial.printf("Saving config file '%s'...", DISK_BOOT_FILENAME);
     File f = SPIFFS.open(DISK_BOOT_FILENAME, FILE_WRITE);
-    f.printf("arch:%u\n", cfg_arch);
+    f.printf("arch:%s\n", cfg_arch.c_str());
     f.printf("romset:%s\n", cfg_rom_set.c_str());
     f.printf("ram:%s\n", cfg_ram_file.c_str());
     f.printf("slog:%s\n", (cfg_slog_on ? "true" : "false"));
