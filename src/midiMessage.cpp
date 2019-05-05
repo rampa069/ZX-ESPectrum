@@ -41,5 +41,7 @@ void midiMessage(uint8_t message, uint8_t channel, uint8_t data1, uint8_t data2)
 uint8_t data[2];
   data[0]=data1;
   data[1]=data2;
+
+
   //send_channel_message(message,channel,2,data);
 }

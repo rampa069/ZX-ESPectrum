@@ -11,6 +11,7 @@
 #include "Emulator/z80emu/z80emu.h"
 #include "Emulator/z80user.h"
 
+
 #include "dirdefs.h"
 #include "esp_attr.h"
 #include "machinedefs.h"
@@ -60,6 +61,10 @@ boolean xULAStop = false;
 boolean xULAStopped = false;
 boolean writeScreen = false;
 byte tick;
+const int SAMPLING_RATE = 44100;
+const int BUFFER_SIZE = 2000;
+AudioSystem audioSystem(SAMPLING_RATE, BUFFER_SIZE);
+AudioOutput audioOutput;
 
 // SETUP *************************************
 
@@ -198,7 +203,7 @@ void videoTask(void *parameter) {
 
         for (unsigned int vga_lin = 0; vga_lin < 200; vga_lin++) {
             tick = 0;
-            if (vga_lin < 4 || vga_lin > 194) {
+            if (vga_lin < 3 || vga_lin > 194) {
                 for (int bor = 32; bor < 328; bor++)
                     vga.dotFast(bor, vga_lin, zxcolor(borderTemp, 0));
             } else {
@@ -376,6 +381,8 @@ void do_keyboard() {
     bitWrite(z80ports_in[0x1f], 3, !keymap[KEY_CURSOR_UP]);
     bitWrite(z80ports_in[0x1f], 4, !keymap[KEY_ALT_GR]);
 }
+
+
 
 /* +-------------+
  | LOOP core 1 |

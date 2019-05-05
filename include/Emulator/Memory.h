@@ -15,5 +15,5 @@ extern volatile byte* ram6;
 extern volatile byte* ram7;
 
 extern byte rom_latch,bank_latch,video_latch,paging_lock;
-extern byte sp3_mode, sp3_rom;
+extern byte sp3_mode, sp3_rom, rom_in_use;
 void alloc_memory();

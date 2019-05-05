@@ -65,20 +65,26 @@ void IRAM_ATTR load_ram(String sna_file) {
     uint16_t size_read;
     byte sp_h, sp_l;
     uint16_t retaddr;
-
+    int sna_size;
     zx_reset();
 
-    if (cfg_arch == "48K") {
-        rom_latch = 1;
-        paging_lock = 1;
-        bank_latch = 0;
-        video_latch = 0;
-    }
 
     Serial.printf("%s SNA: %ub\n", MSG_FREE_HEAP_BEFORE, ESP.getFreeHeap());
 
     KB_INT_STOP;
+
     lhandle = open_read_file(sna_file);
+    sna_size = lhandle.size();
+
+    if (sna_size < 50000 && cfg_arch != "48K")
+    {
+      rom_latch = 1;
+      rom_in_use =1;
+      paging_lock = 1;
+      bank_latch = 0;
+      video_latch = 0;
+
+    }
     vTaskDelay(10);
     size_read = 0;
     // Read in the registers
@@ -126,7 +132,7 @@ void IRAM_ATTR load_ram(String sna_file) {
 
     _zxCpu.iff1 = _zxCpu.iff2;
 
-    if (cfg_arch == "48K") {
+    if (sna_size < 50000) {
         uint16_t thestack = _zxCpu.registers.word[Z80_SP];
         uint16_t buf_p = 0x4000;
         while (lhandle.available()) {
@@ -140,7 +146,8 @@ void IRAM_ATTR load_ram(String sna_file) {
 
         _zxCpu.registers.word[Z80_SP]++;
         _zxCpu.registers.word[Z80_SP]++;
-    } else if (cfg_arch == "128K") {
+    } else
+     {
         uint16_t buf_p;
         for (buf_p = 0x4000; buf_p < 0x8000; buf_p++) {
             writebyte(buf_p, lhandle.read());
@@ -153,7 +160,7 @@ void IRAM_ATTR load_ram(String sna_file) {
             writebyte(buf_p, lhandle.read());
         }
 
-        byte machine = lhandle.read();
+        byte machine_b = lhandle.read();
         byte retaddr_l = lhandle.read();
         byte retaddr_h = lhandle.read();
         retaddr = retaddr_l + retaddr_h * 0x100;
@@ -190,8 +197,8 @@ void IRAM_ATTR load_ram(String sna_file) {
     _zxCpu.pc = retaddr;
 
     Serial.printf("%s SNA: %u\n", MSG_FREE_HEAP_AFTER, ESP.getFreeHeap());
-    Serial.printf("Ret address: %x Stack: %x AF: %x Border: %x\n", retaddr, _zxCpu.registers.word[Z80_SP],
-                  _zxCpu.registers.word[Z80_AF], borderTemp);
+    Serial.printf("Ret address: %x Stack: %x AF: %x Border: %x sna_size: %d\n", retaddr, _zxCpu.registers.word[Z80_SP],
+                  _zxCpu.registers.word[Z80_AF], borderTemp,sna_size);
     KB_INT_START;
 }
 

@@ -57,6 +57,7 @@ void zx_reset() {
     paging_lock=0;
     sp3_mode=0;
     sp3_rom=0;
+    rom_in_use=0;
 
     Z80Reset(&_zxCpu);
 }
@@ -90,19 +91,14 @@ int32_t zx_loop() {
 extern "C" uint8_t readbyte(uint16_t addr) {
   switch (addr)
   {
-    case 0x0000 ... 0x3fff: if (!rom_latch && !sp3_rom)
-                              return rom0[addr] ;
+    case 0x0000 ... 0x3fff: switch (rom_in_use)
+                            {
+                                case 0: return rom0[addr] ;
+                                case 1: return rom1[addr] ;
+                                case 2: return rom2[addr] ;
+                                case 3: return rom3[addr] ;
 
-                            if (rom_latch && !sp3_rom)
-                              return rom1[addr] ;
-
-                            if (rom_latch && sp3_rom & 0x04 )
-                              return rom3[addr] ;
-
-                            if (rom_latch && sp3_rom & 0x10)
-                              return rom2[addr] ;
-
-                            break;
+                            }
     case 0x4000 ... 0x7fff: return ram5[addr-0x4000];break;
     case 0x8000 ... 0xbfff: return ram2[addr-0x8000];break;
     case 0xc000 ... 0xffff: switch(bank_latch)
@@ -260,14 +256,18 @@ extern "C" void output(uint8_t portLow, uint8_t portHigh, uint8_t data) {
                      rom_latch=bitRead(tmp_data,4);
                      video_latch=bitRead(tmp_data,3);
                      bank_latch=tmp_data & 0x7;
+                     bitWrite(rom_in_use,1,sp3_rom);
+                     bitWrite(rom_in_use,0,rom_latch);
                      //Serial.printf("7FFD data: %x ROM latch: %x Video Latch: %x bank latch: %x page lock: %x\n",tmp_data,rom_latch,video_latch,bank_latch,paging_lock);
                    }
                      break;
 
         case 0x1F: sp3_mode=bitRead(data,0);
-                   sp3_rom=data &0x0c;
+                   sp3_rom=bitRead(data,2);
+                   bitWrite(rom_in_use,1,sp3_rom);
+                   bitWrite(rom_in_use,0,rom_latch);
 
-                   Serial.printf("1FFD data: %x mode: %x rom: %x\n",data,sp3_mode,sp3_rom);
+                   //Serial.printf("1FFD data: %x mode: %x rom bits: %x ROM chip: %x\n",data,sp3_mode,sp3_rom, rom_in_use);
                    break;
         }
     } break;
