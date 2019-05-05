@@ -32,9 +32,8 @@ extern Z80_STATE _zxCpu;
 extern int _total;
 extern int _next_total;
 
-void load_rom(String arch, String romset);
+void load_rom(String, String);
 void load_ram(String);
-void load_ram_128(String);
 
 volatile byte keymap[256];
 volatile byte oldKeymap[256];
@@ -142,15 +141,12 @@ void setup() {
 
     kb_begin();
 
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
     Serial.printf("%s bank %u: %ub\n", MSG_FREE_HEAP_AFTER, 0, ESP.getFreeHeap());
-#pragma GCC diagnostic warning "-Wall"
 
     setup_cpuspeed();
 
     // START Z80
-    if (cfg_slog_on)
-        Serial.println(MSG_Z80_RESET);
+    Serial.println(MSG_Z80_RESET);
     zx_setup();
 
     // make sure keyboard ports are FF
@@ -158,10 +154,8 @@ void setup() {
         z80ports_in[t] = 0x1f;
     }
 
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
     Serial.printf("%s %u\n", MSG_EXEC_ON_CORE, xPortGetCoreID());
     Serial.printf("%s Z80 RESET: %ub\n", MSG_FREE_HEAP_AFTER, ESP.getFreeHeap());
-#pragma GCC diagnostic warning "-Wall"
 
     xTaskCreatePinnedToCore(videoTask,   /* Function to implement the task */
                             "videoTask", /* Name of the task */
@@ -172,8 +166,9 @@ void setup() {
                             0);          /* Core where the task should run */
 
     load_rom(cfg_arch, cfg_rom_set);
-    // if (cfg_ram_file != (String)NO_RAM_FILE)
-    //     load_ram_128("/sna/" + cfg_ram_file);
+    if (cfg_ram_file.compareTo(NO_RAM_FILE) < 0) {
+        load_ram("/sna/" + cfg_ram_file);
+    }
 }
 
 // VIDEO core 0 *************************************
@@ -200,7 +195,7 @@ void videoTask(void *parameter) {
         if (flashing++ > 32)
             flashing = 0;
 
-        
+
         for (unsigned int vga_lin = 0; vga_lin < 200; vga_lin++) {
             tick = 0;
             if (vga_lin < 4 || vga_lin > 194) {
@@ -262,7 +257,13 @@ void videoTask(void *parameter) {
         if (ts2 - ts1 < 20)
             delay(20 - (ts2 - ts1));
     }
-  }
+    TIMERG0.wdt_wprotect = TIMG_WDT_WKEY_VALUE;
+    TIMERG0.wdt_feed = 1;
+    TIMERG0.wdt_wprotect = 0;
+    Serial.printf("ULA: %d\n", ts2 - ts1);
+    if (ts2 - ts1 < 20)
+        delay(20 - (ts2 - ts1));
+}
 
 // SPECTRUM SCREEN DISPLAY
 //
@@ -389,6 +390,6 @@ void loop() {
         TIMERG0.wdt_wprotect = TIMG_WDT_WKEY_VALUE;
         TIMERG0.wdt_feed = 1;
         TIMERG0.wdt_wprotect = 0;
-        vTaskDelay(1); // important to avoid task watchdog timeouts - change this to slow down emu
+        vTaskDelay(0); // important to avoid task watchdog timeouts - change this to slow down emu
     }
 }

@@ -55,6 +55,8 @@ void zx_reset() {
     video_latch=0;
     rom_latch=0;
     paging_lock=0;
+    sp3_mode=0;
+    sp3_rom=0;
 
     Z80Reset(&_zxCpu);
 }
@@ -68,8 +70,8 @@ int32_t zx_loop() {
     _total += Z80Emulate(&_zxCpu, _next_total - _total, &_zxContext);
     ts2 = millis();
 
-    if ((ts2 - ts1) < 20)
-        delay(20 - (ts2 - ts1));
+    //if ((ts2 - ts1) < 20)
+    //    delay(20 - (ts2 - ts1));
 
     // while (tick==0)
     // delayMicroseconds(1);
@@ -88,10 +90,18 @@ int32_t zx_loop() {
 extern "C" uint8_t readbyte(uint16_t addr) {
   switch (addr)
   {
-    case 0x0000 ... 0x3fff: if (!rom_latch)
+    case 0x0000 ... 0x3fff: if (!rom_latch && !sp3_rom)
                               return rom0[addr] ;
-                            else
+
+                            if (rom_latch && !sp3_rom)
                               return rom1[addr] ;
+
+                            if (rom_latch && sp3_rom & 0x04 )
+                              return rom3[addr] ;
+
+                            if (rom_latch && sp3_rom & 0x10)
+                              return rom2[addr] ;
+
                             break;
     case 0x4000 ... 0x7fff: return ram5[addr-0x4000];break;
     case 0x8000 ... 0xbfff: return ram2[addr-0x8000];break;
@@ -244,22 +254,20 @@ extern "C" void output(uint8_t portLow, uint8_t portHigh, uint8_t data) {
         case 0xBF:
              //Serial.println("Select AY register Data");
             _ay3_8912.setRegisterData(data);break;
-        case 0x7F: if (paging_lock)
-                       return;
-                   paging_lock=bitRead(tmp_data,5);
-                   rom_latch=bitRead(tmp_data,4);
-                   video_latch=bitRead(tmp_data,3);
-                   bank_latch=tmp_data & 0x7;
-                   //Serial.printf("7FFD data: %x ROM latch: %x Video Latch: %x bank latch: %x page lock: %x\n",tmp_data,rom_latch,video_latch,bank_latch,paging_lock);
-                   break;
+        case 0x7F: if (!paging_lock)
+                   {
+                     paging_lock=bitRead(tmp_data,5);
+                     rom_latch=bitRead(tmp_data,4);
+                     video_latch=bitRead(tmp_data,3);
+                     bank_latch=tmp_data & 0x7;
+                     //Serial.printf("7FFD data: %x ROM latch: %x Video Latch: %x bank latch: %x page lock: %x\n",tmp_data,rom_latch,video_latch,bank_latch,paging_lock);
+                   }
+                     break;
 
-        case 0x1F: if (paging_lock)
-                       return;
-                   paging_lock=bitRead(data,5);
-                   rom_latch=bitRead(data,4);
-                   bank_latch=data & 0x7;
-                   video_latch=bitRead(data,3);
-                   Serial.printf("1FFD data: %x ROM latch: %x Video Latch: %x bank latch: %x\n",data,rom_latch,video_latch,bank_latch);
+        case 0x1F: sp3_mode=bitRead(data,0);
+                   sp3_rom=data &0x0c;
+
+                   Serial.printf("1FFD data: %x mode: %x rom: %x\n",data,sp3_mode,sp3_rom);
                    break;
         }
     } break;

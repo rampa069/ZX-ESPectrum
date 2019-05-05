@@ -23,3 +23,5 @@ byte bank_latch=0;
 byte video_latch=0;
 byte rom_latch=0;
 byte paging_lock=0;
+byte sp3_mode=0;
+byte sp3_rom=1;
