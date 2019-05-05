@@ -163,6 +163,9 @@ void setup() {
                             0);          /* Core where the task should run */
 
     load_rom(cfg_arch, cfg_rom_set);
+    if (cfg_ram_file.compareTo(NO_RAM_FILE) < 0) {
+        load_ram("/sna/" + cfg_ram_file);
+    }
 }
 
 // VIDEO core 0 *************************************
@@ -247,7 +250,6 @@ void videoTask(void *parameter) {
     Serial.printf("ULA: %d\n", ts2 - ts1);
     if (ts2 - ts1 < 20)
         delay(20 - (ts2 - ts1));
-    // vTaskDelay(1);
 }
 
 // SPECTRUM SCREEN DISPLAY
