@@ -26,7 +26,9 @@ void do_OSD() {
                     cfg_arch = menuGetRow(arch_menu, arch_num);
                     cfg_rom_set = menuGetRow(romset_menu, romset_num);
                     load_rom(cfg_arch, cfg_rom_set);
+                    vTaskDelay(2);
                     config_save();
+                    vTaskDelay(2);
                     zx_reset();
                 }
             }

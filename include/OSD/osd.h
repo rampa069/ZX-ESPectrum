@@ -24,6 +24,8 @@
 extern String cfg_sna_file_list;
 extern boolean cfg_demo_on;
 extern boolean cfg_demo_every;
+extern String cfg_arch;
+extern String cfg_rom_set;
 extern boolean xULAStop;
 extern boolean xULAStopped;
 

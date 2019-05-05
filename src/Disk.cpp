@@ -71,9 +71,7 @@ void IRAM_ATTR load_ram(String sna_file) {
     bank_latch = 0;
     video_latch = 0;
 
-#pragma GCC diagnostic ignored "-Wall"
     Serial.printf("%s SNA: %ub\n", MSG_FREE_HEAP_BEFORE, ESP.getFreeHeap());
-#pragma GCC diagnostic warning "-Wall"
 
     KB_INT_STOP;
     lhandle = open_read_file(sna_file);
@@ -318,6 +316,9 @@ void load_rom(String arch, String romset) {
     String path = "/rom/" + arch + "/" + romset;
     Serial.printf("Loading ROMSET '%s'\n", path.c_str());
     byte n_roms = countFileEntriesFromDir(path);
+    if (n_roms < 1) {
+        errorHalt("No ROMs found at " + path + "\nARCH: '" + arch + "' ROMSET: " + romset);
+    }
     Serial.printf("Processing %u ROMs\n", n_roms);
     for (byte f = 0; f < n_roms; f++) {
         File rom_f = open_read_file(path + "/" + (String)f + ".rom");
@@ -333,23 +334,8 @@ void load_rom(String arch, String romset) {
             }
         }
         rom_f.close();
-        vTaskDelay(2);
     }
-    KB_INT_START;
-}
-
-// Dump actual config to FS
-void IRAM_ATTR config_save() {
-    KB_INT_STOP;
-    Serial.printf("Saving config file '%s'...", DISK_BOOT_FILENAME);
-    File f = SPIFFS.open(DISK_BOOT_FILENAME, FILE_WRITE);
-    f.printf("arch:%s\n", cfg_arch.c_str());
-    f.printf("romset:%s\n", cfg_rom_set.c_str());
-    f.printf("ram:%s\n", cfg_ram_file.c_str());
-    f.printf("slog:%s\n", (cfg_slog_on ? "true" : "false"));
-    f.close();
-    vTaskDelay(5);
-    Serial.println("OK");
+    vTaskDelay(2);
     KB_INT_START;
 }
 
@@ -358,31 +344,30 @@ String getSnaFileList() { return getFileEntriesFromDir(DISK_SNA_DIR); }
 
 // Read config from FS
 void config_read() {
+    KB_INT_STOP;
     String line;
     File cfg_f;
 
-    // if (cfg_slog_on)
-    //    Serial.begin(115200);
-    while (!Serial)
-        delay(5);
-
     // Boot config file
-    KB_INT_STOP;
+    Serial.printf("Loading config file '%s':\n", DISK_BOOT_FILENAME);
     cfg_f = open_read_file(DISK_BOOT_FILENAME);
     for (int i = 0; i < cfg_f.size(); i++) {
         char c = (char)cfg_f.read();
         if (c == '\n') {
-            Serial.println("CFG LINE " + line);
             if (line.compareTo("slog:false") == 0) {
                 cfg_slog_on = false;
+                Serial.printf("  + slog:%s\n", (cfg_slog_on ? "true" : "false"));
                 if (Serial)
                     Serial.end();
             } else if (line.startsWith("ram:")) {
                 cfg_ram_file = line.substring(line.lastIndexOf(':') + 1);
+                Serial.printf("  + ram:%s\n", cfg_ram_file.c_str());
             } else if (line.startsWith("arch:")) {
-                cfg_arch = line.substring(line.lastIndexOf(':') + 1).toInt();
+                cfg_arch = line.substring(line.lastIndexOf(':') + 1);
+                Serial.printf("  + arch:%s\n", cfg_arch.c_str());
             } else if (line.startsWith("romset:")) {
                 cfg_rom_set = line.substring(line.lastIndexOf(':') + 1);
+                Serial.printf("  + romset:%s\n", cfg_rom_set.c_str());
             }
             line = "";
         } else {
@@ -390,6 +375,27 @@ void config_read() {
         }
     }
     cfg_f.close();
+    Serial.println("Config file loaded OK");
     cfg_sna_file_list = (String)MENU_SNA_TITLE + "\n" + getSnaFileList();
     KB_INT_START;
+}
+
+// Dump actual config to FS
+void IRAM_ATTR config_save() {
+    KB_INT_STOP;
+    Serial.printf("Saving config file '%s':\n", DISK_BOOT_FILENAME);
+    File f = SPIFFS.open(DISK_BOOT_FILENAME, FILE_WRITE);
+    Serial.printf("  + arch:%s\n", cfg_arch.c_str());
+    f.printf("arch:%s\n", cfg_arch.c_str());
+    Serial.printf("  + romset:%s\n", cfg_rom_set.c_str());
+    f.printf("romset:%s\n", cfg_rom_set.c_str());
+    Serial.printf("  + ram:%s\n", cfg_ram_file.c_str());
+    f.printf("ram:%s\n", cfg_ram_file.c_str());
+    Serial.printf("  + slog:%s\n", (cfg_slog_on ? "true" : "false"));
+    f.printf("slog:%s\n", (cfg_slog_on ? "true" : "false"));
+    f.close();
+    vTaskDelay(5);
+    Serial.println("Config saved OK");
+    KB_INT_START;
+    config_read();
 }
