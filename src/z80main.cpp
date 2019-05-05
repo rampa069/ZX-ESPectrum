@@ -259,7 +259,7 @@ extern "C" void output(uint8_t portLow, uint8_t portHigh, uint8_t data) {
                    rom_latch=bitRead(data,4);
                    bank_latch=data & 0x7;
                    video_latch=bitRead(data,3);
-                   //Serial.printf("1FFD data: %x ROM latch: %x Video Latch: %x bank latch: %x\n",data,rom_latch,video_latch,bank_latch);
+                   Serial.printf("1FFD data: %x ROM latch: %x Video Latch: %x bank latch: %x\n",data,rom_latch,video_latch,bank_latch);
                    break;
         }
     } break;

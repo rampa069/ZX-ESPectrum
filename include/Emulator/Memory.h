@@ -2,6 +2,8 @@
 
 extern volatile byte *rom0;
 extern volatile byte *rom1;
+extern volatile byte *rom2;
+extern volatile byte *rom3;
 
 extern volatile byte* ram0;
 extern volatile byte* ram1;

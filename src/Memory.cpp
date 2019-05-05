@@ -4,9 +4,11 @@
 #include "esp_attr.h"
 
 void errorHalt(String);
-volatile byte *rom0;
 
+volatile byte *rom0;
 volatile byte *rom1;
+volatile byte *rom2;
+volatile byte *rom3;
 
 volatile byte *ram0 ;
 volatile byte *ram1 ;

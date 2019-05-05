@@ -79,6 +79,9 @@ void setup() {
     // esp_wifi_set_mode(WIFI_MODE_NULL);
 
     Serial.begin(115200);
+    if (cfg_slog_on) {
+        Serial.println(MSG_VGA_INIT);
+    }
 
 #ifdef COLOUR_8
     vga.init(vga.MODE360x200, redPin, greenPin, bluePin, hsyncPin, vsyncPin);
@@ -97,9 +100,13 @@ void setup() {
 
     rom0 = (byte *)heap_caps_malloc(16384, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
     rom1 = (byte *)heap_caps_malloc(16384, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+    rom2 = (byte *)heap_caps_malloc(16384, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+    rom3 = (byte *)heap_caps_malloc(16384, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
 #else
     rom0 = (byte *)malloc(16384);
     rom1 = (byte *)malloc(16384);
+    rom2 = (byte *)malloc(16384);
+    rom3 = (byte *)malloc(16384);
 #endif
 
     Serial.printf("HEAP after rom: %d\n", ESP.getFreeHeap());
@@ -129,10 +136,6 @@ void setup() {
     mount_spiffs();
     config_read();
 
-    if (cfg_slog_on) {
-        Serial.println(MSG_CHIP_SETUP);
-        Serial.println(MSG_VGA_INIT);
-    }
 
     pinMode(SOUND_PIN, OUTPUT);
     digitalWrite(SOUND_PIN, LOW);
@@ -162,7 +165,7 @@ void setup() {
 
     xTaskCreatePinnedToCore(videoTask,   /* Function to implement the task */
                             "videoTask", /* Name of the task */
-                            1024,        /* Stack size in words */
+                            2048,        /* Stack size in words */
                             NULL,        /* Task input parameter */
                             20,          /* Priority of the task */
                             NULL,        /* Task handle. */
@@ -182,6 +185,7 @@ void videoTask(void *parameter) {
     unsigned int old_border;
     unsigned int ts1, ts2;
     word zx_fore_color, zx_back_color, tmp_color;
+    byte active_latch;
 
     while (1) {
 
@@ -196,6 +200,7 @@ void videoTask(void *parameter) {
         if (flashing++ > 32)
             flashing = 0;
 
+        
         for (unsigned int vga_lin = 0; vga_lin < 200; vga_lin++) {
             tick = 0;
             if (vga_lin < 4 || vga_lin > 194) {
@@ -207,12 +212,14 @@ void videoTask(void *parameter) {
                     vga.dotFast(bor + 276, vga_lin, zxcolor(borderTemp, 0));
                 }
 
+                active_latch = video_latch;
+
                 for (ff = 0; ff < 32; ff++) // foreach byte in line
                 {
 
                     byte_offset = (vga_lin - 3) * 32 + ff; //*2+1;
 
-                    if (!video_latch) {
+                    if (!active_latch) {
                         color_attrib = ram5[0x1800 + (calcY(byte_offset) / 8) * 32 + ff]; // get 1 of 768 attrib values
                         pixel_map = ram5[byte_offset];
                     } else {
@@ -248,15 +255,14 @@ void videoTask(void *parameter) {
         }
         tick = 1;
         ts2 = millis();
+        TIMERG0.wdt_wprotect = TIMG_WDT_WKEY_VALUE;
+        TIMERG0.wdt_feed = 1;
+        TIMERG0.wdt_wprotect = 0;
+        //Serial.printf("ULA: %d\n", ts2 - ts1);
+        if (ts2 - ts1 < 20)
+            delay(20 - (ts2 - ts1));
     }
-    TIMERG0.wdt_wprotect = TIMG_WDT_WKEY_VALUE;
-    TIMERG0.wdt_feed = 1;
-    TIMERG0.wdt_wprotect = 0;
-    Serial.printf("ULA: %d\n", ts2 - ts1);
-    if (ts2 - ts1 < 20)
-        delay(20 - (ts2 - ts1));
-    // vTaskDelay(1);
-}
+  }
 
 // SPECTRUM SCREEN DISPLAY
 //
