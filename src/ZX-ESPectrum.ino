@@ -109,8 +109,8 @@ void setup() {
 #else
     rom0 = (byte *)malloc(16384);
     rom1 = (byte *)malloc(16384);
-    rom2 = (byte *)malloc(16384);
-    rom3 = (byte *)malloc(16384);
+    //rom2 = (byte *)malloc(16384);
+    //rom3 = (byte *)malloc(16384);
 #endif
 
     Serial.printf("HEAP after rom: %d\n", ESP.getFreeHeap());

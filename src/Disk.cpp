@@ -161,6 +161,7 @@ void IRAM_ATTR load_ram(String sna_file) {
         }
 
         byte machine_b = lhandle.read();
+        Serial.printf("Machine: %x\n",machine_b);
         byte retaddr_l = lhandle.read();
         byte retaddr_h = lhandle.read();
         retaddr = retaddr_l + retaddr_h * 0x100;
@@ -268,12 +269,15 @@ void load_rom(String arch, String romset) {
                 rom1[i] = (byte)rom_f.read();
                 break;
 
+#ifdef BOARD_HAS_PSRAM
+
             case 2:
                 rom2[i] = (byte)rom_f.read();
                 break;
             case 3:
                 rom3[i] = (byte)rom_f.read();
                 break;
+#endif
             }
         }
         rom_f.close();
