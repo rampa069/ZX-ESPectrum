@@ -9,10 +9,8 @@
 #include "Emulator/Keyboard/PS2Kbd.h"
 #include "Emulator/Memory.h"
 #include "Emulator/z80emu/z80emu.h"
-#include "Emulator/z80user.h"
 #include "Emulator/z80main.h"
-
-
+#include "Emulator/z80user.h"
 
 #include "dirdefs.h"
 #include "esp_attr.h"
@@ -41,7 +39,6 @@ volatile byte keymap[256];
 volatile byte oldKeymap[256];
 
 // EXTERN METHODS
-
 
 void setup_cpuspeed();
 void config_read();
@@ -88,34 +85,34 @@ void setup() {
     Serial.printf("HEAP BEGIN %d\n", ESP.getFreeHeap());
 
 #ifdef BOARD_HAS_PSRAM
-  rom0=(byte*) ps_malloc(16384);
-  rom1=(byte*) ps_malloc(16384);
-  rom2=(byte*) ps_malloc(16384);
-  rom3=(byte*) ps_malloc(16384);
+    rom0 = (byte *)ps_malloc(16384);
+    rom1 = (byte *)ps_malloc(16384);
+    rom2 = (byte *)ps_malloc(16384);
+    rom3 = (byte *)ps_malloc(16384);
 
-  ram0=(byte*) ps_malloc(16384);
-  ram1=(byte*) ps_malloc(16384);
-  ram2=(byte*) ps_malloc(16384);
-  ram3=(byte*) ps_malloc(16384);
-  ram4=(byte*) ps_malloc(16384);
-  ram5=(byte*) ps_malloc(16384);
-  ram6=(byte*) ps_malloc(16384);
-  ram7=(byte*) ps_malloc(16384);
+    ram0 = (byte *)ps_malloc(16384);
+    ram1 = (byte *)ps_malloc(16384);
+    ram2 = (byte *)ps_malloc(16384);
+    ram3 = (byte *)ps_malloc(16384);
+    ram4 = (byte *)ps_malloc(16384);
+    ram5 = (byte *)ps_malloc(16384);
+    ram6 = (byte *)ps_malloc(16384);
+    ram7 = (byte *)ps_malloc(16384);
 
 #else
-  rom0=(byte*) malloc(16384);
-  rom1=(byte*) malloc(16384);
-  //rom2=(byte*) malloc(16384);
-  //rom3=(byte*) malloc(16384);
+    rom0 = (byte *)malloc(16384);
+    // rom1=(byte*) malloc(16384);
+    // rom2=(byte*) malloc(16384);
+    // rom3=(byte*) malloc(16384);
 
-  ram0=(byte*) malloc(16384);
-  ram1=(byte*) malloc(16384);
-  ram2=(byte*) malloc(16384);
-  ram3=(byte*) malloc(16384);
-  ram4=(byte*) malloc(16384);
-  ram5=(byte*) malloc(16384);
-  ram6=(byte*) malloc(16384);
-  ram7=(byte*) malloc(16384);
+    ram0 = (byte *)malloc(16384);
+    // ram1=(byte*) malloc(16384);
+    ram2 = (byte *)malloc(16384);
+    // ram3=(byte*) malloc(16384);
+    // ram4=(byte*) malloc(16384);
+    ram5 = (byte *)malloc(16384);
+    // ram6=(byte*) malloc(16384);
+    // ram7=(byte*) malloc(16384);
 
 #endif
 
@@ -133,7 +130,6 @@ void setup() {
 
     mount_spiffs();
     config_read();
-
 
     pinMode(SOUND_PIN, OUTPUT);
     digitalWrite(SOUND_PIN, LOW);
@@ -181,13 +177,13 @@ void videoTask(void *parameter) {
     unsigned int ts1, ts2;
     word zx_fore_color, zx_back_color, tmp_color;
     byte active_latch;
-    byte *video_ram =  (byte *) malloc(16384);
+    byte *video_ram = (byte *)malloc(16384);
     while (1) {
 
         if (video_latch)
-           memcpy(video_ram,ram7,16384);
+            memcpy(video_ram, ram7, 16384);
         else
-           memcpy(video_ram,ram5,16384);
+            memcpy(video_ram, ram5, 16384);
 
         while (xULAStop) {
             xULAStopped = true;
@@ -200,7 +196,6 @@ void videoTask(void *parameter) {
         if (flashing++ > 32)
             flashing = 0;
 
-
         for (unsigned int vga_lin = 0; vga_lin < 200; vga_lin++) {
             tick = 0;
             if (vga_lin < 3 || vga_lin > 194) {
@@ -211,7 +206,6 @@ void videoTask(void *parameter) {
                     vga.dotFast(bor, vga_lin, zxcolor(borderTemp, 0));
                     vga.dotFast(bor + 276, vga_lin, zxcolor(borderTemp, 0));
                 }
-
 
                 for (ff = 0; ff < 32; ff++) // foreach byte in line
                 {
@@ -250,13 +244,12 @@ void videoTask(void *parameter) {
         tick = 1;
         ts2 = millis();
 
-
         TIMERG0.wdt_wprotect = TIMG_WDT_WKEY_VALUE;
         TIMERG0.wdt_feed = 1;
         TIMERG0.wdt_wprotect = 0;
-        //Serial.printf("ULA: %d\n", ts2 - ts1);
+        // Serial.printf("ULA: %d\n", ts2 - ts1);
         if (ts2 - ts1 < 20)
-          delay(20 - (ts2 - ts1));
+            delay(20 - (ts2 - ts1));
     }
 }
 
@@ -372,22 +365,19 @@ void do_keyboard() {
     bitWrite(z80ports_in[0x1f], 4, !keymap[KEY_ALT_GR]);
 }
 
-
-
 /* +-------------+
  | LOOP core 1 |
  +-------------+
  */
 void loop() {
 
-        //Serial.println("Loop");
-        do_keyboard();
-        do_OSD();
-        // Z80Emulate(&_zxCpu, _next_total - _total, &_zxContext);
-        zx_loop();
-        TIMERG0.wdt_wprotect = TIMG_WDT_WKEY_VALUE;
-        TIMERG0.wdt_feed = 1;
-        TIMERG0.wdt_wprotect = 0;
-        vTaskDelay(0); // important to avoid task watchdog timeouts - change this to slow down emu
-
+    // Serial.println("Loop");
+    do_keyboard();
+    do_OSD();
+    // Z80Emulate(&_zxCpu, _next_total - _total, &_zxContext);
+    zx_loop();
+    TIMERG0.wdt_wprotect = TIMG_WDT_WKEY_VALUE;
+    TIMERG0.wdt_feed = 1;
+    TIMERG0.wdt_wprotect = 0;
+    vTaskDelay(0); // important to avoid task watchdog timeouts - change this to slow down emu
 }
