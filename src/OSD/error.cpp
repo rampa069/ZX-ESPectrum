@@ -2,7 +2,10 @@
 #include "ZX-ESPectrum.h"
 #include "def/files.h"
 #include "def/msg.h"
+#include "def/Font.h"
 #include "osd.h"
+
+
 
 // Shows a red panel with error text
 void errorPanel(String errormsg) {

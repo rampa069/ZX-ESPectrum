@@ -14,16 +14,20 @@
 #include <Arduino.h>
 
 #include "MartianVGA.h"
+
 #include "def/color.h"
 #include "def/files.h"
 #include "def/msg.h"
 #include "def/pin.h"
-// #include "esp_attr.h"
-// #include "esp_task_wdt.h"
-// #include "sdkconfig.h"
+#include "def/Font.h"
+
 #include <esp_bt.h>
+#include "soc/timer_group_struct.h"
+#include "driver/timer.h"
 
 // EXTERN VARS
+
+
 extern boolean cfg_slog_on;
 extern String cfg_ram_file;
 extern String cfg_rom_set;

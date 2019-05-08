@@ -2,7 +2,7 @@
 #include "ZX-ESPectrum.h"
 #include "def/files.h"
 #include "def/msg.h"
-#include <Ressources/Font6x8.h>
+#include "def/Font.h"
 
 // Cursor to OSD first row,col
 void osdHome() {

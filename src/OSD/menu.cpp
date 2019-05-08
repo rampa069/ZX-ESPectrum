@@ -3,7 +3,11 @@
 #include "ZX-ESPectrum.h"
 #include "def/files.h"
 #include "def/msg.h"
+#include "def/Font.h"
 #include "osd.h"
+
+
+
 
 // Menu row count
 unsigned short menuRowCount(String menu) {
