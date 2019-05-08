@@ -79,7 +79,11 @@ void IRAM_ATTR load_ram(String sna_file) {
     if (sna_size < 50000 && cfg_arch != "48K")
     {
       rom_latch = 1;
-      rom_in_use =1;
+      if (cfg_arch == "48K")
+          rom_in_use =0;
+      else
+          rom_in_use=1;
+          
       paging_lock = 1;
       bank_latch = 0;
       video_latch = 0;
@@ -193,6 +197,7 @@ void IRAM_ATTR load_ram(String sna_file) {
         rom_latch = bitRead(tmp_port, 4);
         paging_lock = bitRead(tmp_port, 5);
         bank_latch = tmp_latch;
+        rom_in_use = rom_latch;
     }
 
     _zxCpu.pc = retaddr;

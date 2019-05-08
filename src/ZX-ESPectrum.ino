@@ -10,6 +10,8 @@
 #include "Emulator/Memory.h"
 #include "Emulator/z80emu/z80emu.h"
 #include "Emulator/z80user.h"
+#include "Emulator/z80main.h"
+
 
 
 #include "dirdefs.h"
@@ -40,9 +42,7 @@ volatile byte oldKeymap[256];
 
 // EXTERN METHODS
 
-void zx_setup(void); /* Reset registers to the initial values */
-void zx_loop();
-void zx_reset();
+
 void setup_cpuspeed();
 void config_read();
 void do_OSD();

@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-namespace Sound
+namespace Sound_AY
 {
 
 class Ay3_8912_state

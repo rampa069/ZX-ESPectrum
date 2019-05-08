@@ -11,7 +11,7 @@
 #define CYCLES_PER_STEP 69888 // 71600
 #define RAM_AVAILABLE 0xC000
 
-Sound::Ay3_8912_state _ay3_8912;
+Sound_AY::Ay3_8912_state _ay3_8912;
 Z80_STATE _zxCpu;
 
 extern byte borderTemp;

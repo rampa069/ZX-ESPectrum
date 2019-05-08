@@ -3,7 +3,7 @@
 #include "Sound/volume.h"
 #include "Sound/midiMessage.h"
 
-namespace Sound
+namespace Sound_AY
 {
 
 void Ay3_8912_state::updated()
