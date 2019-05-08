@@ -15,14 +15,14 @@
 
 
 #include "dirdefs.h"
-#include "esp_attr.h"
+//#include "esp_attr.h"
 #include "machinedefs.h"
 #include "msg.h"
-#include "sdkconfig.h"
+//#include "sdkconfig.h"
 #include <ESP32Lib.h>
 #include <Ressources/Font6x8.h>
 #include <esp_bt.h>
-#include <esp_task_wdt.h>
+//#include <esp_task_wdt.h>
 
 // EXTERN VARS
 extern boolean cfg_slog_on;
@@ -135,8 +135,11 @@ void setup() {
     config_read();
 
 
-    pinMode(SOUND_PIN, OUTPUT);
-    digitalWrite(SOUND_PIN, LOW);
+    pinMode(SPEAKER_PIN, OUTPUT);
+    pinMode(EAR_PIN, INPUT);
+    pinMode(MIC_PIN,OUTPUT);
+    digitalWrite(SPEAKER_PIN, LOW);
+    digitalWrite(MIC_PIN, LOW);
 
     kb_begin();
 
@@ -181,13 +184,9 @@ void videoTask(void *parameter) {
     unsigned int ts1, ts2;
     word zx_fore_color, zx_back_color, tmp_color;
     byte active_latch;
-    byte *video_ram =  (byte *) malloc(16384);
+
     while (1) {
 
-        if (video_latch)
-           memcpy(video_ram,ram7,16384);
-        else
-           memcpy(video_ram,ram5,16384);
 
         while (xULAStop) {
             xULAStopped = true;
@@ -217,9 +216,15 @@ void videoTask(void *parameter) {
                 {
 
                     byte_offset = (vga_lin - 3) * 32 + ff; //*2+1;
-
-                    color_attrib = video_ram[0x1800 + (calcY(byte_offset) / 8) * 32 + ff]; // get 1 of 768 attrib values
-                    pixel_map = video_ram[byte_offset];
+                    if (!video_latch)
+                    {
+                      color_attrib = ram5[0x1800 + (calcY(byte_offset) / 8) * 32 + ff]; // get 1 of 768 attrib values
+                      pixel_map = ram5[byte_offset];
+                    } else
+                    {
+                      color_attrib = ram7[0x1800 + (calcY(byte_offset) / 8) * 32 + ff]; // get 1 of 768 attrib values
+                      pixel_map = ram7[byte_offset];
+                    }
                     calc_y = calcY(byte_offset);
 
                     for (i = 0; i < 8; i++) // foreach pixel within a byte

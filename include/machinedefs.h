@@ -1,4 +1,6 @@
-#define SOUND_PIN 5
+#define SPEAKER_PIN 5
+#define EAR_PIN 34
+#define MIC_PIN 0
 
 #define KEYBOARD_DATA 25
 #define KEYBOARD_CLK 26

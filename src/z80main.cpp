@@ -99,18 +99,18 @@ extern "C" uint8_t readbyte(uint16_t addr) {
                                 case 3: return rom3[addr] ;
 
                             }
-    case 0x4000 ... 0x7fff: return ram5[addr-0x4000];break;
+    case 0x4000 ... 0x7fff: delayMicroseconds(1);return ram5[addr-0x4000];break;
     case 0x8000 ... 0xbfff: return ram2[addr-0x8000];break;
     case 0xc000 ... 0xffff: switch(bank_latch)
                             {
                               case 0: return ram0[addr-0xc000];break;
-                              case 1: return ram1[addr-0xc000];break;
+                              case 1: delayMicroseconds(1);return ram1[addr-0xc000];break;
                               case 2: return ram2[addr-0xc000];break;
-                              case 3: return ram3[addr-0xc000];break;
+                              case 3: delayMicroseconds(1);return ram3[addr-0xc000];break;
                               case 4: return ram4[addr-0xc000];break;
-                              case 5: return ram5[addr-0xc000];break;
+                              case 5: delayMicroseconds(1);return ram5[addr-0xc000];break;
                               case 6: return ram6[addr-0xc000];break;
-                              case 7: return ram7[addr-0xc000];break;
+                              case 7: delayMicroseconds(1);return ram7[addr-0xc000];break;
                             }
                             //Serial.printf("Address: %x Returned address %x  Bank: %x\n",addr,addr-0xc000,bank_latch);
                             break;
@@ -137,13 +137,13 @@ extern "C" void writebyte(uint16_t addr, uint8_t data) {
       case 0xc000 ... 0xffff: switch(bank_latch)
                               {
                                 case 0:ram0[addr-0xc000] = data;break;
-                                case 1:ram1[addr-0xc000] = data;break;
+                                case 1:delayMicroseconds(1);ram1[addr-0xc000] = data;break;
                                 case 2:ram2[addr-0xc000] = data;break;
-                                case 3:ram3[addr-0xc000] = data;break;
+                                case 3:delayMicroseconds(1);ram3[addr-0xc000] = data;break;
                                 case 4:ram4[addr-0xc000] = data;break;
-                                case 5:ram5[addr-0xc000] = data;break;
+                                case 5:delayMicroseconds(1);ram5[addr-0xc000] = data;break;
                                 case 6:ram6[addr-0xc000] = data;break;
-                                case 7:ram7[addr-0xc000] = data;break;
+                                case 7:delayMicroseconds(1);ram7[addr-0xc000] = data;break;
                               }
                               //Serial.println("plin");
                               break;
@@ -202,6 +202,8 @@ extern "C" uint8_t input(uint8_t portLow, uint8_t portHigh) {
             return result;
         }
         }
+        bitWrite(z80ports_in[kbdarrno],6,digitalRead(34));
+        Serial.println(digitalRead(EAR_PIN));
         return (z80ports_in[kbdarrno]);
     }
 
@@ -234,9 +236,9 @@ extern "C" void output(uint8_t portLow, uint8_t portHigh, uint8_t data) {
         bitWrite(borderTemp, 1, bitRead(data, 1));
         bitWrite(borderTemp, 2, bitRead(data, 2));
 
-        digitalWrite(SOUND_PIN, bitRead(data, 4)); // speaker
+        digitalWrite(SPEAKER_PIN, bitRead(data, 4)); // speaker
 
-        // digitalWrite(SOUND_PIN,bitRead(data,3));  //tape_out
+        digitalWrite(MIC_PIN,bitRead(data,3));  //tape_out
 
         z80ports_in[0x20] = data;
     } break;
