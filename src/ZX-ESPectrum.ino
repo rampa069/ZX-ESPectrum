@@ -67,7 +67,7 @@ VGA3Bit vga;
 #endif
 
 #ifdef COLOUR_16
-VGA14BitI vga;
+VGA14Bit vga;
 #endif
 
 void setup() {
