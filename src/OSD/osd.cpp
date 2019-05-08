@@ -1,5 +1,7 @@
-#pragma once
-#include "OSD/osd.h"
+#include "osd.h"
+#include "ZX-ESPectrum.h"
+#include "def/files.h"
+#include "def/msg.h"
 
 // Cursor to OSD first row,col
 void osdHome() {

@@ -1,6 +1,27 @@
-#include "Emulator/Disk.h"
+#include "Emulator/Keyboard/PS2Kbd.h"
 #include "Emulator/Memory.h"
 #include "Emulator/z80main.h"
+#include "ZX-ESPectrum.h"
+#include "def/ascii.h"
+#include "def/files.h"
+#include "def/msg.h"
+#include "def/types.h"
+#include "osd.h"
+#include <FS.h>
+#include <SPIFFS.h>
+
+void errorHalt(String errormsg);
+void IRAM_ATTR kb_interruptHandler(void);
+void zx_reset();
+
+// Globals
+boolean cfg_demo_on = false;
+unsigned short cfg_demo_every = 60;
+String cfg_arch = "128K";
+String cfg_ram_file = NO_RAM_FILE;
+String cfg_rom_set = "SINCLAIR";
+String cfg_sna_file_list;
+boolean cfg_slog_on = true;
 
 void IRAM_ATTR mount_spiffs() {
     if (!SPIFFS.begin())
@@ -68,7 +89,6 @@ void IRAM_ATTR load_ram(String sna_file) {
     int sna_size;
     zx_reset();
 
-
     Serial.printf("%s SNA: %ub\n", MSG_FREE_HEAP_BEFORE, ESP.getFreeHeap());
 
     KB_INT_STOP;
@@ -76,18 +96,16 @@ void IRAM_ATTR load_ram(String sna_file) {
     lhandle = open_read_file(sna_file);
     sna_size = lhandle.size();
 
-    if (sna_size < 50000 && cfg_arch != "48K")
-    {
-      rom_latch = 1;
-      if (cfg_arch == "48K")
-          rom_in_use =0;
-      else
-          rom_in_use=1;
-          
-      paging_lock = 1;
-      bank_latch = 0;
-      video_latch = 0;
+    if (sna_size < 50000 && cfg_arch != "48K") {
+        rom_latch = 1;
+        if (cfg_arch == "48K")
+            rom_in_use = 0;
+        else
+            rom_in_use = 1;
 
+        paging_lock = 1;
+        bank_latch = 0;
+        video_latch = 0;
     }
     vTaskDelay(10);
     size_read = 0;
@@ -150,8 +168,7 @@ void IRAM_ATTR load_ram(String sna_file) {
 
         _zxCpu.registers.word[Z80_SP]++;
         _zxCpu.registers.word[Z80_SP]++;
-    } else
-     {
+    } else {
         uint16_t buf_p;
         for (buf_p = 0x4000; buf_p < 0x8000; buf_p++) {
             writebyte(buf_p, lhandle.read());
@@ -165,7 +182,7 @@ void IRAM_ATTR load_ram(String sna_file) {
         }
 
         byte machine_b = lhandle.read();
-        Serial.printf("Machine: %x\n",machine_b);
+        Serial.printf("Machine: %x\n", machine_b);
         byte retaddr_l = lhandle.read();
         byte retaddr_h = lhandle.read();
         retaddr = retaddr_l + retaddr_h * 0x100;
@@ -204,7 +221,7 @@ void IRAM_ATTR load_ram(String sna_file) {
 
     Serial.printf("%s SNA: %u\n", MSG_FREE_HEAP_AFTER, ESP.getFreeHeap());
     Serial.printf("Ret address: %x Stack: %x AF: %x Border: %x sna_size: %d\n", retaddr, _zxCpu.registers.word[Z80_SP],
-                  _zxCpu.registers.word[Z80_AF], borderTemp,sna_size);
+                  _zxCpu.registers.word[Z80_AF], borderTemp, sna_size);
     KB_INT_START;
 }
 
@@ -286,7 +303,6 @@ void load_rom(String arch, String romset) {
             }
         }
         rom_f.close();
-
     }
 
     interrupts();
@@ -321,6 +337,16 @@ void config_read() {
             } else if (line.startsWith("romset:")) {
                 cfg_rom_set = line.substring(line.lastIndexOf(':') + 1);
                 Serial.printf("  + romset:%s\n", cfg_rom_set.c_str());
+            } else if (line.startsWith("demo_on:")) {
+                if (line.substring(line.lastIndexOf(':') + 1) == "true") {
+                    cfg_demo_on = true;
+                } else {
+                    cfg_demo_on = false;
+                }
+                Serial.printf("  + demo_on:%s\n", (cfg_demo_on ? "true" : "false"));
+            } else if (line.startsWith("demo_every:")) {
+                cfg_demo_every = line.substring(line.lastIndexOf(':') + 1).toInt();
+                Serial.printf("  + demo_every:%s\n", cfg_demo_every);
             }
             line = "";
         } else {
@@ -344,6 +370,10 @@ void IRAM_ATTR config_save() {
     f.printf("romset:%s\n", cfg_rom_set.c_str());
     Serial.printf("  + ram:%s\n", cfg_ram_file.c_str());
     f.printf("ram:%s\n", cfg_ram_file.c_str());
+    Serial.printf("  + demo_on:%s\n", (cfg_demo_on ? "true" : "false"));
+    f.printf("demo_on:%s\n", (cfg_demo_on ? "true" : "false"));
+    Serial.printf("  + demo_every:%u\n", cfg_demo_every);
+    f.printf("demo_every:%u\n", cfg_demo_every);
     Serial.printf("  + slog:%s\n", (cfg_slog_on ? "true" : "false"));
     f.printf("slog:%s\n", (cfg_slog_on ? "true" : "false"));
     f.close();

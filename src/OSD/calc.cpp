@@ -1,3 +1,6 @@
+#include "osd.h"
+#include <Arduino.h>
+
 // X origin to center an element with pixel_width
 unsigned short scrAlignCenterX(unsigned short pixel_width) { return (SCR_W / 2) - (pixel_width / 2); }
 // Y origin to center an element with pixel_height

@@ -1,3 +1,8 @@
+#include "osd.h"
+
+extern volatile boolean xULAStop;
+extern volatile boolean xULAStopped;
+
 // Stop ULA service
 void stopULA() {
     xULAStop = true;

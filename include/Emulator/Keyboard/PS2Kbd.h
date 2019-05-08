@@ -1,17 +1,13 @@
-#pragma once
-#pragma GCC diagnostic ignored "-Wall"
+#include "def/keys.h"
+#include "def/pin.h"
 #include <Arduino.h>
-#pragma GCC diagnostic warning "-Wall"
 
-#define KEY_F1 0x05
-#define KEY_F12 0x07
-#define KEY_ESC 0x76
-#define KEY_CURSOR_LEFT 0x6B
-#define KEY_CURSOR_DOWN 0x72
-#define KEY_CURSOR_RIGHT 0x74
-#define KEY_CURSOR_UP 0x75
-#define KEY_ALT_GR 0x11
-#define KEY_ENTER 0x5A
+#define KB_INT_START attachInterrupt(digitalPinToInterrupt(KEYBOARD_CLK), kb_interruptHandler, FALLING)
+#define KB_INT_STOP detachInterrupt(digitalPinToInterrupt(KEYBOARD_CLK))
 
-void kb_begin();
 extern byte lastcode;
+
+void IRAM_ATTR kb_interruptHandler(void);
+void kb_begin();
+boolean isKeymapChanged();
+boolean checkAndCleanKey(byte scancode);

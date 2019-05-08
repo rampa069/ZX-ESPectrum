@@ -12,10 +12,11 @@
 #include "Emulator/z80main.h"
 #include "Emulator/z80user.h"
 
-#include "dirdefs.h"
+#include "def/color.h"
+#include "def/files.h"
+#include "def/msg.h"
+#include "def/pin.h"
 #include "esp_attr.h"
-#include "machinedefs.h"
-#include "msg.h"
 #include "sdkconfig.h"
 #include <ESP32Lib.h>
 #include <Ressources/Font6x8.h>
@@ -58,12 +59,9 @@ const int SAMPLING_RATE = 44100;
 const int BUFFER_SIZE = 2000;
 
 // SETUP *************************************
-
 #ifdef COLOUR_8
 VGA3Bit vga;
-#endif
-
-#ifdef COLOUR_16
+#else
 VGA14Bit vga;
 #endif
 

@@ -1,4 +1,4 @@
-#include "machinedefs.h"
+#include "def/pin.h"
 #include "startup.h"
 #include <stdio.h>
 #include <string.h>

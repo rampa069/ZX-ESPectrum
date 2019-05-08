@@ -1,9 +1,7 @@
-#pragma GCC diagnostic ignored "-Wall"
+#include "ZX-ESPectrum.h"
+#include "def/keys.h"
+#include "def/pin.h"
 #include <Arduino.h>
-#pragma GCC diagnostic warning "-Wall"
-
-#include "Emulator/Keyboard/PS2Kbd.h"
-#include "machinedefs.h"
 
 unsigned int shift = 0;
 byte lastcode = 0;
@@ -11,11 +9,6 @@ boolean keyup = false;
 boolean shift_presed = false;
 boolean symbol_pressed = false;
 byte rc = 0;
-
-extern byte keymap[256];
-extern byte oldKeymap[256];
-
-extern boolean debug_keyboard;
 
 void IRAM_ATTR kb_interruptHandler(void) {
     static uint8_t bitcount = 0;
@@ -47,7 +40,7 @@ void IRAM_ATTR kb_interruptHandler(void) {
                 if (keymap[incoming] == 0) {
                     keymap[incoming] = 1;
                 } else {
-                    //Serial.println("WARNING: Keyboard cleaned");
+                    // Serial.println("WARNING: Keyboard cleaned");
                     for (int gg = 0; gg < 256; gg++)
                         keymap[gg] = 1;
                 }
@@ -72,8 +65,8 @@ void kb_begin() {
     digitalWrite(KEYBOARD_CLK, true);
     attachInterrupt(digitalPinToInterrupt(KEYBOARD_CLK), kb_interruptHandler, FALLING);
 
-    memset(keymap,1,sizeof(keymap));
-    memset(oldKeymap,1,sizeof(oldKeymap));
+    memset(keymap, 1, sizeof(keymap));
+    memset(oldKeymap, 1, sizeof(oldKeymap));
     //}
 }
 

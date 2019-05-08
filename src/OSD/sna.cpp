@@ -1,3 +1,9 @@
+#include "Disk.h"
+#include "Emulator/z80main.h"
+#include "def/files.h"
+#include "def/msg.h"
+#include "osd.h"
+
 // Change running snapshot
 void changeSna(String sna_filename) {
     stopULA();

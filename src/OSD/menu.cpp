@@ -1,3 +1,10 @@
+#include "Disk.h"
+#include "Emulator/Keyboard/PS2Kbd.h"
+#include "ZX-ESPectrum.h"
+#include "def/files.h"
+#include "def/msg.h"
+#include "osd.h"
+
 // Menu row count
 unsigned short menuRowCount(String menu) {
     unsigned short count = 0;

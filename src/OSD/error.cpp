@@ -1,3 +1,9 @@
+#include "Disk.h"
+#include "ZX-ESPectrum.h"
+#include "def/files.h"
+#include "def/msg.h"
+#include "osd.h"
+
 // Shows a red panel with error text
 void errorPanel(String errormsg) {
     unsigned short x = scrAlignCenterX(OSD_W);
