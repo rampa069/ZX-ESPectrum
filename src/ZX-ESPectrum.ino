@@ -9,8 +9,8 @@
 #include "Emulator/Keyboard/PS2Kbd.h"
 #include "Emulator/Memory.h"
 #include "Emulator/z80emu/z80emu.h"
+#include "Emulator/z80main.h"
 #include "Emulator/z80user.h"
-
 
 #include "dirdefs.h"
 #include "esp_attr.h"
@@ -41,9 +41,6 @@ volatile byte oldKeymap[256];
 
 // EXTERN METHODS
 
-void zx_setup(void); /* Reset registers to the initial values */
-void zx_loop();
-void zx_reset();
 void setup_cpuspeed();
 void config_read();
 void do_OSD();
@@ -140,7 +137,6 @@ void setup() {
     mount_spiffs();
     config_read();
 
-
     pinMode(SOUND_PIN, OUTPUT);
     digitalWrite(SOUND_PIN, LOW);
 
@@ -200,7 +196,6 @@ void videoTask(void *parameter) {
         if (flashing++ > 32)
             flashing = 0;
 
-
         for (unsigned int vga_lin = 0; vga_lin < 200; vga_lin++) {
             tick = 0;
             if (vga_lin < 3 || vga_lin > 194) {
@@ -258,7 +253,7 @@ void videoTask(void *parameter) {
         TIMERG0.wdt_wprotect = TIMG_WDT_WKEY_VALUE;
         TIMERG0.wdt_feed = 1;
         TIMERG0.wdt_wprotect = 0;
-        //Serial.printf("ULA: %d\n", ts2 - ts1);
+        // Serial.printf("ULA: %d\n", ts2 - ts1);
         if (ts2 - ts1 < 20)
             delay(20 - (ts2 - ts1));
     }
@@ -381,8 +376,6 @@ void do_keyboard() {
     bitWrite(z80ports_in[0x1f], 3, !keymap[KEY_CURSOR_UP]);
     bitWrite(z80ports_in[0x1f], 4, !keymap[KEY_ALT_GR]);
 }
-
-
 
 /* +-------------+
  | LOOP core 1 |
