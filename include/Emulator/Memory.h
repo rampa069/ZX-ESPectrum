@@ -1,19 +1,18 @@
 //extern byte *rom0;
 
-extern volatile byte *rom0;
-extern volatile byte *rom1;
-extern volatile byte *rom2;
-extern volatile byte *rom3;
+extern  byte *rom0;
+extern  byte *rom1;
+extern  byte *rom2;
+extern  byte *rom3;
 
-extern volatile byte* ram0;
-extern volatile byte* ram1;
-extern volatile byte* ram2;
-extern volatile byte* ram3;
-extern volatile byte* ram4;
-extern volatile byte* ram5;
-extern volatile byte* ram6;
-extern volatile byte* ram7;
+extern  byte* ram0;
+extern  byte* ram1;
+extern  byte* ram2;
+extern  byte* ram3;
+extern  byte* ram4;
+extern  byte* ram5;
+extern  byte* ram6;
+extern  byte* ram7;
 
-extern byte rom_latch,bank_latch,video_latch,paging_lock;
-extern byte sp3_mode, sp3_rom, rom_in_use;
-void alloc_memory();
+extern volatile byte rom_latch,bank_latch,video_latch,paging_lock;
+extern volatile byte sp3_mode, sp3_rom, rom_in_use;

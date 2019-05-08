@@ -5,24 +5,26 @@
 
 void errorHalt(String);
 
-volatile byte *rom0;
-volatile byte *rom1;
-volatile byte *rom2;
-volatile byte *rom3;
 
-volatile byte *ram0 ;
-volatile byte *ram1 ;
-volatile byte *ram2 ;
-volatile byte *ram3 ;
-volatile byte *ram4 ;
-volatile byte *ram5 ;
-volatile byte *ram6 ;
-volatile byte *ram7 ;
 
-byte bank_latch=0;
-byte video_latch=0;
-byte rom_latch=0;
-byte paging_lock=0;
-byte sp3_mode=0;
-byte sp3_rom=0;
-byte rom_in_use =0;
+byte *rom0;
+byte *rom1;
+byte *rom2;
+byte *rom3;
+
+byte *ram0;
+byte *ram1;
+byte *ram2;
+byte *ram3;
+byte *ram4;
+byte *ram5;
+byte *ram6;
+byte *ram7;
+
+volatile byte bank_latch=0;
+volatile byte video_latch=0;
+volatile byte rom_latch=0;
+volatile byte paging_lock=0;
+volatile byte sp3_mode=0;
+volatile byte sp3_rom=0;
+volatile byte rom_in_use =0;

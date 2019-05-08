@@ -8,6 +8,9 @@ board_build.mcu = esp32
 
 ; change MCU frequency
 board_build.f_cpu = 240000000L
+; set frequency to 40MHz
+board_build.f_flash = 40000000L
+
 
 upload_port = /dev/ttyUSB0
 upload_protocol = esptool

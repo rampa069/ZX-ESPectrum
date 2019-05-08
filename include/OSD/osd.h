@@ -26,8 +26,8 @@ extern boolean cfg_demo_on;
 extern boolean cfg_demo_every;
 extern String cfg_arch;
 extern String cfg_rom_set;
-extern boolean xULAStop;
-extern boolean xULAStopped;
+extern volatile boolean xULAStop;
+extern volatile boolean xULAStopped;
 
 // OSD Interface
 // Calc
