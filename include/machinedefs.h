@@ -3,8 +3,8 @@
 #define KEYBOARD_DATA 25
 #define KEYBOARD_CLK 26
 
-#define  COLOUR_8
-//#define COLOUR_16
+//#define  COLOUR_8
+#define COLOUR_16
 
 #ifdef COLOUR_8
 const int redPin = 14;
@@ -25,9 +25,13 @@ const int vsyncPin = 33;
 #endif
 
 #ifdef COLOUR_16
-const int redPins[] = {2, 4, 12, 13, 14};
-const int greenPins[] = {15, 16, 17, 18, 19};
-const int bluePins[] = {21, 22, 23, 27};
+//const int redPins[] = {2, 4, 12, 13, 14};
+//const int greenPins[] = {15, 16, 17, 18, 19};
+//const int bluePins[] = {21, 22, 23, 27};
+const int redPins[] = {2, 2, 14, 14, 14};
+const int greenPins[] = {15, 15, 19, 19, 19};
+const int bluePins[] = {21, 21, 27, 27};
+
 const int hsyncPin = 32;
 const int vsyncPin = 33;
 

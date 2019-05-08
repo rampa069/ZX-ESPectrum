@@ -23,7 +23,6 @@
 #include <esp_task_wdt.h>
 
 // EXTERN VARS
-extern boolean writeScreen;
 extern boolean cfg_slog_on;
 extern String cfg_ram_file;
 extern String cfg_rom_set;
@@ -51,20 +50,15 @@ void errorHalt(String);
 void mount_spiffs();
 
 // GLOBALS
-// volatile byte *bank0;
 volatile byte z80ports_in[128];
-byte borderTemp = 7;
-byte soundTemp = 0;
-unsigned int flashing = 0;
-byte lastAudio = 0;
-boolean xULAStop = false;
-boolean xULAStopped = false;
-boolean writeScreen = false;
-byte tick;
+volatile byte borderTemp = 7;
+volatile byte flashing = 0;
+volatile boolean xULAStop = false;
+volatile boolean xULAStopped = false;
+volatile boolean writeScreen = false;
+volatile byte tick;
 const int SAMPLING_RATE = 44100;
 const int BUFFER_SIZE = 2000;
-AudioSystem audioSystem(SAMPLING_RATE, BUFFER_SIZE);
-AudioOutput audioOutput;
 
 // SETUP *************************************
 
@@ -73,7 +67,7 @@ VGA3Bit vga;
 #endif
 
 #ifdef COLOUR_16
-VGA14Bit vga;
+VGA14BitI vga;
 #endif
 
 void setup() {
@@ -91,51 +85,51 @@ void setup() {
     vga.init(vga.MODE360x200, redPin, greenPin, bluePin, hsyncPin, vsyncPin);
 #endif
 
+    Serial.printf("HEAP BEGIN %d\n", ESP.getFreeHeap());
+
+#ifdef BOARD_HAS_PSRAM
+  rom0=(byte*) ps_malloc(16384);
+  rom1=(byte*) ps_malloc(16384);
+  rom2=(byte*) ps_malloc(16384);
+  rom3=(byte*) ps_malloc(16384);
+
+  ram0=(byte*) ps_malloc(16384);
+  ram1=(byte*) ps_malloc(16384);
+  ram2=(byte*) ps_malloc(16384);
+  ram3=(byte*) ps_malloc(16384);
+  ram4=(byte*) ps_malloc(16384);
+  ram5=(byte*) ps_malloc(16384);
+  ram6=(byte*) ps_malloc(16384);
+  ram7=(byte*) ps_malloc(16384);
+
+#else
+  rom0=(byte*) malloc(16384);
+  rom1=(byte*) malloc(16384);
+  //rom2=(byte*) malloc(16384);
+  //rom3=(byte*) malloc(16384);
+
+  ram0=(byte*) malloc(16384);
+  ram1=(byte*) malloc(16384);
+  ram2=(byte*) malloc(16384);
+  ram3=(byte*) malloc(16384);
+  ram4=(byte*) malloc(16384);
+  ram5=(byte*) malloc(16384);
+  ram6=(byte*) malloc(16384);
+  ram7=(byte*) malloc(16384);
+
+#endif
+
+#ifdef COLOUR_8
+    vga.init(vga.MODE360x200, redPin, greenPin, bluePin, hsyncPin, vsyncPin);
+#endif
+
 #ifdef COLOUR_16
     vga.init(vga.MODE360x200, redPins, greenPins, bluePins, hsyncPin, vsyncPin);
 #endif
 
+    Serial.printf("HEAP after vga  %d \n", ESP.getFreeHeap());
+
     vga.clear(0);
-
-    Serial.printf("HEAP BEGIN %d\n", ESP.getFreeHeap());
-
-    // rom0=  (byte *)malloc(16384);
-#ifdef BOARD_HAS_PSRAM
-
-    rom0 = (byte *)heap_caps_malloc(16384, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
-    rom1 = (byte *)heap_caps_malloc(16384, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
-    rom2 = (byte *)heap_caps_malloc(16384, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
-    rom3 = (byte *)heap_caps_malloc(16384, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
-#else
-    rom0 = (byte *)malloc(16384);
-    rom1 = (byte *)malloc(16384);
-    //rom2 = (byte *)malloc(16384);
-    //rom3 = (byte *)malloc(16384);
-#endif
-
-    Serial.printf("HEAP after rom: %d\n", ESP.getFreeHeap());
-
-#ifdef BOARD_HAS_PSRAM
-    ram0 = (byte *)heap_caps_malloc(16384, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
-    ram1 = (byte *)heap_caps_malloc(16384, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
-    ram2 = (byte *)heap_caps_malloc(16384, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
-    ram3 = (byte *)heap_caps_malloc(16384, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
-    ram4 = (byte *)heap_caps_malloc(16384, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
-    ram5 = (byte *)heap_caps_malloc(16384, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
-    ram6 = (byte *)heap_caps_malloc(16384, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
-    ram7 = (byte *)heap_caps_malloc(16384, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
-#else
-    ram0 = (byte *)malloc(16384);
-    ram1 = (byte *)malloc(16384);
-    ram2 = (byte *)malloc(16384);
-    ram3 = (byte *)malloc(16384);
-    ram4 = (byte *)malloc(16384);
-    ram5 = (byte *)malloc(16384);
-    ram6 = (byte *)malloc(16384);
-    ram7 = (byte *)malloc(16384);
-#endif
-
-    Serial.printf("HEAP after ram %d \n", ESP.getFreeHeap());
 
     mount_spiffs();
     config_read();
@@ -174,6 +168,7 @@ void setup() {
     if (cfg_ram_file.compareTo(NO_RAM_FILE) < 0) {
         load_ram("/sna/" + cfg_ram_file);
     }
+    Serial.println("End of setup");
 }
 
 // VIDEO core 0 *************************************
@@ -186,8 +181,13 @@ void videoTask(void *parameter) {
     unsigned int ts1, ts2;
     word zx_fore_color, zx_back_color, tmp_color;
     byte active_latch;
-
+    byte *video_ram =  (byte *) malloc(16384);
     while (1) {
+
+        if (video_latch)
+           memcpy(video_ram,ram7,16384);
+        else
+           memcpy(video_ram,ram5,16384);
 
         while (xULAStop) {
             xULAStopped = true;
@@ -212,20 +212,14 @@ void videoTask(void *parameter) {
                     vga.dotFast(bor + 276, vga_lin, zxcolor(borderTemp, 0));
                 }
 
-                active_latch = video_latch;
 
                 for (ff = 0; ff < 32; ff++) // foreach byte in line
                 {
 
                     byte_offset = (vga_lin - 3) * 32 + ff; //*2+1;
 
-                    if (!active_latch) {
-                        color_attrib = ram5[0x1800 + (calcY(byte_offset) / 8) * 32 + ff]; // get 1 of 768 attrib values
-                        pixel_map = ram5[byte_offset];
-                    } else {
-                        color_attrib = ram7[0x1800 + (calcY(byte_offset) / 8) * 32 + ff]; // get 1 of 768 attrib values
-                        pixel_map = ram7[byte_offset];
-                    }
+                    color_attrib = video_ram[0x1800 + (calcY(byte_offset) / 8) * 32 + ff]; // get 1 of 768 attrib values
+                    pixel_map = video_ram[byte_offset];
                     calc_y = calcY(byte_offset);
 
                     for (i = 0; i < 8; i++) // foreach pixel within a byte
@@ -255,19 +249,15 @@ void videoTask(void *parameter) {
         }
         tick = 1;
         ts2 = millis();
+
+
         TIMERG0.wdt_wprotect = TIMG_WDT_WKEY_VALUE;
         TIMERG0.wdt_feed = 1;
         TIMERG0.wdt_wprotect = 0;
         //Serial.printf("ULA: %d\n", ts2 - ts1);
         if (ts2 - ts1 < 20)
-            delay(20 - (ts2 - ts1));
+          delay(20 - (ts2 - ts1));
     }
-    TIMERG0.wdt_wprotect = TIMG_WDT_WKEY_VALUE;
-    TIMERG0.wdt_feed = 1;
-    TIMERG0.wdt_wprotect = 0;
-    Serial.printf("ULA: %d\n", ts2 - ts1);
-    if (ts2 - ts1 < 20)
-        delay(20 - (ts2 - ts1));
 }
 
 // SPECTRUM SCREEN DISPLAY
@@ -389,7 +379,8 @@ void do_keyboard() {
  +-------------+
  */
 void loop() {
-    while (1) {
+
+        //Serial.println("Loop");
         do_keyboard();
         do_OSD();
         // Z80Emulate(&_zxCpu, _next_total - _total, &_zxContext);
@@ -398,5 +389,5 @@ void loop() {
         TIMERG0.wdt_feed = 1;
         TIMERG0.wdt_wprotect = 0;
         vTaskDelay(0); // important to avoid task watchdog timeouts - change this to slow down emu
-    }
+
 }

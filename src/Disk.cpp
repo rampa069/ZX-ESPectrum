@@ -249,7 +249,7 @@ unsigned short countFileEntriesFromDir(String path) {
 }
 
 void load_rom(String arch, String romset) {
-    KB_INT_STOP;
+    noInterrupts();
     String path = "/rom/" + arch + "/" + romset;
     Serial.printf("Loading ROMSET '%s'\n", path.c_str());
     byte n_roms = countFileEntriesFromDir(path);
@@ -263,27 +263,28 @@ void load_rom(String arch, String romset) {
         for (int i = 0; i < rom_f.size(); i++) {
             switch (f) {
             case 0:
-                rom0[i] = (byte)rom_f.read();
+                rom0[i] = rom_f.read();
                 break;
             case 1:
-                rom1[i] = (byte)rom_f.read();
+                rom1[i] = rom_f.read();
                 break;
 
 #ifdef BOARD_HAS_PSRAM
 
             case 2:
-                rom2[i] = (byte)rom_f.read();
+                rom2[i] = rom_f.read();
                 break;
             case 3:
-                rom3[i] = (byte)rom_f.read();
+                rom3[i] = rom_f.read();
                 break;
 #endif
             }
         }
         rom_f.close();
+
     }
-    vTaskDelay(2);
-    KB_INT_START;
+
+    interrupts();
 }
 
 // Get all sna files
