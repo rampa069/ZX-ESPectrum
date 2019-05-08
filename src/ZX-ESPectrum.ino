@@ -11,17 +11,17 @@
 #include "Emulator/z80emu/z80emu.h"
 #include "Emulator/z80main.h"
 #include "Emulator/z80user.h"
+#include <Arduino.h>
 
+#include "MartianVGA.h"
 #include "def/color.h"
 #include "def/files.h"
 #include "def/msg.h"
 #include "def/pin.h"
-#include "esp_attr.h"
-#include "sdkconfig.h"
-#include <ESP32Lib.h>
-#include <Ressources/Font6x8.h>
+// #include "esp_attr.h"
+// #include "esp_task_wdt.h"
+// #include "sdkconfig.h"
 #include <esp_bt.h>
-#include <esp_task_wdt.h>
 
 // EXTERN VARS
 extern boolean cfg_slog_on;
@@ -246,8 +246,9 @@ void videoTask(void *parameter) {
         TIMERG0.wdt_feed = 1;
         TIMERG0.wdt_wprotect = 0;
         // Serial.printf("ULA: %d\n", ts2 - ts1);
-        if (ts2 - ts1 < 20)
+        if (ts2 - ts1 < 20) {
             delay(20 - (ts2 - ts1));
+        }
     }
 }
 
@@ -368,7 +369,6 @@ void do_keyboard() {
  +-------------+
  */
 void loop() {
-
     // Serial.println("Loop");
     do_keyboard();
     do_OSD();

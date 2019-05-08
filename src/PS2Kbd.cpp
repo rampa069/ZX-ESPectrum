@@ -1,3 +1,4 @@
+#include "MartianVGA.h"
 #include "ZX-ESPectrum.h"
 #include "def/keys.h"
 #include "def/pin.h"

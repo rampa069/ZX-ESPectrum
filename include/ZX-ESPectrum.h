@@ -1,7 +1,6 @@
 #pragma once
 
-#include <ESP32Lib.h>
-#include <Ressources/Font6x8.h>
+#include "MartianVGA.h"
 
 // Declared vars
 #ifdef COLOUR_8
