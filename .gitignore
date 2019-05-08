@@ -2,7 +2,6 @@
 .DS_Store
 data/sna/**
 !.keep
-!/data/boot.cfg
 .pioenvs/
 platformio.ini
 .clang_complete
