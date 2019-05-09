@@ -10,6 +10,11 @@ void do_OSD() {
     boolean cycle_sna = false;
     if (checkAndCleanKey(KEY_F12)) {
         cycle_sna = true;
+    } else if (checkAndCleanKey(KEY_F2)) {
+        stopULA(); // ULA Stopped
+        byte opt = do_Menu(MENU_TEST);
+        Serial.printf("Selected option %u", opt);
+        startULA();
     } else if (checkAndCleanKey(KEY_F1)) {
         // Main menu
         stopULA(); // ULA Stopped

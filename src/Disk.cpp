@@ -276,7 +276,7 @@ unsigned short countFileEntriesFromDir(String path) {
 }
 
 void load_rom(String arch, String romset) {
-    noInterrupts();
+    KB_INT_STOP;
     String path = "/rom/" + arch + "/" + romset;
     Serial.printf("Loading ROMSET '%s'\n", path.c_str());
     byte n_roms = countFileEntriesFromDir(path);
@@ -310,7 +310,7 @@ void load_rom(String arch, String romset) {
         rom_f.close();
     }
 
-    interrupts();
+    KB_INT_START;
 }
 
 // Get all sna files
