@@ -372,8 +372,8 @@ void IRAM_ATTR config_save() {
     f.printf("ram:%s\n", cfg_ram_file.c_str());
     Serial.printf("  + demo_on:%s\n", (cfg_demo_on ? "true" : "false"));
     f.printf("demo_on:%s\n", (cfg_demo_on ? "true" : "false"));
-    Serial.printf("  + demo_every:%u\n", cfg_demo_every);
-    f.printf("demo_every:%u\n", cfg_demo_every);
+    // Serial.printf("  + demo_every:%u\n", cfg_demo_every);
+    // f.printf("demo_every:%u\n", cfg_demo_every);
     Serial.printf("  + slog:%s\n", (cfg_slog_on ? "true" : "false"));
     f.printf("slog:%s\n", (cfg_slog_on ? "true" : "false"));
     f.close();
