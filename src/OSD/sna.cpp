@@ -20,7 +20,7 @@ void changeSna(String sna_filename) {
 // Demo mode on off
 void setDemoMode(boolean on, unsigned short every) {
     cfg_demo_mode_on = on;
-    cfg_demo_every = every;
+    cfg_demo_every = (every > 0 ? every : 60);
     if (on) {
         osdCenteredMsg(OSD_DEMO_MODE_ON, LEVEL_OK);
     } else {
