@@ -240,7 +240,7 @@ String getFileEntriesFromDir(String path) {
     if (!file)
         Serial.println("No entries found!");
     while (file) {
-        Serial.printf("Found %s: %s...", (file.isDirectory() ? "DIR" : "FILE"), file.name());
+        Serial.printf("Found %s: %s...%ub...", (file.isDirectory() ? "DIR" : "FILE"), file.name(), file.size());
         String filename = file.name();
         byte start = filename.indexOf("/", path.length()) + 1;
         byte end = filename.indexOf("/", start);
@@ -248,6 +248,8 @@ String getFileEntriesFromDir(String path) {
         Serial.printf("%s...", filename.c_str());
         if (filename.startsWith(".")) {
             Serial.println("HIDDEN");
+        } else if (cfg_arch == "48K" & file.size() > SIZE48K) {
+            Serial.println("128K SKIP");
         } else {
             if (filelist.indexOf(filename) < 0) {
                 Serial.println("ADDING");
