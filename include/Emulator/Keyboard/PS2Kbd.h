@@ -1,5 +1,5 @@
+#include "def/hardware.h"
 #include "def/keys.h"
-#include "def/pin.h"
 #include <Arduino.h>
 
 #define KB_INT_START attachInterrupt(digitalPinToInterrupt(KEYBOARD_CLK), kb_interruptHandler, FALLING)

@@ -15,18 +15,16 @@
 
 #include "MartianVGA.h"
 
-#include "def/color.h"
-#include "def/files.h"
-#include "def/msg.h"
-#include "def/pin.h"
 #include "def/Font.h"
+#include "def/files.h"
+#include "def/hardware.h"
+#include "def/msg.h"
 
-#include <esp_bt.h>
-#include "soc/timer_group_struct.h"
 #include "driver/timer.h"
+#include "soc/timer_group_struct.h"
+#include <esp_bt.h>
 
 // EXTERN VARS
-
 
 extern boolean cfg_slog_on;
 extern String cfg_ram_file;
@@ -100,29 +98,27 @@ void setup() {
     ram5 = (byte *)ps_malloc(16384);
     ram6 = (byte *)ps_malloc(16384);
     ram7 = (byte *)ps_malloc(16384);
-
 #else
     rom0 = (byte *)malloc(16384);
-    // rom1=(byte*) malloc(16384);
-    // rom2=(byte*) malloc(16384);
-    // rom3=(byte*) malloc(16384);
 
     ram0 = (byte *)malloc(16384);
-    // ram1=(byte*) malloc(16384);
     ram2 = (byte *)malloc(16384);
-    // ram3=(byte*) malloc(16384);
-    // ram4=(byte*) malloc(16384);
     ram5 = (byte *)malloc(16384);
-    // ram6=(byte*) malloc(16384);
-    // ram7=(byte*) malloc(16384);
-
 #endif
 
 #ifdef COLOUR_8
+    const int redPin = 14;
+    const int greenPin = 19;
+    const int bluePin = 27;
+    const int hsyncPin = 32;
+    const int vsyncPin = 33;
     vga.init(vga.MODE360x200, redPin, greenPin, bluePin, hsyncPin, vsyncPin);
-#endif
-
-#ifdef COLOUR_16
+#else
+    const int redPins[] = {2, 2, 14, 14, 14};
+    const int greenPins[] = {15, 15, 19, 19, 19};
+    const int bluePins[] = {21, 21, 27, 27};
+    const int hsyncPin = 32;
+    const int vsyncPin = 33;
     vga.init(vga.MODE360x200, redPins, greenPins, bluePins, hsyncPin, vsyncPin);
 #endif
 
@@ -133,8 +129,11 @@ void setup() {
     mount_spiffs();
     config_read();
 
-    pinMode(SOUND_PIN, OUTPUT);
-    digitalWrite(SOUND_PIN, LOW);
+    pinMode(SPEAKER_PIN, OUTPUT);
+    pinMode(EAR_PIN, INPUT);
+    pinMode(MIC_PIN, OUTPUT);
+    digitalWrite(SPEAKER_PIN, LOW);
+    digitalWrite(MIC_PIN, LOW);
 
     kb_begin();
 
@@ -179,13 +178,8 @@ void videoTask(void *parameter) {
     unsigned int ts1, ts2;
     word zx_fore_color, zx_back_color, tmp_color;
     byte active_latch;
-    byte *video_ram = (byte *)malloc(16384);
-    while (1) {
 
-        if (video_latch)
-            memcpy(video_ram, ram7, 16384);
-        else
-            memcpy(video_ram, ram5, 16384);
+    while (1) {
 
         while (xULAStop) {
             xULAStopped = true;
@@ -213,9 +207,13 @@ void videoTask(void *parameter) {
                 {
 
                     byte_offset = (vga_lin - 3) * 32 + ff; //*2+1;
-
-                    color_attrib = video_ram[0x1800 + (calcY(byte_offset) / 8) * 32 + ff]; // get 1 of 768 attrib values
-                    pixel_map = video_ram[byte_offset];
+                    if (!video_latch) {
+                        color_attrib = ram5[0x1800 + (calcY(byte_offset) / 8) * 32 + ff]; // get 1 of 768 attrib values
+                        pixel_map = ram5[byte_offset];
+                    } else {
+                        color_attrib = ram7[0x1800 + (calcY(byte_offset) / 8) * 32 + ff]; // get 1 of 768 attrib values
+                        pixel_map = ram7[byte_offset];
+                    }
                     calc_y = calcY(byte_offset);
 
                     for (i = 0; i < 8; i++) // foreach pixel within a byte

@@ -1,7 +1,5 @@
 #include <Arduino.h>
 
-// extern byte *rom0;
-
 extern byte *rom0;
 extern byte *rom1;
 extern byte *rom2;
@@ -16,5 +14,5 @@ extern byte *ram5;
 extern byte *ram6;
 extern byte *ram7;
 
-extern volatile byte rom_latch, bank_latch, video_latch, paging_lock;
-extern volatile byte sp3_mode, sp3_rom, rom_in_use;
+extern byte rom_latch, bank_latch, video_latch, paging_lock;
+extern byte sp3_mode, sp3_rom, rom_in_use;

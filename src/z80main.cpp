@@ -1,4 +1,4 @@
-#include "def/pin.h"
+#include "def/hardware.h"
 #include "startup.h"
 #include <stdio.h>
 #include <string.h>
@@ -10,6 +10,7 @@
 
 #define CYCLES_PER_STEP 69888 // 71600
 #define RAM_AVAILABLE 0xC000
+#define CONTENTION_TIME 10
 
 Sound_AY::Ay3_8912_state _ay3_8912;
 Z80_STATE _zxCpu;
@@ -166,24 +167,28 @@ extern "C" void writebyte(uint16_t addr, uint8_t data) {
             ram0[addr - 0xc000] = data;
             break;
         case 1:
+            delayMicroseconds(1);
             ram1[addr - 0xc000] = data;
             break;
         case 2:
             ram2[addr - 0xc000] = data;
             break;
         case 3:
+            delayMicroseconds(1);
             ram3[addr - 0xc000] = data;
             break;
         case 4:
             ram4[addr - 0xc000] = data;
             break;
         case 5:
+            delayMicroseconds(1);
             ram5[addr - 0xc000] = data;
             break;
         case 6:
             ram6[addr - 0xc000] = data;
             break;
         case 7:
+            delayMicroseconds(1);
             ram7[addr - 0xc000] = data;
             break;
         }
@@ -202,6 +207,8 @@ extern "C" uint8_t input(uint8_t portLow, uint8_t portHigh) {
     int16_t kbdarrno = 0;
     if (portLow == 0xFE) {
         // Keyboard
+
+        delayMicroseconds(CONTENTION_TIME);
 
         switch (portHigh) {
 
@@ -242,9 +249,11 @@ extern "C" uint8_t input(uint8_t portLow, uint8_t portHigh) {
             return result;
         }
         }
+        if (portHigh == 0xfe) {
+            bitWrite(z80ports_in[kbdarrno], 6, digitalRead(EAR_PIN));
+        }
         return (z80ports_in[kbdarrno]);
     }
-
     // Kempston
     if (portLow == 0x1F) {
         return z80ports_in[31];
@@ -269,14 +278,17 @@ extern "C" void output(uint8_t portLow, uint8_t portHigh, uint8_t data) {
     uint8_t tmp_data = data;
     switch (portLow) {
     case 0xFE: {
+
+        delayMicroseconds(CONTENTION_TIME);
+
         // border color (no bright colors)
         bitWrite(borderTemp, 0, bitRead(data, 0));
         bitWrite(borderTemp, 1, bitRead(data, 1));
         bitWrite(borderTemp, 2, bitRead(data, 2));
 
-        digitalWrite(SOUND_PIN, bitRead(data, 4)); // speaker
+        digitalWrite(SPEAKER_PIN, bitRead(data, 4)); // speaker
 
-        // digitalWrite(SOUND_PIN,bitRead(data,3));  //tape_out
+        digitalWrite(MIC_PIN, bitRead(data, 3)); // tape_out
 
         z80ports_in[0x20] = data;
     } break;
@@ -285,11 +297,11 @@ extern "C" void output(uint8_t portLow, uint8_t portHigh, uint8_t data) {
         // Sound (AY-3-8912)
         switch (portHigh) {
         case 0xFF:
-            // Serial.println("Select AY register");
+            // Serial.printf("Select AY register %x %x %x\n",portHigh,portLow,data);
             _ay3_8912.selectRegister(data);
             break;
         case 0xBF:
-            // Serial.println("Select AY register Data");
+            // Serial.printf("Select AY register Data %x %x %x\n",portHigh,portLow,data);
             _ay3_8912.setRegisterData(data);
             break;
         case 0x7F:
@@ -298,6 +310,7 @@ extern "C" void output(uint8_t portLow, uint8_t portHigh, uint8_t data) {
                 rom_latch = bitRead(tmp_data, 4);
                 video_latch = bitRead(tmp_data, 3);
                 bank_latch = tmp_data & 0x7;
+                // rom_in_use=0;
                 bitWrite(rom_in_use, 1, sp3_rom);
                 bitWrite(rom_in_use, 0, rom_latch);
                 // Serial.printf("7FFD data: %x ROM latch: %x Video Latch: %x bank latch: %x page lock:

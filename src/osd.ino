@@ -36,7 +36,9 @@ void do_OSD() {
             // Change RAM
             unsigned short snanum = do_Menu(cfg_sna_file_list);
             if (snanum > 0) {
-                setDemoMode(OFF, 0);
+                if (cfg_demo_mode_on) {
+                    setDemoMode(OFF, 0);
+                }
                 changeSna(menuGetRow(cfg_sna_file_list, snanum));
             }
         } else if (opt == 3) {

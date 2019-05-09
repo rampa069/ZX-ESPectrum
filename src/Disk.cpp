@@ -65,7 +65,7 @@ void listAllFiles() {
     KB_INT_START;
 }
 
-File IRAM_ATTR open_read_file(String filename) {
+File open_read_file(String filename) {
     File f;
     filename.replace("\n", " ");
     filename.trim();
@@ -81,7 +81,7 @@ File IRAM_ATTR open_read_file(String filename) {
     return f;
 }
 
-void IRAM_ATTR load_ram(String sna_file) {
+void load_ram(String sna_file) {
     File lhandle;
     uint16_t size_read;
     byte sp_h, sp_l;
@@ -96,18 +96,22 @@ void IRAM_ATTR load_ram(String sna_file) {
     lhandle = open_read_file(sna_file);
     sna_size = lhandle.size();
 
+    if (cfg_arch == "48K") {
+        rom_latch = 0;
+        rom_in_use = 0;
+        bank_latch = 0;
+        paging_lock = 1;
+    }
     if (sna_size < 50000 && cfg_arch != "48K") {
+        rom_in_use = 1;
         rom_latch = 1;
-        if (cfg_arch == "48K")
-            rom_in_use = 0;
-        else
-            rom_in_use = 1;
-
+        paging_lock = 1;
+        bank_latch = 0;
+        video_latch = 0;
         paging_lock = 1;
         bank_latch = 0;
         video_latch = 0;
     }
-    vTaskDelay(10);
     size_read = 0;
     // Read in the registers
     _zxCpu.i = lhandle.read();
@@ -161,11 +165,11 @@ void IRAM_ATTR load_ram(String sna_file) {
             writebyte(buf_p, lhandle.read());
             buf_p++;
         }
-        lhandle.close();
 
-        uint16_t offset = thestack - 0x4000;
-        retaddr = ram5[offset] + 0x100 * ram5[offset + 1];
-
+        // uint16_t offset = thestack - 0x4000;
+        // retaddr = ram5[offset] + 0x100 * ram5[offset + 1];
+        retaddr = readword(thestack);
+        Serial.printf("%x\n", retaddr);
         _zxCpu.registers.word[Z80_SP]++;
         _zxCpu.registers.word[Z80_SP]++;
     } else {
@@ -176,7 +180,7 @@ void IRAM_ATTR load_ram(String sna_file) {
         for (buf_p = 0x8000; buf_p < 0xc000; buf_p++) {
             writebyte(buf_p, lhandle.read());
         }
-        // bank_latch=6;
+
         for (buf_p = 0xc000; buf_p < 0xffff; buf_p++) {
             writebyte(buf_p, lhandle.read());
         }
@@ -208,20 +212,19 @@ void IRAM_ATTR load_ram(String sna_file) {
             }
         }
 
-        lhandle.close();
-
         video_latch = bitRead(tmp_port, 3);
         rom_latch = bitRead(tmp_port, 4);
         paging_lock = bitRead(tmp_port, 5);
         bank_latch = tmp_latch;
         rom_in_use = rom_latch;
     }
+    lhandle.close();
 
     _zxCpu.pc = retaddr;
-
     Serial.printf("%s SNA: %u\n", MSG_FREE_HEAP_AFTER, ESP.getFreeHeap());
-    Serial.printf("Ret address: %x Stack: %x AF: %x Border: %x sna_size: %d\n", retaddr, _zxCpu.registers.word[Z80_SP],
-                  _zxCpu.registers.word[Z80_AF], borderTemp, sna_size);
+    Serial.printf("Ret address: %x Stack: %x AF: %x Border: %x sna_size: %d rom: %d bank: %x\n", retaddr,
+                  _zxCpu.registers.word[Z80_SP], _zxCpu.registers.word[Z80_AF], borderTemp, sna_size, rom_in_use,
+                  bank_latch);
     KB_INT_START;
 }
 
@@ -356,7 +359,7 @@ void config_read() {
 }
 
 // Dump actual config to FS
-void IRAM_ATTR config_save() {
+void config_save() {
     KB_INT_STOP;
     Serial.printf("Saving config file '%s':\n", DISK_BOOT_FILENAME);
     File f = SPIFFS.open(DISK_BOOT_FILENAME, FILE_WRITE);

@@ -1,7 +1,7 @@
 #include "MartianVGA.h"
 #include "ZX-ESPectrum.h"
+#include "def/hardware.h"
 #include "def/keys.h"
-#include "def/pin.h"
 #include <Arduino.h>
 
 unsigned int shift = 0;
