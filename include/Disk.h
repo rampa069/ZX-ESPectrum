@@ -6,7 +6,7 @@
 #include <FS.h>
 
 // Declared vars
-extern boolean cfg_demo_on;
+extern boolean cfg_demo_mode_on;
 extern unsigned short cfg_demo_every;
 extern String cfg_sna_file_list;
 extern String cfg_arch;

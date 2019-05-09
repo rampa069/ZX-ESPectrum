@@ -6,9 +6,7 @@
 // OSD Main Loop
 void do_OSD() {
     static byte last_sna_row = 0;
-    static boolean demo_mode_on = false;
     static unsigned int last_demo_ts = millis() / 1000;
-    static unsigned int demo_every = 300;
     boolean cycle_sna = false;
     if (checkAndCleanKey(KEY_F12)) {
         cycle_sna = true;
@@ -57,32 +55,34 @@ void do_OSD() {
             // Demo mode
             byte opt2 = do_Menu(MENU_DEMO);
             if (opt2 == 1) {
-                demo_mode_on = false;
+                cfg_demo_mode_on = false;
                 osdCenteredMsg(OSD_DEMO_MODE_OFF, LEVEL_WARN);
             } else {
-                demo_mode_on = true;
+                cfg_demo_mode_on = true;
                 last_demo_ts = millis() / 1000;
                 osdCenteredMsg(OSD_DEMO_MODE_ON, LEVEL_OK);
                 switch (opt2) {
                 case 2:
-                    demo_every = 60;
+                    cfg_demo_every = 60;
                     break;
                 case 3:
-                    demo_every = 180;
+                    cfg_demo_every = 180;
                     break;
                 case 4:
-                    demo_every = 300;
+                    cfg_demo_every = 300;
                     break;
                 case 5:
-                    demo_every = 900;
+                    cfg_demo_every = 900;
                     break;
                 case 6:
-                    demo_every = 1800;
+                    cfg_demo_every = 1800;
                     break;
                 case 7:
-                    demo_every = 3600;
+                    cfg_demo_every = 3600;
                     break;
                 }
+                Serial.printf("DEMO MODE %s every %u seconds.", (cfg_demo_mode_on ? "ON" : "OFF"), cfg_demo_every);
+                config_save();
             }
             vTaskDelay(500);
         } else if (opt == 5) {
@@ -99,7 +99,7 @@ void do_OSD() {
         startULA();
     }
 
-    if (cycle_sna || (demo_mode_on && ((millis() / 1000) - last_demo_ts) > demo_every)) {
+    if (cycle_sna || (cfg_demo_mode_on && ((millis() / 1000) - last_demo_ts) > cfg_demo_every)) {
         // Cycle over snapshots
         last_sna_row++;
         if (last_sna_row > menuRowCount(cfg_sna_file_list) - 1) {

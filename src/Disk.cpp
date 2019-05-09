@@ -15,8 +15,8 @@ void IRAM_ATTR kb_interruptHandler(void);
 void zx_reset();
 
 // Globals
-boolean cfg_demo_on = false;
-unsigned short cfg_demo_every = 60;
+boolean cfg_demo_mode_on = false;
+unsigned short cfg_demo_every;
 String cfg_arch = "128K";
 String cfg_ram_file = NO_RAM_FILE;
 String cfg_rom_set = "SINCLAIR";
@@ -338,15 +338,11 @@ void config_read() {
                 cfg_rom_set = line.substring(line.lastIndexOf(':') + 1);
                 Serial.printf("  + romset:%s\n", cfg_rom_set.c_str());
             } else if (line.startsWith("demo_on:")) {
-                if (line.substring(line.lastIndexOf(':') + 1) == "true") {
-                    cfg_demo_on = true;
-                } else {
-                    cfg_demo_on = false;
-                }
-                Serial.printf("  + demo_on:%s\n", (cfg_demo_on ? "true" : "false"));
+                cfg_demo_mode_on = (line.substring(line.lastIndexOf(':') + 1) == "true");
+                Serial.printf("  + demo_on:%s\n", (cfg_demo_mode_on ? "true" : "false"));
             } else if (line.startsWith("demo_every:")) {
-                cfg_demo_every = line.substring(line.lastIndexOf(':') + 1).toInt();
-                Serial.printf("  + demo_every:%s\n", cfg_demo_every);
+                // cfg_demo_every = line.substring(line.lastIndexOf(':') + 1).toInt();
+                Serial.printf("  + demo_every:%u\n", cfg_demo_every);
             }
             line = "";
         } else {
@@ -370,10 +366,10 @@ void IRAM_ATTR config_save() {
     f.printf("romset:%s\n", cfg_rom_set.c_str());
     Serial.printf("  + ram:%s\n", cfg_ram_file.c_str());
     f.printf("ram:%s\n", cfg_ram_file.c_str());
-    Serial.printf("  + demo_on:%s\n", (cfg_demo_on ? "true" : "false"));
-    f.printf("demo_on:%s\n", (cfg_demo_on ? "true" : "false"));
-    // Serial.printf("  + demo_every:%u\n", cfg_demo_every);
-    // f.printf("demo_every:%u\n", cfg_demo_every);
+    Serial.printf("  + demo_on:%s\n", (cfg_demo_mode_on ? "true" : "false"));
+    f.printf("demo_on:%s\n", (cfg_demo_mode_on ? "true" : "false"));
+    Serial.printf("  + demo_every:%u\n", cfg_demo_every);
+    f.printf("demo_every:%u\n", cfg_demo_every);
     Serial.printf("  + slog:%s\n", (cfg_slog_on ? "true" : "false"));
     f.printf("slog:%s\n", (cfg_slog_on ? "true" : "false"));
     f.close();
