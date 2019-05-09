@@ -144,11 +144,12 @@ void load_ram(String sna_file) {
             writebyte(buf_p, lhandle.read());
             buf_p++;
         }
-        Serial.println(rom_in_use);
 
-        uint16_t offset = thestack - 0x4000;
-        retaddr = ram5[offset] + 0x100 * ram5[offset + 1];
 
+        //uint16_t offset = thestack - 0x4000;
+        //retaddr = ram5[offset] + 0x100 * ram5[offset + 1];
+        retaddr = readword(thestack);
+        Serial.printf("%x\n",retaddr);
         _zxCpu.registers.word[Z80_SP]++;
         _zxCpu.registers.word[Z80_SP]++;
     } else
