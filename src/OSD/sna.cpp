@@ -16,3 +16,18 @@ void changeSna(String sna_filename) {
     config_save();
     startULA();
 }
+
+// Demo mode on off
+void setDemoMode(boolean on, unsigned short every) {
+    cfg_demo_mode_on = on;
+    cfg_demo_every = every;
+    if (on) {
+        osdCenteredMsg(OSD_DEMO_MODE_ON, LEVEL_OK);
+    } else {
+        osdCenteredMsg(OSD_DEMO_MODE_OFF, LEVEL_WARN);
+    }
+    Serial.printf("DEMO MODE %s every %u seconds.", (cfg_demo_mode_on ? "ON" : "OFF"), cfg_demo_every);
+    vTaskDelay(200);
+    osdCenteredMsg(MSG_SAVE_CONFIG, LEVEL_WARN);
+    config_save();
+}

@@ -1,5 +1,7 @@
 // Defines
 #define ASCII_NL 10
+#define ON true
+#define OFF false
 
 // Headers
 #include <Arduino.h>

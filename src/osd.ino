@@ -26,6 +26,7 @@ void do_OSD() {
                     cfg_rom_set = menuGetRow(romset_menu, romset_num);
                     load_rom(cfg_arch, cfg_rom_set);
                     vTaskDelay(2);
+
                     config_save();
                     vTaskDelay(2);
                     zx_reset();
@@ -55,34 +56,29 @@ void do_OSD() {
             // Demo mode
             byte opt2 = do_Menu(MENU_DEMO);
             if (opt2 == 1) {
-                cfg_demo_mode_on = false;
-                osdCenteredMsg(OSD_DEMO_MODE_OFF, LEVEL_WARN);
+                setDemoMode(OFF, 0);
             } else {
-                cfg_demo_mode_on = true;
                 last_demo_ts = millis() / 1000;
-                osdCenteredMsg(OSD_DEMO_MODE_ON, LEVEL_OK);
                 switch (opt2) {
                 case 2:
-                    cfg_demo_every = 60;
+                    setDemoMode(ON, 60);
                     break;
                 case 3:
-                    cfg_demo_every = 180;
+                    setDemoMode(ON, 180);
                     break;
                 case 4:
-                    cfg_demo_every = 300;
+                    setDemoMode(ON, 300);
                     break;
                 case 5:
-                    cfg_demo_every = 900;
+                    setDemoMode(ON, 900);
                     break;
                 case 6:
-                    cfg_demo_every = 1800;
+                    setDemoMode(ON, 1800);
                     break;
                 case 7:
-                    cfg_demo_every = 3600;
+                    setDemoMode(ON, 3600);
                     break;
                 }
-                Serial.printf("DEMO MODE %s every %u seconds.", (cfg_demo_mode_on ? "ON" : "OFF"), cfg_demo_every);
-                config_save();
             }
             vTaskDelay(500);
         } else if (opt == 5) {

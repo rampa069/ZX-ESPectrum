@@ -17,6 +17,8 @@
 #define LEVEL_OK 1
 #define LEVEL_WARN 2
 #define LEVEL_ERROR 3
+#define ON true
+#define OFF false
 
 // OSD Interface
 // Calc
@@ -49,6 +51,7 @@ String getRomsetMenu(String arch);
 unsigned short do_Menu(String menu);
 // SNA Management
 void changeSna(String sna_filename);
+void setDemoMode(boolean on, unsigned short every);
 // ULA Management
 void stopULA();
 void startULA();
