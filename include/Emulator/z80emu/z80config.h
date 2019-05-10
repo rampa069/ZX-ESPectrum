@@ -30,8 +30,8 @@
 #define Z80_CATCH_HALT
 //#define Z80_CATCH_DI
 //#define Z80_CATCH_EI
-//#define Z80_CATCH_RETI
-//#define Z80_CATCH_RETN
+#define Z80_CATCH_RETI
+#define Z80_CATCH_RETN
 
 
 /* Undefined 0xed prefixed opcodes may be catched, otherwise they are treated

@@ -277,7 +277,7 @@ extern "C" void output(uint8_t portLow, uint8_t portHigh, uint8_t data) {
     switch (portLow) {
     case 0xFE: {
 
-        delayMicroseconds(CONTENTION_TIME);
+        //delayMicroseconds(CONTENTION_TIME);
 
         // border color (no bright colors)
         bitWrite(borderTemp, 0, bitRead(data, 0));
