@@ -19,6 +19,7 @@ then
 else
     echo "Cloning data"
     git clone gogs@git.martianoids.com:imsai/zxespectrum-data.git data
+    cp data/boot.cfg.orig data/boot.cfg
 fi
 
 popd &> /dev/null
