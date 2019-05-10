@@ -276,7 +276,7 @@ start_emulation:
 
                 registers = state->register_table;
                 //if (opcode == 0xd3)
-                delayMicroseconds(1);
+                delayMicroseconds(2);
 
 emulate_next_opcode:
 
@@ -1201,7 +1201,7 @@ emulate_next_instruction:
 
                                 state->status = Z80_STATUS_FLAG_HALT;
                                 int delay_halt=millis()-ts1;
-                                Serial.println(elapsed_cycles);
+                                //Serial.println(elapsed_cycles);
                                 elapsed_cycles+=4;
 
 
@@ -2198,7 +2198,11 @@ emulate_next_instruction:
                                 state->status = opcode == OPCODE_RETI
                                         ? Z80_STATUS_FLAG_RETI
                                         : Z80_STATUS_FLAG_RETN;
-                                goto stop_emulation;
+                                        elapsed_cycles +=4;
+                                        Serial.println(elapsed_cycles);
+
+                                        break;
+                                //goto stop_emulation;
 
 #elif defined(Z80_CATCH_RETI)
 
