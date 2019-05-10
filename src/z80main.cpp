@@ -10,7 +10,7 @@
 
 #define CYCLES_PER_STEP 69888 // 71600
 #define RAM_AVAILABLE 0xC000
-#define CONTENTION_TIME 10
+#define CONTENTION_TIME 0
 
 Sound_AY::Ay3_8912_state _ay3_8912;
 Z80_STATE _zxCpu;
@@ -69,23 +69,22 @@ int32_t zx_loop() {
     uint32_t ts1, ts2;
 
     ts1 = millis();
-    _total += Z80Emulate(&_zxCpu, _next_total - _total, &_zxContext);
+    //_total += Z80Emulate(&_zxCpu, _next_total - _total, &_zxContext);
+    Z80Emulate(&_zxCpu, CYCLES_PER_STEP, &_zxContext);
+    Z80Interrupt(&_zxCpu, 0xff, &_zxContext);
     ts2 = millis();
 
-    // if ((ts2 - ts1) < 20)
-    //    delay(20 - (ts2 - ts1));
 
-    // while (tick==0)
-    // delayMicroseconds(1);
+    //if (_total >= _next_total) {
+    //    _next_total += CYCLES_PER_STEP;
 
-    if (_total >= _next_total) {
-        _next_total += CYCLES_PER_STEP;
 
-        // while (tick==0)
-        // delayMicroseconds(1);
 
-        Z80Interrupt(&_zxCpu, 0xff, &_zxContext);
-    }
+    //     Z80Interrupt(&_zxCpu, 0xff, &_zxContext);
+         //if ((ts2 - ts1) < 20)
+         //    delay(20 - (ts2 - ts1));
+
+    //}
     return result;
 }
 

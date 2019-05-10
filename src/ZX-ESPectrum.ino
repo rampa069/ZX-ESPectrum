@@ -60,6 +60,9 @@ volatile byte tick;
 const int SAMPLING_RATE = 44100;
 const int BUFFER_SIZE = 2000;
 
+
+int halfsec,sp_int_ctr,evenframe,updateframe;
+
 // SETUP *************************************
 #ifdef COLOUR_8
 VGA3Bit vga;
@@ -187,10 +190,11 @@ void videoTask(void *parameter) {
         }
         xULAStopped = false;
 
+
         ts1 = millis();
 
-        if (flashing++ > 32)
-            flashing = 0;
+        //if (flashing++ > 32)
+        //    flashing = 0;
 
         for (unsigned int vga_lin = 0; vga_lin < 200; vga_lin++) {
             tick = 0;
@@ -200,7 +204,7 @@ void videoTask(void *parameter) {
             } else {
                 for (int bor = 32; bor < 52; bor++) {
                     vga.dotFast(bor, vga_lin, zxcolor(borderTemp, 0));
-                    vga.dotFast(bor + 276, vga_lin, zxcolor(borderTemp, 0));
+
                 }
 
                 for (ff = 0; ff < 32; ff++) // foreach byte in line
@@ -238,6 +242,10 @@ void videoTask(void *parameter) {
                             vga.dotFast(zx_vidcalc + 52, calc_y + 3, zx_back_color);
                         writeScreen = false;
                     }
+                    for (int bor = 32; bor < 52; bor++) {
+                      vga.dotFast(bor + 276, vga_lin, zxcolor(borderTemp, 0));
+                    }
+
                 }
             }
         }
@@ -247,8 +255,8 @@ void videoTask(void *parameter) {
         TIMERG0.wdt_wprotect = TIMG_WDT_WKEY_VALUE;
         TIMERG0.wdt_feed = 1;
         TIMERG0.wdt_wprotect = 0;
-        // Serial.printf("ULA: %d\n", ts2 - ts1);
-        if (ts2 - ts1 < 20) {
+       // Serial.printf("ULA: %d\n", ts2 - ts1);
+      if (ts2 - ts1 < 20) {
             delay(20 - (ts2 - ts1));
         }
     }
@@ -371,11 +379,23 @@ void do_keyboard() {
  +-------------+
  */
 void loop() {
+
     // Serial.println("Loop");
     do_keyboard();
     do_OSD();
-    // Z80Emulate(&_zxCpu, _next_total - _total, &_zxContext);
+    //Z80Emulate(&_zxCpu, _next_total - _total, &_zxContext);
     zx_loop();
+    if(halfsec) {
+            flashing = ~flashing;
+    }
+    sp_int_ctr++;
+    halfsec = !(sp_int_ctr % 25);
+    evenframe = !(sp_int_ctr & 1);
+
+    updateframe = 0 ? halfsec :
+            !((sp_int_ctr+1) % 2);
+
+
     TIMERG0.wdt_wprotect = TIMG_WDT_WKEY_VALUE;
     TIMERG0.wdt_feed = 1;
     TIMERG0.wdt_wprotect = 0;

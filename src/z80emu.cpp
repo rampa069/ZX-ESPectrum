@@ -273,7 +273,7 @@ start_emulation:
 
                 registers = state->register_table;
                 //if (opcode == 0xd3)
-                delayMicroseconds(1);
+                delayMicroseconds(2);
 
 emulate_next_opcode:
 
