@@ -77,7 +77,7 @@ static const int OVERFLOW_TABLE[4] = {
 
 };
 
-unsigned int ts1;
+unsigned long ts1;
 
 static int	emulate (Z80_STATE * state,
 			int opcode,
@@ -1200,7 +1200,10 @@ emulate_next_instruction:
 #ifdef Z80_CATCH_HALT
 
                                 state->status = Z80_STATUS_FLAG_HALT;
-                                delay(20);
+                                int delay_halt=millis()-ts1;
+                                Serial.println(elapsed_cycles);
+                                elapsed_cycles+=4;
+
 
 #else
 
@@ -1216,7 +1219,8 @@ emulate_next_instruction:
 
 #endif
 
-				goto stop_emulation;
+				//goto stop_emulation;
+        break;
 
                         }
 

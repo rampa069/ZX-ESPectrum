@@ -250,6 +250,7 @@ void videoTask(void *parameter) {
             }
         }
         tick = 1;
+        //Z80Interrupt(&_zxCpu, 0xff, &_zxContext);
         ts2 = millis();
 
         TIMERG0.wdt_wprotect = TIMG_WDT_WKEY_VALUE;
