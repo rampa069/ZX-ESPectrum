@@ -1,6 +1,6 @@
 /* z80emu.h
  * Main header of z80emu. Don't modify this file directly. Use z80config.h and
- * z80user.h to customize the emulator to your need. 
+ * z80user.h to customize the emulator to your need.
  *
  * Copyright (c) 2012, 2016 Lin Ke-Fong
  *
@@ -16,9 +16,15 @@ extern "C" {
 
 #include "z80config.h"
 
-/* If Z80_STATE's status is non-zero, the emulation has been stopped for some 
+/* If Z80_STATE's status is non-zero, the emulation has been stopped for some
  * reason other than emulating the requested number of cycles. See z80config.h.
  */
+#define Z80_STATUS_FLAG_HALT            (1 << 0)
+#define Z80_STATUS_FLAG_DI              (1 << 1)
+#define Z80_STATUS_FLAG_EI              (1 << 2)
+#define Z80_STATUS_FLAG_RETI            (1 << 3)
+#define Z80_STATUS_FLAG_RETN            (1 << 4)
+#define Z80_STATUS_FLAG_ED_UNDEFINED    (1 << 5)
 
 enum {
 
@@ -31,11 +37,11 @@ enum {
 	Z80_STATUS_PREFIX
 
 };
- 
-/* The main registers are stored inside Z80_STATE as an union of arrays named 
- * registers. They are referenced using indexes. Words are stored in the 
- * endianness of the host processor. The alternate set of word registers AF', 
- * BC', DE', and HL' is stored in the alternates member of Z80_STATE, as an 
+
+/* The main registers are stored inside Z80_STATE as an union of arrays named
+ * registers. They are referenced using indexes. Words are stored in the
+ * endianness of the host processor. The alternate set of word registers AF',
+ * BC', DE', and HL' is stored in the alternates member of Z80_STATE, as an
  * array using the same ordering.
  */
 
@@ -70,7 +76,7 @@ enum {
 #       define Z80_IXL          8
 #       define Z80_IYH          11
 #       define Z80_IYL          10
-                                
+
 #endif
 
 #define Z80_BC                  0
@@ -79,12 +85,12 @@ enum {
 #define Z80_AF                  3
 
 #define Z80_IX                  4
-#define Z80_IY                  5 
+#define Z80_IY                  5
 #define Z80_SP                  6
 
 /* Z80's flags. */
 
-#define Z80_S_FLAG_SHIFT        7       
+#define Z80_S_FLAG_SHIFT        7
 #define Z80_Z_FLAG_SHIFT        6
 #define Z80_Y_FLAG_SHIFT        5
 #define Z80_H_FLAG_SHIFT        4
@@ -118,9 +124,9 @@ enum {
 };
 
 /* Z80 processor's state. You may add your own members if needed. However, it
- * is rather suggested to use the context pointer passed to the emulation 
+ * is rather suggested to use the context pointer passed to the emulation
  * functions for that purpose. See z80user.h.
- */ 
+ */
 
 typedef struct Z80_STATE {
 
@@ -136,12 +142,12 @@ typedef struct Z80_STATE {
         unsigned short  alternates[4];
 
         int             i, r, pc, iff1, iff2, im;
-        
+
         /* Register decoding tables. */
 
-        void            *register_table[16], 
-                        *dd_register_table[16], 
-                        *fd_register_table[16];        
+        void            *register_table[16],
+                        *dd_register_table[16],
+                        *fd_register_table[16];
 
 } Z80_STATE;
 
@@ -151,12 +157,12 @@ extern void     Z80Reset (Z80_STATE *state);
 
 /* Trigger an interrupt according to the current interrupt mode and return the
  * number of cycles elapsed to accept it. If maskable interrupts are disabled,
- * this will return zero. In interrupt mode 0, data_on_bus must be a single 
+ * this will return zero. In interrupt mode 0, data_on_bus must be a single
  * byte opcode.
  */
 
-extern int      Z80Interrupt (Z80_STATE *state, 
-			int data_on_bus, 
+extern int      Z80Interrupt (Z80_STATE *state,
+			int data_on_bus,
 			void *context);
 
 /* Trigger a non maskable interrupt, then return the number of cycles elapsed
@@ -167,12 +173,12 @@ extern int      Z80NonMaskableInterrupt (Z80_STATE *state, void *context);
 
 /* Execute instructions as long as the number of elapsed cycles is smaller than
  * number_cycles, and return the number of cycles emulated. The emulator can be
- * set to stop early on some conditions (see z80config.h). The user macros 
+ * set to stop early on some conditions (see z80config.h). The user macros
  * (see z80user.h) also control the emulation.
  */
 
-extern int      Z80Emulate (Z80_STATE *state, 
-			int number_cycles, 
+extern int      Z80Emulate (Z80_STATE *state,
+			int number_cycles,
 			void *context);
 
 #ifdef __cplusplus

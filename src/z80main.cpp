@@ -73,7 +73,7 @@ int32_t zx_loop() {
     Z80Interrupt(&_zxCpu, 0xff, &_zxContext);
     ts2 = millis();
 
-
+    //Serial.println(_zxCpu.status);
     //if (_total >= _next_total) {
     //    _next_total += CYCLES_PER_STEP;
 

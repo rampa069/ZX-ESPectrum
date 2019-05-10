@@ -390,10 +390,6 @@ void loop() {
     }
     sp_int_ctr++;
     halfsec = !(sp_int_ctr % 25);
-    evenframe = !(sp_int_ctr & 1);
-
-    updateframe = 0 ? halfsec :
-            !((sp_int_ctr+1) % 2);
 
 
     TIMERG0.wdt_wprotect = TIMG_WDT_WKEY_VALUE;

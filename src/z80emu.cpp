@@ -77,6 +77,8 @@ static const int OVERFLOW_TABLE[4] = {
 
 };
 
+unsigned int ts1;
+
 static int	emulate (Z80_STATE * state,
 			int opcode,
 			int elapsed_cycles, int number_cycles,
@@ -237,6 +239,7 @@ int Z80Emulate (Z80_STATE *state, int number_cycles, void *context)
 
         state->status = 0;
 	elapsed_cycles = 0;
+  ts1 = millis();
 	pc = state->pc;
         Z80_FETCH_BYTE(pc, opcode);
         state->pc = pc + 1;
@@ -1197,6 +1200,7 @@ emulate_next_instruction:
 #ifdef Z80_CATCH_HALT
 
                                 state->status = Z80_STATUS_FLAG_HALT;
+                                delay(20);
 
 #else
 
@@ -1207,8 +1211,8 @@ emulate_next_instruction:
 				 */
 
 				if (elapsed_cycles < number_cycles)
-
 					elapsed_cycles = number_cycles;
+
 
 #endif
 

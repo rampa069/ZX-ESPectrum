@@ -26,21 +26,21 @@
  * accepted at the instruction right after a DI or EI on an actual processor.
  */
 
-/*
-#define Z80_CATCH_HALT
-#define Z80_CATCH_DI
-#define Z80_CATCH_EI
-#define Z80_CATCH_RETI
-#define Z80_CATCH_RETN
 
-*/
+#define Z80_CATCH_HALT
+//#define Z80_CATCH_DI
+//#define Z80_CATCH_EI
+//#define Z80_CATCH_RETI
+//#define Z80_CATCH_RETN
+
+
 /* Undefined 0xed prefixed opcodes may be catched, otherwise they are treated
  * like NOP instructions. When one is catched, Z80_STATUS_ED_UNDEFINED is set
  * in Z80_STATE's status member and the PC register points at the 0xed prefix
  * before the undefined opcode.
  */
 
-/* #define Z80_CATCH_ED_UNDEFINED */
+#define Z80_CATCH_ED_UNDEFINED
 
 /* The emulator cannot be stopped between prefixed opcodes. This can be a
  * problem if there is a long sequence of 0xdd and/or 0xfd prefixes. But if
@@ -52,7 +52,7 @@
  * most program won't need this feature.
  */
 
-//#define Z80_PREFIX_FAILSAFE
+#define Z80_PREFIX_FAILSAFE
 
 /* By defining this macro, the emulator will always fetch the displacement or
  * address of a conditionnal jump or call instruction, even if the condition
@@ -67,7 +67,7 @@
  * these pathological cases.
  */
 
-#define Z80_HANDLE_SELF_MODIFYING_CODE 
+#define Z80_HANDLE_SELF_MODIFYING_CODE
 
 /* For interrupt mode 2, bit 0 of the 16-bit address to the interrupt vector
  * can be masked to zero. Some documentation states that this bit is forced to
