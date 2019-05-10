@@ -162,7 +162,7 @@ void setup() {
                             0);          /* Core where the task should run */
 
     load_rom(cfg_arch, cfg_rom_set);
-    if (cfg_ram_file.compareTo(NO_RAM_FILE) < 0) {
+    if ((String)cfg_ram_file != (String)NO_RAM_FILE) {
         load_ram("/sna/" + cfg_ram_file);
     }
     Serial.println("End of setup");
