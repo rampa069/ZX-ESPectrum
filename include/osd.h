@@ -19,6 +19,7 @@
 #define LEVEL_ERROR 3
 #define ON true
 #define OFF false
+#define MENU_MAX_ROWS 24
 
 // OSD Interface
 // Calc

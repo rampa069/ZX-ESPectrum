@@ -41,3 +41,47 @@
     "F12 Cycle to next snapshot.\n\n"                                                                                  \
     "Keyboard cursor is mapped to kempston\n"                                                                          \
     "joystick. AltGr to fire.\n"
+#define MENU_TEST                                                                                                      \
+    "Test Menu\n"                                                                                                      \
+    "Option 01\n"                                                                                                      \
+    "Option 02\n"                                                                                                      \
+    "Option 03\n"                                                                                                      \
+    "Option 04\n"                                                                                                      \
+    "Option 05\n"                                                                                                      \
+    "Option 06\n"                                                                                                      \
+    "Option 07\n"                                                                                                      \
+    "Option 08\n"                                                                                                      \
+    "Option 09\n"                                                                                                      \
+    "Option 10\n"                                                                                                      \
+    "Option 11\n"                                                                                                      \
+    "Option 12\n"                                                                                                      \
+    "Option 13\n"                                                                                                      \
+    "Option 14\n"                                                                                                      \
+    "Option 15\n"                                                                                                      \
+    "Option 16\n"                                                                                                      \
+    "Option 17\n"                                                                                                      \
+    "Option 18\n"                                                                                                      \
+    "Option 19\n"                                                                                                      \
+    "Option 20\n"                                                                                                      \
+    "Option 21\n"                                                                                                      \
+    "Option 22\n"                                                                                                      \
+    "Option 23\n"                                                                                                      \
+    "Option 24\n"                                                                                                      \
+    "Option 25\n"                                                                                                      \
+    "Option 25\n"                                                                                                      \
+    "Option 26\n"                                                                                                      \
+    "Option 27\n"                                                                                                      \
+    "Option 28\n"                                                                                                      \
+    "Option 29\n"                                                                                                      \
+    "Option 30\n"                                                                                                      \
+    "Option 31\n"                                                                                                      \
+    "Option 32\n"                                                                                                      \
+    "Option 33\n"                                                                                                      \
+    "Option 34\n"                                                                                                      \
+    "Option 35\n"                                                                                                      \
+    "Option 35\n"                                                                                                      \
+    "Option 36\n"                                                                                                      \
+    "Option 37\n"                                                                                                      \
+    "Option 38\n"                                                                                                      \
+    "Option 39\n"                                                                                                      \
+    "Option 49\n"

@@ -38,7 +38,6 @@ void output(uint8_t portLow, uint8_t portHigh, uint8_t data);
 }
 
 void zx_setup() {
-
     _zxContext.readbyte = readbyte;
     _zxContext.readword = readword;
     _zxContext.writeword = writeword;

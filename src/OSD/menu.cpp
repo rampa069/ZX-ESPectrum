@@ -17,13 +17,7 @@ unsigned short menuRowCount(String menu) {
     return count;
 }
 
-byte menuVirtualRows(String menu) {
-    unsigned short rows = menuRowCount(menu);
-    if (rows > 25) {
-        return 25;
-    }
-    return rows;
-}
+byte menuVirtualRows(String menu) { return (menuRowCount(menu) > MENU_MAX_ROWS ? MENU_MAX_ROWS : menuRowCount(menu)); }
 
 // Menu columns
 byte menuColMax(String menu) {
@@ -82,8 +76,6 @@ void drawMenu(String menu, byte focus, boolean new_draw) {
     Serial.printf("Menu x:%u, y:%u, w:%u, h:%u\n", x, y, w, h);
 
     if (new_draw) {
-        // Launch ULA for a while
-
         vga.setFont(Font6x8);
         // Menu border
         vga.rect(x, y, w, h, zxcolor(0, 0));
