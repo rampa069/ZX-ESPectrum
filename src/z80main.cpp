@@ -10,7 +10,7 @@
 
 #define CYCLES_PER_STEP 69888 // 71600
 #define RAM_AVAILABLE 0xC000
-#define CONTENTION_TIME 50
+#define CONTENTION_TIME 200
 
 Sound_AY::Ay3_8912_state _ay3_8912;
 Z80_STATE _zxCpu;
@@ -203,12 +203,12 @@ extern "C" void writeword(uint16_t addr, uint16_t data) {
 
 extern "C" uint8_t input(uint8_t portLow, uint8_t portHigh) {
     int16_t kbdarrno = 0;
+    delay(3);
+    Serial.print ("IN ");
     if (portLow == 0xFE) {
         // Keyboard
 
-        delayMicroseconds(CONTENTION_TIME);
-
-        switch (portHigh) {
+    switch (portHigh) {
 
         case 0xfe:
             kbdarrno = 0;
