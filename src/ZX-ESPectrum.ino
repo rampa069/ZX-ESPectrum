@@ -59,8 +59,7 @@ volatile byte tick;
 const int SAMPLING_RATE = 44100;
 const int BUFFER_SIZE = 2000;
 
-
-int halfsec,sp_int_ctr,evenframe,updateframe;
+int halfsec, sp_int_ctr, evenframe, updateframe;
 
 // SETUP *************************************
 #ifdef COLOUR_8
@@ -189,10 +188,9 @@ void videoTask(void *parameter) {
         }
         xULAStopped = false;
 
-
         ts1 = millis();
 
-        //if (flashing++ > 32)
+        // if (flashing++ > 32)
         //    flashing = 0;
 
         for (unsigned int vga_lin = 0; vga_lin < 200; vga_lin++) {
@@ -203,7 +201,6 @@ void videoTask(void *parameter) {
             } else {
                 for (int bor = 32; bor < 52; bor++) {
                     vga.dotFast(bor, vga_lin, zxcolor(borderTemp, 0));
-
                 }
 
                 for (ff = 0; ff < 32; ff++) // foreach byte in line
@@ -242,21 +239,20 @@ void videoTask(void *parameter) {
                         writeScreen = false;
                     }
                     for (int bor = 32; bor < 52; bor++) {
-                      vga.dotFast(bor + 276, vga_lin, zxcolor(borderTemp, 0));
+                        vga.dotFast(bor + 276, vga_lin, zxcolor(borderTemp, 0));
                     }
-
                 }
             }
         }
         tick = 1;
-        //Z80Interrupt(&_zxCpu, 0xff, &_zxContext);
+        // Z80Interrupt(&_zxCpu, 0xff, &_zxContext);
         ts2 = millis();
 
         TIMERG0.wdt_wprotect = TIMG_WDT_WKEY_VALUE;
         TIMERG0.wdt_feed = 1;
         TIMERG0.wdt_wprotect = 0;
-       // Serial.printf("ULA: %d\n", ts2 - ts1);
-      if (ts2 - ts1 < 20) {
+        // Serial.printf("ULA: %d\n", ts2 - ts1);
+        if (ts2 - ts1 < 20) {
             delay(20 - (ts2 - ts1));
         }
     }
@@ -375,22 +371,22 @@ void do_keyboard() {
 }
 
 /* +-------------+
- | LOOP core 1 |
- +-------------+
+   | LOOP core 1 |
+   +-------------+
  */
 void loop() {
-    unsigned long ts1,ts2;
+    unsigned long ts1, ts2;
     do_keyboard();
     do_OSD();
-    ts1=millis();
+    ts1 = millis();
     zx_loop();
-    ts2=millis();
-    if(halfsec) {
-            flashing = ~flashing;
+    ts2 = millis();
+    if (halfsec) {
+        flashing = ~flashing;
     }
     sp_int_ctr++;
     halfsec = !(sp_int_ctr % 25);
-    Serial.printf("PC:  %d time: %d\n",_zxCpu.pc, ts2-ts1);
+    Serial.printf("PC:  %d time: %d\n", _zxCpu.pc, ts2 - ts1);
 
     TIMERG0.wdt_wprotect = TIMG_WDT_WKEY_VALUE;
     TIMERG0.wdt_feed = 1;

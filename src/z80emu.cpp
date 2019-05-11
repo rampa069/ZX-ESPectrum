@@ -5,20 +5,19 @@
  *
  * This code is free, do whatever you want with it.
  */
+#include "Emulator/z80emu/z80emu.h"
 #include "Arduino.h"
 #include "Emulator/Memory.h"
-#include "Emulator/z80emu/z80emu.h"
-#include "Emulator/z80user.h"
 #include "Emulator/z80emu/instructions.h"
 #include "Emulator/z80emu/macros.h"
 #include "Emulator/z80emu/tables.h"
-
+#include "Emulator/z80user.h"
 
 /* Indirect (HL) or prefixed indexed (IX + d) and (IY + d) memory operands are
  * encoded using the 3 bits "110" (0x06).
  */
 
-#define INDIRECT_HL     0x06
+#define INDIRECT_HL 0x06
 
 /* Condition codes are encoded using 2 or 3 bits.  The xor table is needed for
  * negated conditions, it is used along with the and table.
@@ -26,27 +25,13 @@
 
 static const int XOR_CONDITION_TABLE[8] = {
 
-        Z80_Z_FLAG,
-        0,
-        Z80_C_FLAG,
-        0,
-        Z80_P_FLAG,
-        0,
-        Z80_S_FLAG,
-        0,
+    Z80_Z_FLAG, 0, Z80_C_FLAG, 0, Z80_P_FLAG, 0, Z80_S_FLAG, 0,
 
 };
 
 static const int AND_CONDITION_TABLE[8] = {
 
-        Z80_Z_FLAG,
-        Z80_Z_FLAG,
-        Z80_C_FLAG,
-        Z80_C_FLAG,
-        Z80_P_FLAG,
-        Z80_P_FLAG,
-        Z80_S_FLAG,
-        Z80_S_FLAG,
+    Z80_Z_FLAG, Z80_Z_FLAG, Z80_C_FLAG, Z80_C_FLAG, Z80_P_FLAG, Z80_P_FLAG, Z80_S_FLAG, Z80_S_FLAG,
 
 };
 
@@ -54,14 +39,7 @@ static const int AND_CONDITION_TABLE[8] = {
 
 static const int RST_TABLE[8] = {
 
-        0x00,
-        0x08,
-        0x10,
-        0x18,
-        0x20,
-        0x28,
-        0x30,
-        0x38,
+    0x00, 0x08, 0x10, 0x18, 0x20, 0x28, 0x30, 0x38,
 
 };
 
@@ -71,2574 +49,2348 @@ static const int RST_TABLE[8] = {
 
 static const int OVERFLOW_TABLE[4] = {
 
-	0,
-       	Z80_V_FLAG,
-       	Z80_V_FLAG,
-       	0,
+    0,
+    Z80_V_FLAG,
+    Z80_V_FLAG,
+    0,
 
 };
 
 unsigned long ts1;
 
-static int	emulate (Z80_STATE * state,
-			int opcode,
-			int elapsed_cycles, int number_cycles,
-			void *context);
+static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_cycles, void *context);
 
-void Z80Reset (Z80_STATE *state)
-{
-        int     i;
+void Z80Reset(Z80_STATE *state) {
+    int i;
 
-        state->status = 0;
-        AF = 0xffff;
-        SP = 0xffff;
-        state->i = state->pc = state->iff1 = state->iff2 = 0;
-        state->im = Z80_INTERRUPT_MODE_0;
+    state->status = 0;
+    AF = 0xffff;
+    SP = 0xffff;
+    state->i = state->pc = state->iff1 = state->iff2 = 0;
+    state->im = Z80_INTERRUPT_MODE_0;
 
-        /* Build register decoding tables for both 3-bit encoded 8-bit
-         * registers and 2-bit encoded 16-bit registers. When an opcode is
-         * prefixed by 0xdd, HL is replaced by IX. When 0xfd prefixed, HL is
-         * replaced by IY.
-         */
+    /* Build register decoding tables for both 3-bit encoded 8-bit
+     * registers and 2-bit encoded 16-bit registers. When an opcode is
+     * prefixed by 0xdd, HL is replaced by IX. When 0xfd prefixed, HL is
+     * replaced by IY.
+     */
 
-        /* 8-bit "R" registers. */
+    /* 8-bit "R" registers. */
 
-        state->register_table[0] = &state->registers.byte[Z80_B];
-        state->register_table[1] = &state->registers.byte[Z80_C];
-        state->register_table[2] = &state->registers.byte[Z80_D];
-        state->register_table[3] = &state->registers.byte[Z80_E];
-        state->register_table[4] = &state->registers.byte[Z80_H];
-        state->register_table[5] = &state->registers.byte[Z80_L];
+    state->register_table[0] = &state->registers.byte[Z80_B];
+    state->register_table[1] = &state->registers.byte[Z80_C];
+    state->register_table[2] = &state->registers.byte[Z80_D];
+    state->register_table[3] = &state->registers.byte[Z80_E];
+    state->register_table[4] = &state->registers.byte[Z80_H];
+    state->register_table[5] = &state->registers.byte[Z80_L];
 
-        /* Encoding 0x06 is used for indexed memory operands and direct HL or
-         * IX/IY register access.
-         */
+    /* Encoding 0x06 is used for indexed memory operands and direct HL or
+     * IX/IY register access.
+     */
 
-        state->register_table[6] = &state->registers.word[Z80_HL];
-        state->register_table[7] = &state->registers.byte[Z80_A];
+    state->register_table[6] = &state->registers.word[Z80_HL];
+    state->register_table[7] = &state->registers.byte[Z80_A];
 
-        /* "Regular" 16-bit "RR" registers. */
+    /* "Regular" 16-bit "RR" registers. */
 
-        state->register_table[8] = &state->registers.word[Z80_BC];
-        state->register_table[9] = &state->registers.word[Z80_DE];
-        state->register_table[10] = &state->registers.word[Z80_HL];
-        state->register_table[11] = &state->registers.word[Z80_SP];
+    state->register_table[8] = &state->registers.word[Z80_BC];
+    state->register_table[9] = &state->registers.word[Z80_DE];
+    state->register_table[10] = &state->registers.word[Z80_HL];
+    state->register_table[11] = &state->registers.word[Z80_SP];
 
-        /* 16-bit "SS" registers for PUSH and POP instructions (note that SP is
-         * replaced by AF).
-         */
+    /* 16-bit "SS" registers for PUSH and POP instructions (note that SP is
+     * replaced by AF).
+     */
 
-        state->register_table[12] = &state->registers.word[Z80_BC];
-        state->register_table[13] = &state->registers.word[Z80_DE];
-        state->register_table[14] = &state->registers.word[Z80_HL];
-        state->register_table[15] = &state->registers.word[Z80_AF];
+    state->register_table[12] = &state->registers.word[Z80_BC];
+    state->register_table[13] = &state->registers.word[Z80_DE];
+    state->register_table[14] = &state->registers.word[Z80_HL];
+    state->register_table[15] = &state->registers.word[Z80_AF];
 
-        /* 0xdd and 0xfd prefixed register decoding tables. */
+    /* 0xdd and 0xfd prefixed register decoding tables. */
 
-        for (i = 0; i < 16; i++)
+    for (i = 0; i < 16; i++)
 
-                state->dd_register_table[i]
-                        = state->fd_register_table[i]
-                        = state->register_table[i];
+        state->dd_register_table[i] = state->fd_register_table[i] = state->register_table[i];
 
-        state->dd_register_table[4] = &state->registers.byte[Z80_IXH];
-        state->dd_register_table[5] = &state->registers.byte[Z80_IXL];
-        state->dd_register_table[6] = &state->registers.word[Z80_IX];
-        state->dd_register_table[10] = &state->registers.word[Z80_IX];
-        state->dd_register_table[14] = &state->registers.word[Z80_IX];
+    state->dd_register_table[4] = &state->registers.byte[Z80_IXH];
+    state->dd_register_table[5] = &state->registers.byte[Z80_IXL];
+    state->dd_register_table[6] = &state->registers.word[Z80_IX];
+    state->dd_register_table[10] = &state->registers.word[Z80_IX];
+    state->dd_register_table[14] = &state->registers.word[Z80_IX];
 
-        state->fd_register_table[4] = &state->registers.byte[Z80_IYH];
-        state->fd_register_table[5] = &state->registers.byte[Z80_IYL];
-        state->fd_register_table[6] = &state->registers.word[Z80_IY];
-        state->fd_register_table[10] = &state->registers.word[Z80_IY];
-        state->fd_register_table[14] = &state->registers.word[Z80_IY];
+    state->fd_register_table[4] = &state->registers.byte[Z80_IYH];
+    state->fd_register_table[5] = &state->registers.byte[Z80_IYL];
+    state->fd_register_table[6] = &state->registers.word[Z80_IY];
+    state->fd_register_table[10] = &state->registers.word[Z80_IY];
+    state->fd_register_table[14] = &state->registers.word[Z80_IY];
 }
 
-int Z80Interrupt (Z80_STATE *state, int data_on_bus, void *context)
-{
-        state->status = 0;
-        if (state->iff1) {
+int Z80Interrupt(Z80_STATE *state, int data_on_bus, void *context) {
+    state->status = 0;
+    if (state->iff1) {
 
-                state->iff1 = state->iff2 = 0;
-                state->r = (state->r & 0x80) | ((state->r + 1) & 0x7f);
-                switch (state->im) {
+        state->iff1 = state->iff2 = 0;
+        state->r = (state->r & 0x80) | ((state->r + 1) & 0x7f);
+        switch (state->im) {
 
-                        case Z80_INTERRUPT_MODE_0: {
+        case Z80_INTERRUPT_MODE_0: {
 
-                                /* Assuming the opcode in data_on_bus is an
-                                 * RST instruction, accepting the interrupt
-                                 * should take 2 + 11 = 13 cycles.
-                                 */
+            /* Assuming the opcode in data_on_bus is an
+             * RST instruction, accepting the interrupt
+             * should take 2 + 11 = 13 cycles.
+             */
 
-                                return emulate(state,
-					data_on_bus,
-					2, 4,
-					context);
+            return emulate(state, data_on_bus, 2, 4, context);
+        }
 
-                        }
+        case Z80_INTERRUPT_MODE_1: {
 
-                        case Z80_INTERRUPT_MODE_1: {
+            int elapsed_cycles;
 
-				int	elapsed_cycles;
+            elapsed_cycles = 0;
+            SP -= 2;
+            Z80_WRITE_WORD_INTERRUPT(SP, state->pc);
+            state->pc = 0x0038;
+            // return elapsed_cycles + 13;
+            return elapsed_cycles + 7;
+        }
 
-				elapsed_cycles = 0;
-                                SP -= 2;
-                                Z80_WRITE_WORD_INTERRUPT(SP, state->pc);
-                                state->pc = 0x0038;
-                                //return elapsed_cycles + 13;
-                               return elapsed_cycles + 7;
-                        }
+        case Z80_INTERRUPT_MODE_2:
+        default: {
 
-                        case Z80_INTERRUPT_MODE_2:
-                        default: {
+            int elapsed_cycles, vector;
 
-				int	elapsed_cycles, vector;
-
-				elapsed_cycles = 0;
-                                SP -= 2;
-                                Z80_WRITE_WORD_INTERRUPT(SP, state->pc);
-				vector = state->i << 8 | data_on_bus;
+            elapsed_cycles = 0;
+            SP -= 2;
+            Z80_WRITE_WORD_INTERRUPT(SP, state->pc);
+            vector = state->i << 8 | data_on_bus;
 
 #ifdef Z80_MASK_IM2_VECTOR_ADDRESS
 
-                                vector &= 0xfffe;
+            vector &= 0xfffe;
 
 #endif
 
-				Z80_READ_WORD_INTERRUPT(vector, state->pc);
-                                return elapsed_cycles + 19;
+            Z80_READ_WORD_INTERRUPT(vector, state->pc);
+            return elapsed_cycles + 19;
+        }
+        }
 
-                        }
-
-                }
-
-        } else
-                return 0;
+    } else
+        return 0;
 }
 
-int Z80NonMaskableInterrupt (Z80_STATE *state, void *context)
-{
-	int	elapsed_cycles;
+int Z80NonMaskableInterrupt(Z80_STATE *state, void *context) {
+    int elapsed_cycles;
 
-        state->status = 0;
+    state->status = 0;
 
-        state->iff2 = state->iff1;
-        state->iff1 = 0;
-        state->r = (state->r & 0x80) | ((state->r + 1) & 0x7f);
+    state->iff2 = state->iff1;
+    state->iff1 = 0;
+    state->r = (state->r & 0x80) | ((state->r + 1) & 0x7f);
 
-	elapsed_cycles = 0;
-        SP -= 2;
-        Z80_WRITE_WORD_INTERRUPT(SP, state->pc);
-        state->pc = 0x0066;
+    elapsed_cycles = 0;
+    SP -= 2;
+    Z80_WRITE_WORD_INTERRUPT(SP, state->pc);
+    state->pc = 0x0066;
 
-        return elapsed_cycles + 11;
+    return elapsed_cycles + 11;
 }
 
-int Z80Emulate (Z80_STATE *state, int number_cycles, void *context)
-{
-        int     elapsed_cycles, pc, opcode;
+int Z80Emulate(Z80_STATE *state, int number_cycles, void *context) {
+    int elapsed_cycles, pc, opcode;
 
-        state->status = 0;
-	elapsed_cycles = 0;
-  ts1 = millis();
-	pc = state->pc;
-        Z80_FETCH_BYTE(pc, opcode);
-        state->pc = pc + 1;
-        return emulate(state, opcode, elapsed_cycles, number_cycles, context);
+    state->status = 0;
+    elapsed_cycles = 0;
+    ts1 = millis();
+    pc = state->pc;
+    Z80_FETCH_BYTE(pc, opcode);
+    state->pc = pc + 1;
+    return emulate(state, opcode, elapsed_cycles, number_cycles, context);
 }
 
 /* Actual emulation function. opcode is the first opcode to emulate, this is
  * needed by Z80Interrupt() for interrupt mode 0.
  */
 
-static int emulate (Z80_STATE * state,
-	int opcode,
-	int elapsed_cycles, int number_cycles,
-	void *context)
-{
-        int	pc, r;
+static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_cycles, void *context) {
+    int pc, r;
 
-        pc = state->pc;
-        r = state->r & 0x7f;
+    pc = state->pc;
+    r = state->r & 0x7f;
 
-        goto start_emulation;
+    goto start_emulation;
 
-        for ( ; ; ) {
+    for (;;) {
 
-                void    **registers;
-                int     instruction;
+        void **registers;
+        int instruction;
 
-                Z80_FETCH_BYTE(pc, opcode);
-                pc++;
+        Z80_FETCH_BYTE(pc, opcode);
+        pc++;
 
+    start_emulation:
 
-start_emulation:
+        registers = state->register_table;
+        // if (opcode != 0xdb)
+        delayMicroseconds(2);
 
+    emulate_next_opcode:
 
-                registers = state->register_table;
-                //if (opcode != 0xdb)
-                delayMicroseconds(2);
+        instruction = INSTRUCTION_TABLE[opcode];
 
-emulate_next_opcode:
+    emulate_next_instruction:
+        elapsed_cycles += 4;
+        r++;
+        switch (instruction) {
 
-                instruction = INSTRUCTION_TABLE[opcode];
+            /* 8-bit load group. */
 
-emulate_next_instruction:
-                elapsed_cycles += 4;
-                r++;
-                switch (instruction) {
+        case LD_R_R: {
 
-                        /* 8-bit load group. */
+            R(Y(opcode)) = R(Z(opcode));
+            break;
+        }
 
-                        case LD_R_R: {
+        case LD_R_N: {
 
-                                R(Y(opcode)) = R(Z(opcode));
-                                break;
+            READ_N(R(Y(opcode)));
+            break;
+        }
 
-                        }
+        case LD_R_INDIRECT_HL: {
 
-                        case LD_R_N: {
+            if (registers == state->register_table) {
 
-                                READ_N(R(Y(opcode)));
-                                break;
+                READ_BYTE(HL, R(Y(opcode)));
 
-                        }
+            } else {
 
-                        case LD_R_INDIRECT_HL: {
+                int d;
 
-                                if (registers == state->register_table) {
+                READ_D(d);
+                d += HL_IX_IY;
+                READ_BYTE(d, S(Y(opcode)));
 
-                                        READ_BYTE(HL, R(Y(opcode)));
+                elapsed_cycles += 5;
+            }
+            break;
+        }
 
-                                } else {
+        case LD_INDIRECT_HL_R: {
 
-                                        int     d;
+            if (registers == state->register_table) {
 
-                                        READ_D(d);
-                                        d += HL_IX_IY;
-                                        READ_BYTE(d, S(Y(opcode)));
+                WRITE_BYTE(HL, R(Z(opcode)));
 
-                                        elapsed_cycles += 5;
+            } else {
 
-                                }
-                                break;
+                int d;
 
-                        }
+                READ_D(d);
+                d += HL_IX_IY;
+                WRITE_BYTE(d, S(Z(opcode)));
 
-                        case LD_INDIRECT_HL_R: {
+                elapsed_cycles += 5;
+            }
+            break;
+        }
 
-                                if (registers == state->register_table) {
+        case LD_INDIRECT_HL_N: {
 
-                                        WRITE_BYTE(HL, R(Z(opcode)));
+            int n;
 
-                                } else {
+            if (registers == state->register_table) {
 
-                                        int     d;
+                READ_N(n);
+                WRITE_BYTE(HL, n);
 
-                                        READ_D(d);
-                                        d += HL_IX_IY;
-                                        WRITE_BYTE(d, S(Z(opcode)));
+            } else {
 
-                                        elapsed_cycles += 5;
+                int d;
 
-                                }
-                                break;
+                READ_D(d);
+                d += HL_IX_IY;
+                READ_N(n);
+                WRITE_BYTE(d, n);
 
-                        }
+                elapsed_cycles += 2;
+            }
 
-                        case LD_INDIRECT_HL_N: {
+            break;
+        }
 
-                                int     n;
+        case LD_A_INDIRECT_BC: {
 
-                                if (registers == state->register_table) {
+            READ_BYTE(BC, A);
+            break;
+        }
 
-                                        READ_N(n);
-                                        WRITE_BYTE(HL, n);
+        case LD_A_INDIRECT_DE: {
 
-                                } else {
+            READ_BYTE(DE, A);
+            break;
+        }
 
-                                        int     d;
+        case LD_A_INDIRECT_NN: {
 
-                                        READ_D(d);
-                                        d += HL_IX_IY;
-                                        READ_N(n);
-                                        WRITE_BYTE(d, n);
+            int nn;
 
-                                        elapsed_cycles += 2;
+            READ_NN(nn);
+            READ_BYTE(nn, A);
+            break;
+        }
 
-                                }
+        case LD_INDIRECT_BC_A: {
 
-                                break;
+            WRITE_BYTE(BC, A);
+            break;
+        }
 
-                        }
+        case LD_INDIRECT_DE_A: {
 
-                        case LD_A_INDIRECT_BC: {
+            WRITE_BYTE(DE, A);
+            break;
+        }
 
-                                READ_BYTE(BC, A);
-                                break;
+        case LD_INDIRECT_NN_A: {
 
-                        }
+            int nn;
 
-                        case LD_A_INDIRECT_DE: {
+            READ_NN(nn);
+            WRITE_BYTE(nn, A);
+            break;
+        }
 
-                                READ_BYTE(DE, A);
-                                break;
+        case LD_A_I_LD_A_R: {
 
-                        }
+            int a, f;
 
-                        case LD_A_INDIRECT_NN: {
+            a = opcode == OPCODE_LD_A_I ? state->i : (state->r & 0x80) | (r & 0x7f);
+            f = SZYX_FLAGS_TABLE[a];
 
-                                int     nn;
+            /* Note: On a real processor, if an interrupt
+             * occurs during the execution of either
+             * "LD A, I" or "LD A, R", the parity flag is
+             * reset. That can never happen here.
+             */
 
-                                READ_NN(nn);
-                                READ_BYTE(nn, A);
-                                break;
+            f |= state->iff2 << Z80_P_FLAG_SHIFT;
+            f |= F & Z80_C_FLAG;
 
-                        }
+            AF = (a << 8) | f;
 
-                        case LD_INDIRECT_BC_A: {
+            elapsed_cycles += 9;
 
-                                WRITE_BYTE(BC, A);
-                                break;
+            break;
+        }
 
-                        }
+        case LD_I_A_LD_R_A: {
 
-                        case LD_INDIRECT_DE_A: {
+            if (opcode == OPCODE_LD_I_A)
 
-                                WRITE_BYTE(DE, A);
-                                break;
+                state->i = A;
 
-                        }
+            else {
 
-                        case LD_INDIRECT_NN_A: {
+                state->r = A;
+                r = A & 0x7f;
+            }
 
-                                int     nn;
+            elapsed_cycles += 9;
 
-                                READ_NN(nn);
-                                WRITE_BYTE(nn, A);
-                                break;
+            break;
+        }
 
-                        }
+            /* 16-bit load group. */
 
-                        case LD_A_I_LD_A_R: {
+        case LD_RR_NN: {
 
-                                int     a, f;
+            READ_NN(RR(P(opcode)));
+            break;
+        }
 
-                                a = opcode == OPCODE_LD_A_I
-                                        ? state->i
-                                        : (state->r & 0x80) | (r & 0x7f);
-                                f = SZYX_FLAGS_TABLE[a];
+        case LD_HL_INDIRECT_NN: {
 
-                                /* Note: On a real processor, if an interrupt
-                                 * occurs during the execution of either
-                                 * "LD A, I" or "LD A, R", the parity flag is
-                                 * reset. That can never happen here.
-                                 */
+            int nn;
 
-                                f |= state->iff2 << Z80_P_FLAG_SHIFT;
-                                f |= F & Z80_C_FLAG;
+            READ_NN(nn);
+            READ_WORD(nn, HL_IX_IY);
+            break;
+        }
 
-                                AF = (a << 8) | f;
+        case LD_RR_INDIRECT_NN: {
 
-                                elapsed_cycles+=9;
+            int nn;
 
-                                break;
+            READ_NN(nn);
+            READ_WORD(nn, RR(P(opcode)));
+            break;
+        }
 
-                        }
+        case LD_INDIRECT_NN_HL: {
 
-                        case LD_I_A_LD_R_A: {
+            int nn;
 
-                                if (opcode == OPCODE_LD_I_A)
+            READ_NN(nn);
+            WRITE_WORD(nn, HL_IX_IY);
+            break;
+        }
 
-                                        state->i = A;
+        case LD_INDIRECT_NN_RR: {
 
-                                else {
+            int nn;
 
-                                        state->r = A;
-                                        r = A & 0x7f;
+            READ_NN(nn);
+            WRITE_WORD(nn, RR(P(opcode)));
+            break;
+        }
 
-                                }
+        case LD_SP_HL: {
 
-                                elapsed_cycles+=9;
+            SP = HL_IX_IY;
+            elapsed_cycles += 2;
+            break;
+        }
 
-                                break;
+        case PUSH_SS: {
 
-                        }
+            PUSH(SS(P(opcode)));
+            // elapsed_cycles++;
+            break;
+        }
 
-                        /* 16-bit load group. */
+        case POP_SS: {
 
-                        case LD_RR_NN: {
+            POP(SS(P(opcode)));
+            break;
+        }
 
-                                READ_NN(RR(P(opcode)));
-                                break;
+            /* Exchange, block transfer and search group. */
 
-                        }
+        case EX_DE_HL: {
 
-                        case LD_HL_INDIRECT_NN: {
+            EXCHANGE(DE, HL);
+            break;
+        }
 
-                                int     nn;
+        case EX_AF_AF_PRIME: {
 
-                                READ_NN(nn);
-                                READ_WORD(nn, HL_IX_IY);
-                                break;
+            EXCHANGE(AF, state->alternates[Z80_AF]);
+            break;
+        }
 
-                        }
+        case EXX: {
 
-                        case LD_RR_INDIRECT_NN: {
+            EXCHANGE(BC, state->alternates[Z80_BC]);
+            EXCHANGE(DE, state->alternates[Z80_DE]);
+            EXCHANGE(HL, state->alternates[Z80_HL]);
+            break;
+        }
 
-                                int     nn;
+        case EX_INDIRECT_SP_HL: {
 
-                                READ_NN(nn);
-                                READ_WORD(nn, RR(P(opcode)));
-                                break;
+            int t;
 
-                        }
+            READ_WORD(SP, t);
+            WRITE_WORD(SP, HL_IX_IY);
+            HL_IX_IY = t;
 
-                        case LD_INDIRECT_NN_HL: {
+            elapsed_cycles += 3;
 
-                                int     nn;
+            break;
+        }
 
-                                READ_NN(nn);
-                                WRITE_WORD(nn, HL_IX_IY);
-                                break;
+        case LDI_LDD: {
 
-                        }
+            int n, f, d;
 
-                        case LD_INDIRECT_NN_RR: {
+            READ_BYTE(HL, n);
+            WRITE_BYTE(DE, n);
 
-                                int     nn;
-
-                                READ_NN(nn);
-                                WRITE_WORD(nn, RR(P(opcode)));
-                                break;
-
-                        }
-
-                        case LD_SP_HL: {
-
-                                SP = HL_IX_IY;
-                                elapsed_cycles += 2;
-                                break;
-
-                        }
-
-                        case PUSH_SS: {
-
-                                PUSH(SS(P(opcode)));
-                                //elapsed_cycles++;
-                                break;
-
-                        }
-
-                        case POP_SS: {
-
-                                POP(SS(P(opcode)));
-                                break;
-
-                        }
-
-                        /* Exchange, block transfer and search group. */
-
-                        case EX_DE_HL: {
-
-                                EXCHANGE(DE, HL);
-                                break;
-
-                        }
-
-                        case EX_AF_AF_PRIME: {
-
-                                EXCHANGE(AF, state->alternates[Z80_AF]);
-                                break;
-
-                        }
-
-                        case EXX: {
-
-                                EXCHANGE(BC, state->alternates[Z80_BC]);
-                                EXCHANGE(DE, state->alternates[Z80_DE]);
-                                EXCHANGE(HL, state->alternates[Z80_HL]);
-                                break;
-
-                        }
-
-                        case EX_INDIRECT_SP_HL: {
-
-                                int     t;
-
-                                READ_WORD(SP, t);
-                                WRITE_WORD(SP, HL_IX_IY);
-                                HL_IX_IY = t;
-
-                                elapsed_cycles += 3;
-
-                                break;
-                        }
-
-                        case LDI_LDD: {
-
-                                int     n, f, d;
-
-                                READ_BYTE(HL, n);
-                                WRITE_BYTE(DE, n);
-
-                                f = F & SZC_FLAGS;
-                                f |= --BC ? Z80_P_FLAG : 0;
+            f = F & SZC_FLAGS;
+            f |= --BC ? Z80_P_FLAG : 0;
 
 #ifndef Z80_DOCUMENTED_FLAGS_ONLY
 
-                                n += A;
-                                f |= n & Z80_X_FLAG;
-                                f |= (n << (Z80_Y_FLAG_SHIFT - 1))
-                                        & Z80_Y_FLAG;
+            n += A;
+            f |= n & Z80_X_FLAG;
+            f |= (n << (Z80_Y_FLAG_SHIFT - 1)) & Z80_Y_FLAG;
 
 #endif
 
-                                F = f;
+            F = f;
 
-                                d = opcode == OPCODE_LDI ? +1 : -1;
-                                DE += d;
-                                HL += d;
+            d = opcode == OPCODE_LDI ? +1 : -1;
+            DE += d;
+            HL += d;
 
-                                elapsed_cycles += 2;
+            elapsed_cycles += 2;
 
-                                break;
+            break;
+        }
 
-                        }
+        case LDIR_LDDR: {
 
-                        case LDIR_LDDR: {
-
-                                int     d, f, bc, de, hl, n;
+            int d, f, bc, de, hl, n;
 
 #ifdef Z80_HANDLE_SELF_MODIFYING_CODE
 
-                                int     p, q;
+            int p, q;
 
-                                p = (pc - 2) & 0xffff;
-                                q = (pc - 1) & 0xffff;
+            p = (pc - 2) & 0xffff;
+            q = (pc - 1) & 0xffff;
 
 #endif
 
-                                d = opcode == OPCODE_LDIR ? +1 : -1;
+            d = opcode == OPCODE_LDIR ? +1 : -1;
 
-                                f = F & SZC_FLAGS;
-                                bc = BC;
-                                de = DE;
-                                hl = HL;
+            f = F & SZC_FLAGS;
+            bc = BC;
+            de = DE;
+            hl = HL;
 
-                                r -= 2;
-                                elapsed_cycles -= 8;
-                                for ( ; ; ) {
+            r -= 2;
+            elapsed_cycles -= 8;
+            for (;;) {
 
-                                        r += 2;
+                r += 2;
 
-                                        Z80_READ_BYTE(hl, n);
-                                        Z80_WRITE_BYTE(de, n);
+                Z80_READ_BYTE(hl, n);
+                Z80_WRITE_BYTE(de, n);
 
-                                        hl += d;
-                                        de += d;
+                hl += d;
+                de += d;
 
-                                        if (--bc)
+                if (--bc)
 
-                                                {
-                                                  //elapsed_cycles += 21;
+                {
+                    // elapsed_cycles += 21;
 
-                                                }
+                }
 
-                                        else {
+                else {
 
-                                                elapsed_cycles += 16;
-                                                break;
-
-                                        }
+                    elapsed_cycles += 16;
+                    break;
+                }
 
 #ifdef Z80_HANDLE_SELF_MODIFYING_CODE
 
-                                        if (((de - d) & 0xffff) == p
-                                        || ((de - d) & 0xffff) == q) {
+                if (((de - d) & 0xffff) == p || ((de - d) & 0xffff) == q) {
 
-                                                f |= Z80_P_FLAG;
-                                                pc -= 2;
-                                                break;
-
-                                        }
+                    f |= Z80_P_FLAG;
+                    pc -= 2;
+                    break;
+                }
 
 #endif
 
-                                        if (elapsed_cycles < number_cycles)
+                if (elapsed_cycles < number_cycles)
 
-                                                continue;
+                    continue;
 
-                                        else {
+                else {
 
-                                                f |= Z80_P_FLAG;
-                                                pc -= 2;
-                                                break;
+                    f |= Z80_P_FLAG;
+                    pc -= 2;
+                    break;
+                }
+            }
 
-                                        }
-
-                                }
-
-                                HL = hl;
-                                DE = de;
-                                BC = bc;
+            HL = hl;
+            DE = de;
+            BC = bc;
 
 #ifndef Z80_DOCUMENTED_FLAGS_ONLY
 
-                                n += A;
-                                f |= n & Z80_X_FLAG;
-                                f |= (n << (Z80_Y_FLAG_SHIFT - 1))
-                                        & Z80_Y_FLAG;
+            n += A;
+            f |= n & Z80_X_FLAG;
+            f |= (n << (Z80_Y_FLAG_SHIFT - 1)) & Z80_Y_FLAG;
 
 #endif
 
-                                F = f;
+            F = f;
 
-                                break;
+            break;
+        }
 
-                        }
+        case CPI_CPD: {
 
-                        case CPI_CPD: {
+            int a, n, z, f;
 
-                                int     a, n, z, f;
+            a = A;
+            READ_BYTE(HL, n);
+            z = a - n;
 
-                                a = A;
-                                READ_BYTE(HL, n);
-                                z = a - n;
+            HL += opcode == OPCODE_CPI ? +1 : -1;
 
-                                HL += opcode == OPCODE_CPI ? +1 : -1;
-
-                                f = (a ^ n ^ z) & Z80_H_FLAG;
+            f = (a ^ n ^ z) & Z80_H_FLAG;
 
 #ifndef Z80_DOCUMENTED_FLAGS_ONLY
 
-                                n = z - (f >> Z80_H_FLAG_SHIFT);
-                                f |= (n << (Z80_Y_FLAG_SHIFT - 1))
-                                        & Z80_Y_FLAG;
-                                f |= n & Z80_X_FLAG;
+            n = z - (f >> Z80_H_FLAG_SHIFT);
+            f |= (n << (Z80_Y_FLAG_SHIFT - 1)) & Z80_Y_FLAG;
+            f |= n & Z80_X_FLAG;
 
 #endif
 
-                                f |= SZYX_FLAGS_TABLE[z & 0xff] & SZ_FLAGS;
-                                f |= --BC ? Z80_P_FLAG : 0;
-                                F = f | Z80_N_FLAG | (F & Z80_C_FLAG);
+            f |= SZYX_FLAGS_TABLE[z & 0xff] & SZ_FLAGS;
+            f |= --BC ? Z80_P_FLAG : 0;
+            F = f | Z80_N_FLAG | (F & Z80_C_FLAG);
 
-                                elapsed_cycles += 5;
+            elapsed_cycles += 5;
 
-                                break;
+            break;
+        }
 
-                        }
+        case CPIR_CPDR: {
 
-                        case CPIR_CPDR: {
+            int d, a, bc, hl, n, z, f;
 
-                                int     d, a, bc, hl, n, z, f;
+            d = opcode == OPCODE_CPIR ? +1 : -1;
 
-                                d = opcode == OPCODE_CPIR ? +1 : -1;
+            a = A;
+            bc = BC;
+            hl = HL;
 
-                                a = A;
-                                bc = BC;
-                                hl = HL;
+            r -= 2;
+            elapsed_cycles -= 8;
+            for (;;) {
 
-                                r -= 2;
-                                elapsed_cycles -= 8;
-                                for ( ; ; ) {
+                r += 2;
 
-                                        r += 2;
+                Z80_READ_BYTE(hl, n);
+                z = a - n;
 
-                                        Z80_READ_BYTE(hl, n);
-                                        z = a - n;
+                hl += d;
+                if (--bc && z)
 
-                                        hl += d;
-                                        if (--bc && z)
+                    elapsed_cycles += 21;
 
-                                                elapsed_cycles += 21;
+                else {
 
-                                        else {
+                    elapsed_cycles += 16;
+                    break;
+                }
 
-                                                elapsed_cycles += 16;
-                                                break;
+                if (elapsed_cycles < number_cycles)
 
-                                        }
+                    continue;
 
-                                        if (elapsed_cycles < number_cycles)
+                else {
 
-                                                continue;
+                    pc -= 2;
+                    break;
+                }
+            }
 
-                                        else {
+            HL = hl;
+            BC = bc;
 
-                                                pc -= 2;
-                                                break;
-
-                                        }
-
-                                }
-
-                                HL = hl;
-                                BC = bc;
-
-                                f = (a ^ n ^ z) & Z80_H_FLAG;
+            f = (a ^ n ^ z) & Z80_H_FLAG;
 
 #ifndef Z80_DOCUMENTED_FLAGS_ONLY
 
-                                n = z - (f >> Z80_H_FLAG_SHIFT);
-                                f |= (n << (Z80_Y_FLAG_SHIFT - 1))
-                                        & Z80_Y_FLAG;
-                                f |= n & Z80_X_FLAG;
+            n = z - (f >> Z80_H_FLAG_SHIFT);
+            f |= (n << (Z80_Y_FLAG_SHIFT - 1)) & Z80_Y_FLAG;
+            f |= n & Z80_X_FLAG;
 
 #endif
 
-                                f |= SZYX_FLAGS_TABLE[z & 0xff] & SZ_FLAGS;
-                                f |= bc ? Z80_P_FLAG : 0;
-                                F = f | Z80_N_FLAG | (F & Z80_C_FLAG);
+            f |= SZYX_FLAGS_TABLE[z & 0xff] & SZ_FLAGS;
+            f |= bc ? Z80_P_FLAG : 0;
+            F = f | Z80_N_FLAG | (F & Z80_C_FLAG);
 
-                                break;
+            break;
+        }
 
-                        }
+            /* 8-bit arithmetic and logical group. */
 
-                        /* 8-bit arithmetic and logical group. */
+        case ADD_R: {
 
-                        case ADD_R: {
+            ADD(R(Z(opcode)));
+            break;
+        }
 
-                                ADD(R(Z(opcode)));
-                                break;
+        case ADD_N: {
 
-                        }
+            int n;
 
-                        case ADD_N: {
+            READ_N(n);
+            ADD(n);
+            break;
+        }
 
-                                int     n;
+        case ADD_INDIRECT_HL: {
 
-                                READ_N(n);
-                                ADD(n);
-                                break;
+            int x;
 
-                        }
+            READ_INDIRECT_HL(x);
+            ADD(x);
+            break;
+        }
 
-                        case ADD_INDIRECT_HL: {
+        case ADC_R: {
 
-                                int     x;
+            ADC(R(Z(opcode)));
+            break;
+        }
 
-                                READ_INDIRECT_HL(x);
-                                ADD(x);
-                                break;
+        case ADC_N: {
 
-                        }
+            int n;
 
-                        case ADC_R: {
+            READ_N(n);
+            ADC(n);
+            break;
+        }
 
-                                ADC(R(Z(opcode)));
-                                break;
+        case ADC_INDIRECT_HL: {
 
-                        }
+            int x;
 
-                        case ADC_N: {
+            READ_INDIRECT_HL(x);
+            ADC(x);
+            break;
+        }
 
-                                int     n;
+        case SUB_R: {
 
-                                READ_N(n);
-                                ADC(n);
-                                break;
+            SUB(R(Z(opcode)));
+            break;
+        }
 
-                        }
+        case SUB_N: {
 
-                        case ADC_INDIRECT_HL: {
+            int n;
 
-                                int     x;
+            READ_N(n);
+            SUB(n);
+            break;
+        }
 
-                                READ_INDIRECT_HL(x);
-                                ADC(x);
-                                break;
+        case SUB_INDIRECT_HL: {
 
-                        }
+            int x;
 
-                        case SUB_R: {
+            READ_INDIRECT_HL(x);
+            SUB(x);
+            break;
+        }
 
-                                SUB(R(Z(opcode)));
-                                break;
+        case SBC_R: {
 
-                        }
+            SBC(R(Z(opcode)));
+            break;
+        }
 
-                        case SUB_N: {
+        case SBC_N: {
 
-                                int     n;
+            int n;
 
-                                READ_N(n);
-                                SUB(n);
-                                break;
+            READ_N(n);
+            SBC(n);
+            break;
+        }
 
-                        }
+        case SBC_INDIRECT_HL: {
 
-                        case SUB_INDIRECT_HL: {
+            int x;
 
-                                int     x;
+            READ_INDIRECT_HL(x);
+            SBC(x);
+            break;
+        }
 
-                                READ_INDIRECT_HL(x);
-                                SUB(x);
-                                break;
+        case AND_R: {
 
-                        }
+            AND(R(Z(opcode)));
+            break;
+        }
 
-                        case SBC_R: {
+        case AND_N: {
 
-                                SBC(R(Z(opcode)));
-                                break;
+            int n;
 
-                        }
+            READ_N(n);
+            AND(n);
+            break;
+        }
 
-                        case SBC_N: {
+        case AND_INDIRECT_HL: {
 
-                                int     n;
+            int x;
 
-                                READ_N(n);
-                                SBC(n);
-                                break;
+            READ_INDIRECT_HL(x);
+            AND(x);
+            break;
+        }
 
-                        }
+        case OR_R: {
 
-                        case SBC_INDIRECT_HL: {
+            OR(R(Z(opcode)));
+            break;
+        }
 
-                                int     x;
+        case OR_N: {
 
-                                READ_INDIRECT_HL(x);
-                                SBC(x);
-                                break;
+            int n;
 
-                        }
+            READ_N(n);
+            OR(n);
+            break;
+        }
 
-                        case AND_R: {
+        case OR_INDIRECT_HL: {
 
-                                AND(R(Z(opcode)));
-                                break;
+            int x;
 
-                        }
+            READ_INDIRECT_HL(x);
+            OR(x);
+            break;
+        }
 
-                        case AND_N: {
+        case XOR_R: {
 
-                                int     n;
+            XOR(R(Z(opcode)));
+            break;
+        }
 
-                                READ_N(n);
-                                AND(n);
-                                break;
+        case XOR_N: {
 
-                        }
+            int n;
 
-                        case AND_INDIRECT_HL: {
+            READ_N(n);
+            XOR(n);
+            break;
+        }
 
-                                int     x;
+        case XOR_INDIRECT_HL: {
 
-                                READ_INDIRECT_HL(x);
-                                AND(x);
-                                break;
+            int x;
 
-                        }
+            READ_INDIRECT_HL(x);
+            XOR(x);
+            break;
+        }
 
-                        case OR_R: {
+        case CP_R: {
 
-                                OR(R(Z(opcode)));
-                                break;
+            CP(R(Z(opcode)));
+            break;
+        }
 
-                        }
+        case CP_N: {
 
-                        case OR_N: {
+            int n;
 
-                                int     n;
+            READ_N(n);
+            CP(n);
+            break;
+        }
 
-                                READ_N(n);
-                                OR(n);
-                                break;
+        case CP_INDIRECT_HL: {
 
-                        }
+            int x;
 
-                        case OR_INDIRECT_HL: {
+            READ_INDIRECT_HL(x);
+            CP(x);
+            break;
+        }
 
-                                int     x;
+        case INC_R: {
 
-                                READ_INDIRECT_HL(x);
-                                OR(x);
-                                break;
+            INC(R(Y(opcode)));
+            break;
+        }
 
-                        }
+        case INC_INDIRECT_HL: {
 
-                        case XOR_R: {
+            int x;
 
-                                XOR(R(Z(opcode)));
-                                break;
+            if (registers == state->register_table) {
 
-                        }
+                READ_BYTE(HL, x);
+                INC(x);
+                WRITE_BYTE(HL, x);
 
-                        case XOR_N: {
+                elapsed_cycles += 11;
 
-                                int     n;
+            } else {
 
-                                READ_N(n);
-                                XOR(n);
-                                break;
+                int d;
 
-                        }
+                READ_D(d);
+                d += HL_IX_IY;
+                READ_BYTE(d, x);
+                INC(x);
+                WRITE_BYTE(d, x);
 
-                        case XOR_INDIRECT_HL: {
+                elapsed_cycles += 6;
+            }
+            break;
+        }
 
-                                int     x;
+        case DEC_R: {
 
-                                READ_INDIRECT_HL(x);
-                                XOR(x);
-                                break;
+            DEC(R(Y(opcode)));
+            break;
+        }
 
-                        }
+        case DEC_INDIRECT_HL: {
 
-                        case CP_R: {
+            int x;
 
-                                CP(R(Z(opcode)));
-                                break;
+            if (registers == state->register_table) {
 
-                        }
+                READ_BYTE(HL, x);
+                DEC(x);
+                WRITE_BYTE(HL, x);
 
-                        case CP_N: {
+                elapsed_cycles += 11;
 
-                                int     n;
+            } else {
 
-                                READ_N(n);
-                                CP(n);
-                                break;
+                int d;
 
-                        }
+                READ_D(d);
+                d += HL_IX_IY;
+                READ_BYTE(d, x);
+                DEC(x);
+                WRITE_BYTE(d, x);
 
-                        case CP_INDIRECT_HL: {
+                elapsed_cycles += 6;
+            }
+            break;
+        }
 
-                                int     x;
+            /* General-purpose arithmetic and CPU control group. */
 
-                                READ_INDIRECT_HL(x);
-                                CP(x);
-                                break;
+        case DAA: {
 
-                        }
+            int a, c, d;
 
-                        case INC_R: {
+            /* The following algorithm is from
+             * comp.sys.sinclair's FAQ.
+             */
 
-                                INC(R(Y(opcode)));
-                                break;
+            a = A;
+            if (a > 0x99 || (F & Z80_C_FLAG)) {
 
-                        }
+                c = Z80_C_FLAG;
+                d = 0x60;
 
-                        case INC_INDIRECT_HL: {
+            } else
 
-                                int     x;
+                c = d = 0;
 
-                                if (registers == state->register_table) {
+            if ((a & 0x0f) > 0x09 || (F & Z80_H_FLAG))
 
-                                        READ_BYTE(HL, x);
-                                        INC(x);
-                                        WRITE_BYTE(HL, x);
+                d += 0x06;
 
-                                        elapsed_cycles+=11;
+            A += F & Z80_N_FLAG ? -d : +d;
+            F = SZYXP_FLAGS_TABLE[A] | ((A ^ a) & Z80_H_FLAG) | (F & Z80_N_FLAG) | c;
 
-                                } else {
+            break;
+        }
 
-                                        int     d;
+        case CPL: {
 
-                                        READ_D(d);
-                                        d += HL_IX_IY;
-                                        READ_BYTE(d, x);
-                                        INC(x);
-                                        WRITE_BYTE(d, x);
-
-                                        elapsed_cycles += 6;
-
-                                }
-                                break;
-
-                        }
-
-                        case DEC_R: {
-
-                                DEC(R(Y(opcode)));
-                                break;
-
-                        }
-
-                        case DEC_INDIRECT_HL: {
-
-                                int     x;
-
-                                if (registers == state->register_table) {
-
-                                        READ_BYTE(HL, x);
-                                        DEC(x);
-                                        WRITE_BYTE(HL, x);
-
-                                        elapsed_cycles+=11;
-
-                                } else {
-
-                                        int     d;
-
-                                        READ_D(d);
-                                        d += HL_IX_IY;
-                                        READ_BYTE(d, x);
-                                        DEC(x);
-                                        WRITE_BYTE(d, x);
-
-                                        elapsed_cycles += 6;
-
-                                }
-                                break;
-
-                        }
-
-                        /* General-purpose arithmetic and CPU control group. */
-
-                        case DAA: {
-
-                                int     a, c, d;
-
-                                /* The following algorithm is from
-                                 * comp.sys.sinclair's FAQ.
-                                 */
-
-                                a = A;
-                                if (a > 0x99 || (F & Z80_C_FLAG)) {
-
-                                        c = Z80_C_FLAG;
-                                        d = 0x60;
-
-                                } else
-
-                                        c = d = 0;
-
-                                if ((a & 0x0f) > 0x09 || (F & Z80_H_FLAG))
-
-                                        d += 0x06;
-
-                                A += F & Z80_N_FLAG ? -d : +d;
-                                F = SZYXP_FLAGS_TABLE[A]
-                                        | ((A ^ a) & Z80_H_FLAG)
-                                        | (F & Z80_N_FLAG)
-                                        | c;
-
-                                break;
-
-                        }
-
-                        case CPL: {
-
-                                A = ~A;
-                                F = (F & (SZPV_FLAGS | Z80_C_FLAG))
+            A = ~A;
+            F = (F & (SZPV_FLAGS | Z80_C_FLAG))
 
 #ifndef Z80_DOCUMENTED_FLAGS_ONLY
 
-                                        | (A & YX_FLAGS)
+                | (A & YX_FLAGS)
 
 #endif
 
-                                        | Z80_H_FLAG | Z80_N_FLAG;
+                | Z80_H_FLAG | Z80_N_FLAG;
 
-                                break;
+            break;
+        }
 
-                        }
+        case NEG: {
 
-                        case NEG: {
+            int a, f, z, c;
 
-                                int     a, f, z, c;
+            a = A;
+            z = -a;
 
-                                a = A;
-                                z = -a;
+            c = a ^ z;
+            f = Z80_N_FLAG | (c & Z80_H_FLAG);
+            f |= SZYX_FLAGS_TABLE[z &= 0xff];
+            c &= 0x0180;
+            f |= OVERFLOW_TABLE[c >> 7];
+            f |= c >> (8 - Z80_C_FLAG_SHIFT);
 
-                                c = a ^ z;
-                                f = Z80_N_FLAG | (c & Z80_H_FLAG);
-                                f |= SZYX_FLAGS_TABLE[z &= 0xff];
-                                c &= 0x0180;
-                                f |= OVERFLOW_TABLE[c >> 7];
-                                f |= c >> (8 - Z80_C_FLAG_SHIFT);
+            A = z;
+            F = f;
 
-                                A = z;
-                                F = f;
+            break;
+        }
 
-                                break;
+        case CCF: {
 
-                        }
+            int c;
 
-                        case CCF: {
-
-                                int     c;
-
-                                c = F & Z80_C_FLAG;
-                                F = (F & SZPV_FLAGS)
-                                        | (c << Z80_H_FLAG_SHIFT)
+            c = F & Z80_C_FLAG;
+            F = (F & SZPV_FLAGS) | (c << Z80_H_FLAG_SHIFT)
 
 #ifndef Z80_DOCUMENTED_FLAGS_ONLY
 
-                                        | (A & YX_FLAGS)
+                | (A & YX_FLAGS)
 
 #endif
 
-                                        | (c ^ Z80_C_FLAG);
+                | (c ^ Z80_C_FLAG);
 
-                                break;
+            break;
+        }
 
-                        }
+        case SCF: {
 
-                        case SCF: {
-
-                                F = (F & SZPV_FLAGS)
+            F = (F & SZPV_FLAGS)
 
 #ifndef Z80_DOCUMENTED_FLAGS_ONLY
 
-                                        | (A & YX_FLAGS)
+                | (A & YX_FLAGS)
 
 #endif
 
-                                        | Z80_C_FLAG;
+                | Z80_C_FLAG;
 
-                                break;
+            break;
+        }
 
-                        }
+        case NOP: {
 
-                        case NOP: {
+            break;
+        }
 
-                                break;
-
-                        }
-
-                        case HALT: {
+        case HALT: {
 
 #ifdef Z80_CATCH_HALT
 
-                                state->status = Z80_STATUS_FLAG_HALT;
-                                //int delay_halt=millis()-ts1;
-                                //Serial.println(elapsed_cycles);
-                                elapsed_cycles+=4;
-
+            state->status = Z80_STATUS_FLAG_HALT;
+            // int delay_halt=millis()-ts1;
+            // Serial.println(elapsed_cycles);
+            elapsed_cycles += 4;
 
 #else
 
-				/* If an HALT instruction is executed, the Z80
-				 * keeps executing NOPs until an interrupt is
-				 * generated. Basically nothing happens for the
-				 * remaining number of cycles.
-				 */
+            /* If an HALT instruction is executed, the Z80
+             * keeps executing NOPs until an interrupt is
+             * generated. Basically nothing happens for the
+             * remaining number of cycles.
+             */
 
-				if (elapsed_cycles < number_cycles)
-					elapsed_cycles = number_cycles;
-
+            if (elapsed_cycles < number_cycles)
+                elapsed_cycles = number_cycles;
 
 #endif
 
-				//goto stop_emulation;
-        break;
+            // goto stop_emulation;
+            break;
+        }
 
-                        }
+        case DI: {
 
-                        case DI: {
-
-				state->iff1 = state->iff2 = 0;
+            state->iff1 = state->iff2 = 0;
 
 #ifdef Z80_CATCH_DI
 
-                                state->status = Z80_STATUS_FLAG_DI;
-                                goto stop_emulation;
+            state->status = Z80_STATUS_FLAG_DI;
+            goto stop_emulation;
 
 #else
 
-                                /* No interrupt can be accepted right after
-                                 * a DI or EI instruction on an actual Z80
-                                 * processor. By adding 4 cycles to
-                                 * number_cycles, at least one more
-                                 * instruction will be executed. However, this
-                                 * will fail if the next instruction has
-                                 * multiple 0xdd or 0xfd prefixes and
-                                 * Z80_PREFIX_FAILSAFE is defined, but that
-                                 * is an unlikely pathological case.
-                                 */
+            /* No interrupt can be accepted right after
+             * a DI or EI instruction on an actual Z80
+             * processor. By adding 4 cycles to
+             * number_cycles, at least one more
+             * instruction will be executed. However, this
+             * will fail if the next instruction has
+             * multiple 0xdd or 0xfd prefixes and
+             * Z80_PREFIX_FAILSAFE is defined, but that
+             * is an unlikely pathological case.
+             */
 
-                                number_cycles += 4;
-                                break;
+            number_cycles += 4;
+            break;
 
 #endif
+        }
 
-                        }
+        case EI: {
 
-                        case EI: {
-
-                                state->iff1 = state->iff2 = 1;
+            state->iff1 = state->iff2 = 1;
 
 #ifdef Z80_CATCH_EI
 
-                                state->status = Z80_STATUS_FLAG_EI;
-                                goto stop_emulation;
+            state->status = Z80_STATUS_FLAG_EI;
+            goto stop_emulation;
 
 #else
 
-                                /* See comment for DI. */
+            /* See comment for DI. */
 
-                                number_cycles += 4;
-                                break;
+            number_cycles += 4;
+            break;
 
 #endif
+        }
 
-                        }
+        case IM_N: {
 
-                        case IM_N: {
+            /* "IM 0/1" (0xed prefixed opcodes 0x4e and
+             * 0x6e) is treated like a "IM 0".
+             */
 
-                                /* "IM 0/1" (0xed prefixed opcodes 0x4e and
-                                 * 0x6e) is treated like a "IM 0".
-                                 */
+            if ((Y(opcode) & 0x03) <= 0x01)
 
-				if ((Y(opcode) & 0x03) <= 0x01)
+                state->im = Z80_INTERRUPT_MODE_0;
 
-                                        state->im = Z80_INTERRUPT_MODE_0;
+            else if (!(Y(opcode) & 1))
 
-                                else if (!(Y(opcode) & 1))
+                state->im = Z80_INTERRUPT_MODE_1;
 
-                                        state->im = Z80_INTERRUPT_MODE_1;
+            else
 
-                                else
+                state->im = Z80_INTERRUPT_MODE_2;
 
-                                        state->im = Z80_INTERRUPT_MODE_2;
+            break;
+        }
 
-                                break;
+            /* 16-bit arithmetic group. */
 
-                        }
+        case ADD_HL_RR: {
 
-                        /* 16-bit arithmetic group. */
+            int x, y, z, f, c;
 
-                        case ADD_HL_RR: {
+            x = HL_IX_IY;
+            y = RR(P(opcode));
+            z = x + y;
 
-                                int     x, y, z, f, c;
-
-                                x = HL_IX_IY;
-                                y = RR(P(opcode));
-                                z = x + y;
-
-                                c = x ^ y ^ z;
-                                f = F & SZPV_FLAGS;
+            c = x ^ y ^ z;
+            f = F & SZPV_FLAGS;
 
 #ifndef Z80_DOCUMENTED_FLAGS_ONLY
 
-                                f |= (z >> 8) & YX_FLAGS;
-                                f |= (c >> 8) & Z80_H_FLAG;
+            f |= (z >> 8) & YX_FLAGS;
+            f |= (c >> 8) & Z80_H_FLAG;
 
 #endif
 
-                                f |= c >> (16 - Z80_C_FLAG_SHIFT);
+            f |= c >> (16 - Z80_C_FLAG_SHIFT);
 
-                                HL_IX_IY = z;
-                                F = f;
+            HL_IX_IY = z;
+            F = f;
 
-                                elapsed_cycles += 7;
+            elapsed_cycles += 7;
 
-                                break;
+            break;
+        }
 
-                        }
+        case ADC_HL_RR: {
 
-                        case ADC_HL_RR: {
+            int x, y, z, f, c;
 
-                                int     x, y, z, f, c;
+            x = HL;
+            y = RR(P(opcode));
+            z = x + y + (F & Z80_C_FLAG);
 
-                                x = HL;
-                                y = RR(P(opcode));
-                                z = x + y + (F & Z80_C_FLAG);
-
-                                c = x ^ y ^ z;
-                                f = z & 0xffff
-                                        ? (z >> 8) & SYX_FLAGS
-                                        : Z80_Z_FLAG;
+            c = x ^ y ^ z;
+            f = z & 0xffff ? (z >> 8) & SYX_FLAGS : Z80_Z_FLAG;
 
 #ifndef Z80_DOCUMENTED_FLAGS_ONLY
 
-                                f |= (c >> 8) & Z80_H_FLAG;
+            f |= (c >> 8) & Z80_H_FLAG;
 
 #endif
 
-                                f |= OVERFLOW_TABLE[c >> 15];
-                                f |= z >> (16 - Z80_C_FLAG_SHIFT);
+            f |= OVERFLOW_TABLE[c >> 15];
+            f |= z >> (16 - Z80_C_FLAG_SHIFT);
 
-                                HL = z;
-                                F = f;
+            HL = z;
+            F = f;
 
-                                elapsed_cycles += 7;
+            elapsed_cycles += 7;
 
-                                break;
+            break;
+        }
 
-                        }
+        case SBC_HL_RR: {
 
-                        case SBC_HL_RR: {
+            int x, y, z, f, c;
 
-                                int     x, y, z, f, c;
+            x = HL;
+            y = RR(P(opcode));
+            z = x - y - (F & Z80_C_FLAG);
 
-                                x = HL;
-                                y = RR(P(opcode));
-                                z = x - y - (F & Z80_C_FLAG);
-
-                                c = x ^ y ^ z;
-                                f = Z80_N_FLAG;
-                                f |= z & 0xffff
-                                        ? (z >> 8) & SYX_FLAGS
-                                        : Z80_Z_FLAG;
+            c = x ^ y ^ z;
+            f = Z80_N_FLAG;
+            f |= z & 0xffff ? (z >> 8) & SYX_FLAGS : Z80_Z_FLAG;
 
 #ifndef Z80_DOCUMENTED_FLAGS_ONLY
 
-                                f |= (c >> 8) & Z80_H_FLAG;
+            f |= (c >> 8) & Z80_H_FLAG;
 
 #endif
 
-                                c &= 0x018000;
-                                f |= OVERFLOW_TABLE[c >> 15];
-                                f |= c >> (16 - Z80_C_FLAG_SHIFT);
+            c &= 0x018000;
+            f |= OVERFLOW_TABLE[c >> 15];
+            f |= c >> (16 - Z80_C_FLAG_SHIFT);
 
-                                HL = z;
-                                F = f;
+            HL = z;
+            F = f;
 
-                                elapsed_cycles += 7;
+            elapsed_cycles += 7;
 
-                                break;
+            break;
+        }
 
-                        }
+        case INC_RR: {
 
-                        case INC_RR: {
+            int x;
 
-                                int     x;
+            x = RR(P(opcode));
+            x++;
+            RR(P(opcode)) = x;
 
-                                x = RR(P(opcode));
-                                x++;
-                                RR(P(opcode)) = x;
+            elapsed_cycles += 2;
 
-                                elapsed_cycles += 2;
+            break;
+        }
 
-                                break;
+        case DEC_RR: {
 
-                        }
+            int x;
 
-                        case DEC_RR: {
+            x = RR(P(opcode));
+            x--;
+            RR(P(opcode)) = x;
 
-                                int     x;
+            elapsed_cycles += 2;
 
-                                x = RR(P(opcode));
-                                x--;
-                                RR(P(opcode)) = x;
+            break;
+        }
 
-                                elapsed_cycles += 2;
+            /* Rotate and shift group. */
 
-                                break;
+        case RLCA: {
 
-                        }
+            A = (A << 1) | (A >> 7);
+            F = (F & SZPV_FLAGS) | (A & (YX_FLAGS | Z80_C_FLAG));
+            break;
+        }
 
-                        /* Rotate and shift group. */
+        case RLA: {
 
-                        case RLCA: {
+            int a, f;
 
-                                A = (A << 1) | (A >> 7);
-                                F = (F & SZPV_FLAGS)
-                                        | (A & (YX_FLAGS | Z80_C_FLAG));
-                                break;
-
-                        }
-
-                        case RLA: {
-
-                                int     a, f;
-
-                                a = A << 1;
-                                f = (F & SZPV_FLAGS)
+            a = A << 1;
+            f = (F & SZPV_FLAGS)
 
 #ifndef Z80_DOCUMENTED_FLAGS_ONLY
 
-                                        | (a & YX_FLAGS)
+                | (a & YX_FLAGS)
 
 #endif
 
-                                        | (A >> 7);
-                                A = a | (F & Z80_C_FLAG);
-                                F = f;
+                | (A >> 7);
+            A = a | (F & Z80_C_FLAG);
+            F = f;
 
-                                break;
+            break;
+        }
 
-                        }
+        case RRCA: {
 
-                        case RRCA: {
+            int c;
 
-                                int     c;
-
-                                c = A & 0x01;
-                                A = (A >> 1) | (A << 7);
-                                F = (F & SZPV_FLAGS)
+            c = A & 0x01;
+            A = (A >> 1) | (A << 7);
+            F = (F & SZPV_FLAGS)
 
 #ifndef Z80_DOCUMENTED_FLAGS_ONLY
 
-                                        | (A & YX_FLAGS)
+                | (A & YX_FLAGS)
 
 #endif
 
-                                        | c;
+                | c;
 
-                                break;
+            break;
+        }
 
-                        }
+        case RRA: {
 
-                        case RRA: {
+            int c;
 
-                                int     c;
-
-                                c = A & 0x01;
-                                A = (A >> 1) | ((F & Z80_C_FLAG) << 7);
-                                F = (F & SZPV_FLAGS)
+            c = A & 0x01;
+            A = (A >> 1) | ((F & Z80_C_FLAG) << 7);
+            F = (F & SZPV_FLAGS)
 
 #ifndef Z80_DOCUMENTED_FLAGS_ONLY
 
-                                        | (A & YX_FLAGS)
+                | (A & YX_FLAGS)
 
 #endif
 
-                                        | c;
+                | c;
 
-                                break;
+            break;
+        }
 
-                        }
+        case RLC_R: {
 
-                        case RLC_R: {
+            RLC(R(Z(opcode)));
+            break;
+        }
 
-                                RLC(R(Z(opcode)));
-                                break;
+        case RLC_INDIRECT_HL: {
 
-                        }
+            int x;
 
-                        case RLC_INDIRECT_HL: {
+            if (registers == state->register_table) {
 
-                                int     x;
+                READ_BYTE(HL, x);
+                RLC(x);
+                WRITE_BYTE(HL, x);
 
-                                if (registers == state->register_table) {
+                elapsed_cycles += 15;
 
-                                        READ_BYTE(HL, x);
-                                        RLC(x);
-                                        WRITE_BYTE(HL, x);
+            } else {
 
-                                        elapsed_cycles+=15;
+                int d;
 
-                                } else {
+                Z80_FETCH_BYTE(pc, d);
+                d = ((signed char)d) + HL_IX_IY;
 
-                                        int     d;
+                READ_BYTE(d, x);
+                RLC(x);
+                WRITE_BYTE(d, x);
 
-                                        Z80_FETCH_BYTE(pc, d);
-                                        d = ((signed char) d) + HL_IX_IY;
+                if (Z(opcode) != INDIRECT_HL)
 
-                                        READ_BYTE(d, x);
-                                        RLC(x);
-                                        WRITE_BYTE(d, x);
+                    R(Z(opcode)) = x;
 
-                                        if (Z(opcode) != INDIRECT_HL)
+                pc += 2;
 
-                                                R(Z(opcode)) = x;
+                elapsed_cycles += 5;
+            }
 
-                                        pc += 2;
+            break;
+        }
 
-                                        elapsed_cycles += 5;
+        case RL_R: {
 
-                                }
+            RL(R(Z(opcode)));
+            break;
+        }
 
-                                break;
+        case RL_INDIRECT_HL: {
 
-                        }
+            int x;
 
-                        case RL_R: {
+            if (registers == state->register_table) {
 
-                                RL(R(Z(opcode)));
-                                break;
+                READ_BYTE(HL, x);
+                RL(x);
+                WRITE_BYTE(HL, x);
 
-                        }
+                elapsed_cycles += 15;
 
-                        case RL_INDIRECT_HL: {
+            } else {
 
-                                int     x;
+                int d;
 
-                                if (registers == state->register_table) {
+                Z80_FETCH_BYTE(pc, d);
+                d = ((signed char)d) + HL_IX_IY;
 
-                                        READ_BYTE(HL, x);
-                                        RL(x);
-                                        WRITE_BYTE(HL, x);
+                READ_BYTE(d, x);
+                RL(x);
+                WRITE_BYTE(d, x);
 
-                                        elapsed_cycles+=15;
+                if (Z(opcode) != INDIRECT_HL)
 
-                                } else {
+                    R(Z(opcode)) = x;
 
-                                        int     d;
+                pc += 2;
 
-                                        Z80_FETCH_BYTE(pc, d);
-                                        d = ((signed char) d) + HL_IX_IY;
+                elapsed_cycles += 5;
+            }
+            break;
+        }
 
-                                        READ_BYTE(d, x);
-                                        RL(x);
-                                        WRITE_BYTE(d, x);
+        case RRC_R: {
 
-                                        if (Z(opcode) != INDIRECT_HL)
+            RRC(R(Z(opcode)));
+            break;
+        }
 
-                                                R(Z(opcode)) = x;
+        case RRC_INDIRECT_HL: {
 
-                                        pc += 2;
+            int x;
 
-                                        elapsed_cycles += 5;
+            if (registers == state->register_table) {
 
-                                }
-                                break;
+                READ_BYTE(HL, x);
+                RRC(x);
+                WRITE_BYTE(HL, x);
 
-                        }
+                elapsed_cycles += 15;
 
-                        case RRC_R: {
+            } else {
 
-                                RRC(R(Z(opcode)));
-                                break;
+                int d;
 
-                        }
+                Z80_FETCH_BYTE(pc, d);
+                d = ((signed char)d) + HL_IX_IY;
 
-                        case RRC_INDIRECT_HL: {
+                READ_BYTE(d, x);
+                RRC(x);
+                WRITE_BYTE(d, x);
 
-                                int     x;
+                if (Z(opcode) != INDIRECT_HL)
 
-                                if (registers == state->register_table) {
+                    R(Z(opcode)) = x;
 
-                                        READ_BYTE(HL, x);
-                                        RRC(x);
-                                        WRITE_BYTE(HL, x);
+                pc += 2;
 
-                                        elapsed_cycles+=15;
+                elapsed_cycles += 5;
+            }
+            break;
+        }
 
-                                } else {
+        case RR_R: {
 
-                                        int     d;
+            RR_INSTRUCTION(R(Z(opcode)));
+            break;
+        }
 
-                                        Z80_FETCH_BYTE(pc, d);
-                                        d = ((signed char) d) + HL_IX_IY;
+        case RR_INDIRECT_HL: {
 
-                                        READ_BYTE(d, x);
-                                        RRC(x);
-                                        WRITE_BYTE(d, x);
+            int x;
 
-                                        if (Z(opcode) != INDIRECT_HL)
+            if (registers == state->register_table) {
 
-                                                R(Z(opcode)) = x;
+                READ_BYTE(HL, x);
+                RR_INSTRUCTION(x);
+                WRITE_BYTE(HL, x);
 
-                                        pc += 2;
+                elapsed_cycles += 15;
 
-                                        elapsed_cycles += 5;
+            } else {
 
-                                }
-                                break;
+                int d;
 
-                        }
+                Z80_FETCH_BYTE(pc, d);
+                d = ((signed char)d) + HL_IX_IY;
 
-                        case RR_R: {
+                READ_BYTE(d, x);
+                RR_INSTRUCTION(x);
+                WRITE_BYTE(d, x);
 
-                                RR_INSTRUCTION(R(Z(opcode)));
-                                break;
+                if (Z(opcode) != INDIRECT_HL)
 
-                        }
+                    R(Z(opcode)) = x;
 
-                        case RR_INDIRECT_HL: {
+                pc += 2;
 
-                                int     x;
+                elapsed_cycles += 5;
+            }
+            break;
+        }
 
-                                if (registers == state->register_table) {
+        case SLA_R: {
 
-                                        READ_BYTE(HL, x);
-                                        RR_INSTRUCTION(x);
-                                        WRITE_BYTE(HL, x);
+            SLA(R(Z(opcode)));
+            break;
+        }
 
-                                        elapsed_cycles+=15;
+        case SLA_INDIRECT_HL: {
 
-                                } else {
+            int x;
 
-                                        int     d;
+            if (registers == state->register_table) {
 
-                                        Z80_FETCH_BYTE(pc, d);
-                                        d = ((signed char) d) + HL_IX_IY;
+                READ_BYTE(HL, x);
+                SLA(x);
+                WRITE_BYTE(HL, x);
 
-                                        READ_BYTE(d, x);
-                                        RR_INSTRUCTION(x);
-                                        WRITE_BYTE(d, x);
+                elapsed_cycles += 15;
 
-                                        if (Z(opcode) != INDIRECT_HL)
+            } else {
 
-                                                R(Z(opcode)) = x;
+                int d;
 
-                                        pc += 2;
+                Z80_FETCH_BYTE(pc, d);
+                d = ((signed char)d) + HL_IX_IY;
 
-                                        elapsed_cycles += 5;
+                READ_BYTE(d, x);
+                SLA(x);
+                WRITE_BYTE(d, x);
 
-                                }
-                                break;
+                if (Z(opcode) != INDIRECT_HL)
 
-                        }
+                    R(Z(opcode)) = x;
 
-                        case SLA_R: {
+                pc += 2;
 
-                                SLA(R(Z(opcode)));
-                                break;
+                elapsed_cycles += 5;
+            }
+            break;
+        }
 
-                        }
+        case SLL_R: {
 
-                        case SLA_INDIRECT_HL: {
+            SLL(R(Z(opcode)));
+            break;
+        }
 
-                                int     x;
+        case SLL_INDIRECT_HL: {
 
-                                if (registers == state->register_table) {
+            int x;
 
-                                        READ_BYTE(HL, x);
-                                        SLA(x);
-                                        WRITE_BYTE(HL, x);
+            if (registers == state->register_table) {
 
-                                        elapsed_cycles+=15;
+                READ_BYTE(HL, x);
+                SLL(x);
+                WRITE_BYTE(HL, x);
 
-                                } else {
+                elapsed_cycles += 15;
 
-                                        int     d;
+            } else {
 
-                                        Z80_FETCH_BYTE(pc, d);
-                                        d = ((signed char) d) + HL_IX_IY;
+                int d;
 
-                                        READ_BYTE(d, x);
-                                        SLA(x);
-                                        WRITE_BYTE(d, x);
+                Z80_FETCH_BYTE(pc, d);
+                d = ((signed char)d) + HL_IX_IY;
 
-                                        if (Z(opcode) != INDIRECT_HL)
+                READ_BYTE(d, x);
+                SLL(x);
+                WRITE_BYTE(d, x);
 
-                                                R(Z(opcode)) = x;
+                if (Z(opcode) != INDIRECT_HL)
 
-                                        pc += 2;
+                    R(Z(opcode)) = x;
 
-                                        elapsed_cycles += 5;
+                pc += 2;
 
-                                }
-                                break;
+                elapsed_cycles += 5;
+            }
+            break;
+        }
 
-                        }
+        case SRA_R: {
 
-                        case SLL_R: {
+            SRA(R(Z(opcode)));
+            break;
+        }
 
-                                SLL(R(Z(opcode)));
-                                break;
+        case SRA_INDIRECT_HL: {
 
-                        }
+            int x;
 
-                        case SLL_INDIRECT_HL: {
+            if (registers == state->register_table) {
 
-                                int     x;
+                READ_BYTE(HL, x);
+                SRA(x);
+                WRITE_BYTE(HL, x);
 
-                                if (registers == state->register_table) {
+                elapsed_cycles += 15;
 
-                                        READ_BYTE(HL, x);
-                                        SLL(x);
-                                        WRITE_BYTE(HL, x);
+            } else {
 
-                                        elapsed_cycles+=15;
+                int d;
 
-                                } else {
+                Z80_FETCH_BYTE(pc, d);
+                d = ((signed char)d) + HL_IX_IY;
 
-                                        int     d;
+                READ_BYTE(d, x);
+                SRA(x);
+                WRITE_BYTE(d, x);
 
-                                        Z80_FETCH_BYTE(pc, d);
-                                        d = ((signed char) d) + HL_IX_IY;
+                if (Z(opcode) != INDIRECT_HL)
 
-                                        READ_BYTE(d, x);
-                                        SLL(x);
-                                        WRITE_BYTE(d, x);
+                    R(Z(opcode)) = x;
 
-                                        if (Z(opcode) != INDIRECT_HL)
+                pc += 2;
 
-                                                R(Z(opcode)) = x;
+                elapsed_cycles += 5;
+            }
+            break;
+        }
 
-                                        pc += 2;
+        case SRL_R: {
 
-                                        elapsed_cycles += 5;
+            SRL(R(Z(opcode)));
+            break;
+        }
 
-                                }
-                                break;
+        case SRL_INDIRECT_HL: {
 
-                        }
+            int x;
 
-                        case SRA_R: {
+            if (registers == state->register_table) {
 
-                                SRA(R(Z(opcode)));
-                                break;
+                READ_BYTE(HL, x);
+                SRL(x);
+                WRITE_BYTE(HL, x);
 
-                        }
+                elapsed_cycles += 15;
 
-                        case SRA_INDIRECT_HL: {
+            } else {
 
-                                int     x;
+                int d;
 
-                                if (registers == state->register_table) {
+                Z80_FETCH_BYTE(pc, d);
+                d = ((signed char)d) + HL_IX_IY;
 
-                                        READ_BYTE(HL, x);
-                                        SRA(x);
-                                        WRITE_BYTE(HL, x);
+                READ_BYTE(d, x);
+                SRL(x);
+                WRITE_BYTE(d, x);
 
-                                        elapsed_cycles+=15;
+                if (Z(opcode) != INDIRECT_HL)
 
-                                } else {
+                    R(Z(opcode)) = x;
 
-                                        int     d;
+                pc += 2;
 
-                                        Z80_FETCH_BYTE(pc, d);
-                                        d = ((signed char) d) + HL_IX_IY;
+                elapsed_cycles += 5;
+            }
+            break;
+        }
 
-                                        READ_BYTE(d, x);
-                                        SRA(x);
-                                        WRITE_BYTE(d, x);
+        case RLD_RRD: {
 
-                                        if (Z(opcode) != INDIRECT_HL)
+            int x, y;
 
-                                                R(Z(opcode)) = x;
+            READ_BYTE(HL, x);
+            y = (A & 0xf0) << 8;
+            y |= opcode == OPCODE_RLD ? (x << 4) | (A & 0x0f) : ((x & 0x0f) << 8) | ((A & 0x0f) << 4) | (x >> 4);
+            WRITE_BYTE(HL, y);
+            y >>= 8;
 
-                                        pc += 2;
+            A = y;
+            F = SZYXP_FLAGS_TABLE[y] | (F & Z80_C_FLAG);
 
-                                        elapsed_cycles += 5;
+            elapsed_cycles += 4;
 
-                                }
-                                break;
+            break;
+        }
 
-                        }
+            /* Bit set, reset, and test group. */
 
-                        case SRL_R: {
+        case BIT_B_R: {
 
-                                SRL(R(Z(opcode)));
-                                break;
+            int x;
 
-                        }
-
-                        case SRL_INDIRECT_HL: {
-
-                                int     x;
-
-                                if (registers == state->register_table) {
-
-                                        READ_BYTE(HL, x);
-                                        SRL(x);
-                                        WRITE_BYTE(HL, x);
-
-                                        elapsed_cycles+=15;
-
-                                } else {
-
-                                        int     d;
-
-                                        Z80_FETCH_BYTE(pc, d);
-                                        d = ((signed char) d) + HL_IX_IY;
-
-                                        READ_BYTE(d, x);
-                                        SRL(x);
-                                        WRITE_BYTE(d, x);
-
-                                        if (Z(opcode) != INDIRECT_HL)
-
-                                                R(Z(opcode)) = x;
-
-                                        pc += 2;
-
-                                        elapsed_cycles += 5;
-
-                                }
-                                break;
-
-                        }
-
-                        case RLD_RRD: {
-
-                                int     x, y;
-
-                                READ_BYTE(HL, x);
-                                y = (A & 0xf0) << 8;
-                                y |= opcode == OPCODE_RLD
-                                        ? (x << 4) | (A & 0x0f)
-                                        : ((x & 0x0f) << 8)
-                                                | ((A & 0x0f) << 4)
-                                                | (x >> 4);
-                                WRITE_BYTE(HL, y);
-                                y >>= 8;
-
-                                A = y;
-                                F = SZYXP_FLAGS_TABLE[y] | (F & Z80_C_FLAG);
-
-                                elapsed_cycles += 4;
-
-                                break;
-
-                        }
-
-                        /* Bit set, reset, and test group. */
-
-                        case BIT_B_R: {
-
-                                int     x;
-
-                                x = R(Z(opcode)) & (1 << Y(opcode));
-                                F = (x ? 0 : Z80_Z_FLAG | Z80_P_FLAG)
+            x = R(Z(opcode)) & (1 << Y(opcode));
+            F = (x ? 0 : Z80_Z_FLAG | Z80_P_FLAG)
 
 #ifndef Z80_DOCUMENTED_FLAGS_ONLY
 
-                                        | (x & Z80_S_FLAG)
-                                        | (R(Z(opcode)) & YX_FLAGS)
+                | (x & Z80_S_FLAG) | (R(Z(opcode)) & YX_FLAGS)
 
 #endif
 
-                                        | Z80_H_FLAG
-                                        | (F & Z80_C_FLAG);
+                | Z80_H_FLAG | (F & Z80_C_FLAG);
 
-                                break;
+            break;
+        }
 
-                        }
+        case BIT_B_INDIRECT_HL: {
 
-                        case BIT_B_INDIRECT_HL: {
+            int d, x;
 
-                                int     d, x;
+            if (registers == state->register_table) {
 
-                                if (registers == state->register_table) {
+                d = HL;
 
-                                        d = HL;
+                elapsed_cycles += 12;
 
-                                        elapsed_cycles+=12;
+            } else {
 
-                                } else {
+                Z80_FETCH_BYTE(pc, d);
+                d = ((signed char)d) + HL_IX_IY;
 
-                                        Z80_FETCH_BYTE(pc, d);
-                                        d = ((signed char) d) + HL_IX_IY;
+                pc += 2;
 
-                                        pc += 2;
+                elapsed_cycles += 5;
+            }
 
-                                        elapsed_cycles += 5;
-
-                                }
-
-                                READ_BYTE(d, x);
-                                x &= 1 << Y(opcode);
-                                F = (x ? 0 : Z80_Z_FLAG | Z80_P_FLAG)
+            READ_BYTE(d, x);
+            x &= 1 << Y(opcode);
+            F = (x ? 0 : Z80_Z_FLAG | Z80_P_FLAG)
 
 #ifndef Z80_DOCUMENTED_FLAGS_ONLY
 
-                                        | (x & Z80_S_FLAG)
-                                        | (d & YX_FLAGS)
+                | (x & Z80_S_FLAG) | (d & YX_FLAGS)
 
 #endif
 
-                                        | Z80_H_FLAG
-                                        | (F & Z80_C_FLAG);
+                | Z80_H_FLAG | (F & Z80_C_FLAG);
 
-                                break;
+            break;
+        }
 
-                        }
+        case SET_B_R: {
 
-                        case SET_B_R: {
+            R(Z(opcode)) |= 1 << Y(opcode);
+            break;
+        }
 
-                                R(Z(opcode)) |= 1 << Y(opcode);
-                                break;
+        case SET_B_INDIRECT_HL: {
 
-                        }
+            int x;
 
-                        case SET_B_INDIRECT_HL: {
+            if (registers == state->register_table) {
 
-                                int     x;
+                READ_BYTE(HL, x);
+                x |= 1 << Y(opcode);
+                WRITE_BYTE(HL, x);
 
-                                if (registers == state->register_table) {
+                elapsed_cycles += 15;
 
-                                        READ_BYTE(HL, x);
-                                        x |= 1 << Y(opcode);
-                                        WRITE_BYTE(HL, x);
+            } else {
 
-                                        elapsed_cycles+= 15;
+                int d;
 
-                                } else {
+                Z80_FETCH_BYTE(pc, d);
+                d = ((signed char)d) + HL_IX_IY;
 
-                                        int     d;
+                READ_BYTE(d, x);
+                x |= 1 << Y(opcode);
+                WRITE_BYTE(d, x);
 
-                                        Z80_FETCH_BYTE(pc, d);
-                                        d = ((signed char) d) + HL_IX_IY;
+                if (Z(opcode) != INDIRECT_HL)
 
-                                        READ_BYTE(d, x);
-                                        x |= 1 << Y(opcode);
-                                        WRITE_BYTE(d, x);
+                    R(Z(opcode)) = x;
 
-                                        if (Z(opcode) != INDIRECT_HL)
+                pc += 2;
 
-                                                R(Z(opcode)) = x;
+                elapsed_cycles += 5;
+            }
+            break;
+        }
 
-                                        pc += 2;
+        case RES_B_R: {
 
-                                        elapsed_cycles += 5;
+            R(Z(opcode)) &= ~(1 << Y(opcode));
+            break;
+        }
 
-                                }
-                                break;
+        case RES_B_INDIRECT_HL: {
 
-                        }
+            int x;
 
-                        case RES_B_R: {
+            if (registers == state->register_table) {
 
-                                R(Z(opcode)) &= ~(1 << Y(opcode));
-                                break;
+                READ_BYTE(HL, x);
+                x &= ~(1 << Y(opcode));
+                WRITE_BYTE(HL, x);
 
-                        }
+                elapsed_cycles += 15;
 
-                        case RES_B_INDIRECT_HL: {
+            } else {
 
-                                int     x;
+                int d;
 
-                                if (registers == state->register_table) {
+                Z80_FETCH_BYTE(pc, d);
+                d = ((signed char)d) + HL_IX_IY;
 
-                                        READ_BYTE(HL, x);
-                                        x &= ~(1 << Y(opcode));
-                                        WRITE_BYTE(HL, x);
+                READ_BYTE(d, x);
+                x &= ~(1 << Y(opcode));
+                WRITE_BYTE(d, x);
 
-                                        elapsed_cycles+=15;
+                if (Z(opcode) != INDIRECT_HL)
 
-                                } else {
+                    R(Z(opcode)) = x;
 
-                                        int     d;
+                pc += 2;
 
-                                        Z80_FETCH_BYTE(pc, d);
-                                        d = ((signed char) d) + HL_IX_IY;
+                elapsed_cycles += 5;
+            }
+            break;
+        }
 
-                                        READ_BYTE(d, x);
-                                        x &= ~(1 << Y(opcode));
-                                        WRITE_BYTE(d, x);
+            /* Jump group. */
 
-                                        if (Z(opcode) != INDIRECT_HL)
+        case JP_NN: {
 
-                                                R(Z(opcode)) = x;
+            int nn;
 
-                                        pc += 2;
+            Z80_FETCH_WORD(pc, nn);
+            pc = nn;
 
-                                        elapsed_cycles += 5;
+            elapsed_cycles += 6;
 
-                                }
-                                break;
+            break;
+        }
 
-                        }
+        case JP_CC_NN: {
 
-                        /* Jump group. */
+            int nn;
 
-                        case JP_NN: {
+            if (CC(Y(opcode))) {
 
-                                int     nn;
+                Z80_FETCH_WORD(pc, nn);
+                pc = nn;
 
-                                Z80_FETCH_WORD(pc, nn);
-                                pc = nn;
-
-                                elapsed_cycles += 6;
-
-                                break;
-
-                        }
-
-                        case JP_CC_NN: {
-
-                                int     nn;
-
-                                if (CC(Y(opcode))) {
-
-                                        Z80_FETCH_WORD(pc, nn);
-                                        pc = nn;
-
-                                } else {
+            } else {
 
 #ifdef Z80_FALSE_CONDITION_FETCH
 
-                                        Z80_FETCH_WORD(pc, nn);
+                Z80_FETCH_WORD(pc, nn);
 
 #endif
 
-                                        pc += 2;
+                pc += 2;
+            }
 
-                                }
+            elapsed_cycles += 6;
 
-                                elapsed_cycles += 6;
+            break;
+        }
 
-                                break;
+        case JR_E: {
 
-                        }
+            int e;
 
-                        case JR_E: {
+            Z80_FETCH_BYTE(pc, e);
+            pc += ((signed char)e) + 1;
 
-                                int     e;
+            elapsed_cycles += 8;
 
-                                Z80_FETCH_BYTE(pc, e);
-                                pc += ((signed char) e) + 1;
+            break;
+        }
 
-                                elapsed_cycles += 8;
+        case JR_DD_E: {
 
-                                break;
+            int e;
 
-                        }
+            if (DD(Q(opcode))) {
 
-                        case JR_DD_E: {
+                Z80_FETCH_BYTE(pc, e);
+                pc += ((signed char)e) + 1;
 
-                                int     e;
+                elapsed_cycles += 8;
 
-                                if (DD(Q(opcode))) {
-
-                                        Z80_FETCH_BYTE(pc, e);
-                                        pc += ((signed char) e) + 1;
-
-                                        elapsed_cycles += 8;
-
-                                } else {
+            } else {
 
 #ifdef Z80_FALSE_CONDITION_FETCH
 
-                                        Z80_FETCH_BYTE(pc, e);
+                Z80_FETCH_BYTE(pc, e);
 
 #endif
 
-                                        pc++;
+                pc++;
 
-                                        elapsed_cycles += 3;
+                elapsed_cycles += 3;
+            }
+            break;
+        }
 
-                                }
-                                break;
+        case JP_HL: {
 
-                        }
+            pc = HL_IX_IY;
+            break;
+        }
 
-                        case JP_HL: {
+        case DJNZ_E: {
 
-                                pc = HL_IX_IY;
-                                break;
+            int e;
 
-                        }
+            if (--B) {
 
-                        case DJNZ_E: {
+                Z80_FETCH_BYTE(pc, e);
+                pc += ((signed char)e) + 1;
 
-                                int     e;
+                elapsed_cycles += 9;
 
-                                if (--B) {
-
-                                        Z80_FETCH_BYTE(pc, e);
-                                        pc += ((signed char) e) + 1;
-
-                                        elapsed_cycles += 9;
-
-                                } else {
+            } else {
 
 #ifdef Z80_FALSE_CONDITION_FETCH
 
-                                        Z80_FETCH_BYTE(pc, e);
+                Z80_FETCH_BYTE(pc, e);
 
 #endif
 
-                                        pc++;
+                pc++;
 
-                                        elapsed_cycles += 4;
+                elapsed_cycles += 4;
+            }
+            break;
+        }
 
-                                }
-                                break;
+            /* Call and return group. */
 
-                        }
+        case CALL_NN: {
 
-                        /* Call and return group. */
+            int nn;
 
-                        case CALL_NN: {
+            READ_NN(nn);
+            PUSH(pc);
+            pc = nn;
 
-                                int     nn;
+            elapsed_cycles += 10;
 
-                                READ_NN(nn);
-                                PUSH(pc);
-                                pc = nn;
+            break;
+        }
 
-                                elapsed_cycles+=10;
+        case CALL_CC_NN: {
 
-                                break;
+            int nn;
 
-                        }
+            if (CC(Y(opcode))) {
 
-                        case CALL_CC_NN: {
+                READ_NN(nn);
+                PUSH(pc);
+                pc = nn;
 
-                                int     nn;
+                elapsed_cycles += 10;
 
-                                if (CC(Y(opcode))) {
-
-                                        READ_NN(nn);
-                                        PUSH(pc);
-                                        pc = nn;
-
-                                        elapsed_cycles+=10;
-
-                                } else {
+            } else {
 
 #ifdef Z80_FALSE_CONDITION_FETCH
 
-                                        Z80_FETCH_WORD(pc, nn);
+                Z80_FETCH_WORD(pc, nn);
 
 #endif
 
-                                        pc += 2;
+                pc += 2;
 
-                                        elapsed_cycles += 6;
+                elapsed_cycles += 6;
+            }
+            break;
+        }
 
-                                }
-                                break;
+        case RET: {
 
-                        }
+            POP(pc);
+            break;
+        }
 
-                        case RET: {
+        case RET_CC: {
 
-                                POP(pc);
-                                break;
+            if (CC(Y(opcode))) {
 
-                        }
+                POP(pc);
+            };
+            break;
+        }
 
-                        case RET_CC: {
+        case RETI_RETN: {
 
-                                if (CC(Y(opcode))) {
-
-                                        POP(pc);
-
-                                }
-                                ;
-                                break;
-
-                        }
-
-                        case RETI_RETN: {
-
-                                state->iff1 = state->iff2;
-                                POP(pc);
+            state->iff1 = state->iff2;
+            POP(pc);
 
 #if defined(Z80_CATCH_RETI) && defined(Z80_CATCH_RETN)
 
-                                state->status = opcode == OPCODE_RETI
-                                        ? Z80_STATUS_FLAG_RETI
-                                        : Z80_STATUS_FLAG_RETN;
-                                        elapsed_cycles +=4;
-                                        //delay.println(elapsed_cycles);
+            state->status = opcode == OPCODE_RETI ? Z80_STATUS_FLAG_RETI : Z80_STATUS_FLAG_RETN;
+            elapsed_cycles += 4;
+            // delay.println(elapsed_cycles);
 
-                                        break;
-                                //goto stop_emulation;
+            break;
+            // goto stop_emulation;
 
 #elif defined(Z80_CATCH_RETI)
 
-                                state->status = Z80_STATUS_FLAG_RETI;
-                                //goto stop_emulation;
-                                break;
+            state->status = Z80_STATUS_FLAG_RETI;
+            // goto stop_emulation;
+            break;
 
 #elif defined(Z80_CATCH_RETN)
 
-                                state->status = Z80_STATUS_FLAG_RETN;
-                                //goto stop_emulation;
-                                break;
+            state->status = Z80_STATUS_FLAG_RETN;
+            // goto stop_emulation;
+            break;
 
 #else
 
-                                break;
+            break;
 
 #endif
+        }
 
-                        }
+        case RST_P: {
 
-                        case RST_P: {
+            PUSH(pc);
+            pc = RST_TABLE[Y(opcode)];
+            elapsed_cycles += 11;
+            break;
+        }
 
-                                PUSH(pc);
-                                pc = RST_TABLE[Y(opcode)];
-                                elapsed_cycles+=11;
-                                break;
+            /* Input and output group. */
 
-                        }
+        case IN_A_N: {
 
-                        /* Input and output group. */
+            int n, inputResult;
 
-                        case IN_A_N: {
+            READ_N(n);
+            Z80_INPUT_BYTE(n, A, inputResult);
+            A = inputResult;
 
-                                int n, inputResult;
+            elapsed_cycles += 12;
 
-                                READ_N(n);
-                                Z80_INPUT_BYTE(n, A, inputResult);
-                                A = inputResult;
+            break;
+        }
 
-                                elapsed_cycles += 12;
+        case IN_R_C: {
 
-                                break;
+            int x;
+            Z80_INPUT_BYTE(C, B, x);
+            delay(1);
 
-                        }
+            if (Y(opcode) != INDIRECT_HL)
 
-                        case IN_R_C: {
+                R(Y(opcode)) = x;
 
-                                int     x;
-                                Z80_INPUT_BYTE(C, B, x);
+            F = SZYXP_FLAGS_TABLE[x] | (F & Z80_C_FLAG);
 
+            // elapsed_cycles += 12;
+            elapsed_cycles += 6000;
 
-                                  delay(2);
+            break;
+        }
 
-                                if (Y(opcode) != INDIRECT_HL)
+            /* Some of the undocumented flags for "INI", "IND",
+             * "INIR", "INDR",  "OUTI", "OUTD", "OTIR", and
+             * "OTDR" are really really strange. The emulator
+             * implements the specifications described in "The
+             * Undocumented Z80 Documented Version 0.91".
+             */
 
-                                        R(Y(opcode)) = x;
+        case INI_IND: {
 
-                                F = SZYXP_FLAGS_TABLE[x] | (F & Z80_C_FLAG);
+            int x, f;
 
-                                //elapsed_cycles += 12;
-                                elapsed_cycles+=6000;
+            Z80_INPUT_BYTE(C, B, x);
+            WRITE_BYTE(HL, x);
 
-                                break;
+            f = SZYX_FLAGS_TABLE[--B & 0xff] | (x >> (7 - Z80_N_FLAG_SHIFT));
+            if (opcode == OPCODE_INI) {
 
-                        }
+                HL++;
+                x += (C + 1) & 0xff;
 
-                        /* Some of the undocumented flags for "INI", "IND",
-                         * "INIR", "INDR",  "OUTI", "OUTD", "OTIR", and
-                         * "OTDR" are really really strange. The emulator
-                         * implements the specifications described in "The
-                         * Undocumented Z80 Documented Version 0.91".
-                         */
+            } else {
 
-                        case INI_IND: {
+                HL--;
+                x += (C - 1) & 0xff;
+            }
+            f |= x & 0x0100 ? HC_FLAGS : 0;
+            f |= SZYXP_FLAGS_TABLE[(x & 0x07) ^ B] & Z80_P_FLAG;
+            F = f;
 
-                                int     x, f;
+            elapsed_cycles += 5;
 
-                                Z80_INPUT_BYTE(C, B, x);
-                                WRITE_BYTE(HL, x);
+            break;
+        }
 
-                                f = SZYX_FLAGS_TABLE[--B & 0xff]
-                                        | (x >> (7 - Z80_N_FLAG_SHIFT));
-                                if (opcode == OPCODE_INI) {
+        case INIR_INDR: {
 
-                                        HL++;
-                                        x += (C + 1) & 0xff;
-
-                                } else {
-
-                                        HL--;
-                                        x += (C - 1) & 0xff;
-
-                                }
-                                f |= x & 0x0100 ? HC_FLAGS : 0;
-                                f |= SZYXP_FLAGS_TABLE[(x & 0x07) ^ B]
-                                        & Z80_P_FLAG;
-                                F = f;
-
-                                elapsed_cycles += 5;
-
-                                break;
-
-                        }
-
-                        case INIR_INDR: {
-
-                                int     d, b, hl, x, f;
+            int d, b, hl, x, f;
 
 #ifdef Z80_HANDLE_SELF_MODIFYING_CODE
 
-                                int     p, q;
+            int p, q;
 
-                                p = (pc - 2) & 0xffff;
-                                q = (pc - 1) & 0xffff;
+            p = (pc - 2) & 0xffff;
+            q = (pc - 1) & 0xffff;
 
 #endif
 
-                                d = opcode == OPCODE_INIR ? +1 : -1;
+            d = opcode == OPCODE_INIR ? +1 : -1;
 
-                                b = B;
-                                hl = HL;
+            b = B;
+            hl = HL;
 
-                                r -= 2;
-                                elapsed_cycles -= 8;
-                                for ( ; ; ) {
+            r -= 2;
+            elapsed_cycles -= 8;
+            for (;;) {
 
-                                        r += 2;
+                r += 2;
 
-                                        Z80_INPUT_BYTE(C, B, x);
-                                        Z80_WRITE_BYTE(hl, x);
+                Z80_INPUT_BYTE(C, B, x);
+                Z80_WRITE_BYTE(hl, x);
 
-                                        hl += d;
+                hl += d;
 
-                                        if (--b)
+                if (--b)
 
-                                                elapsed_cycles += 21;
+                    elapsed_cycles += 21;
 
-                                        else {
+                else {
 
-                                                f = Z80_Z_FLAG;
-                                                elapsed_cycles += 16;
-                                                break;
-
-                                        }
+                    f = Z80_Z_FLAG;
+                    elapsed_cycles += 16;
+                    break;
+                }
 
 #ifdef Z80_HANDLE_SELF_MODIFYING_CODE
 
-                                        if (((hl - d) & 0xffff) == p
-                                        || ((hl - d) & 0xffff) == q) {
+                if (((hl - d) & 0xffff) == p || ((hl - d) & 0xffff) == q) {
 
-                                                f = SZYX_FLAGS_TABLE[b];
-                                                pc -= 2;
-                                                break;
-
-                                        }
+                    f = SZYX_FLAGS_TABLE[b];
+                    pc -= 2;
+                    break;
+                }
 
 #endif
 
-                                        if (elapsed_cycles < number_cycles)
+                if (elapsed_cycles < number_cycles)
 
-                                                continue;
+                    continue;
 
-                                        else {
+                else {
 
-                                                f = SZYX_FLAGS_TABLE[b];
-                                                pc -= 2;
-                                                break;
+                    f = SZYX_FLAGS_TABLE[b];
+                    pc -= 2;
+                    break;
+                }
+            }
 
-                                        }
+            HL = hl;
+            B = b;
 
-                                }
+            f |= x >> (7 - Z80_N_FLAG_SHIFT);
+            x += (C + d) & 0xff;
+            f |= x & 0x0100 ? HC_FLAGS : 0;
+            f |= SZYXP_FLAGS_TABLE[(x & 0x07) ^ b] & Z80_P_FLAG;
+            F = f;
 
-                                HL = hl;
-                                B = b;
+            break;
+        }
 
-                                f |= x >> (7 - Z80_N_FLAG_SHIFT);
-                                x += (C + d) & 0xff;
-                                f |= x & 0x0100 ? HC_FLAGS : 0;
-                                f |= SZYXP_FLAGS_TABLE[(x & 0x07) ^ b]
-                                        & Z80_P_FLAG;
-                                F = f;
+        case OUT_N_A: {
 
-                                break;
+            int n;
 
-                        }
+            READ_N(n);
+            Z80_OUTPUT_BYTE(n, A, A);
 
-                        case OUT_N_A: {
+            elapsed_cycles += 4;
+            break;
+        }
 
-                                int     n;
+        case OUT_C_R: {
 
-                                READ_N(n);
-                                Z80_OUTPUT_BYTE(n, A, A);
+            int x;
 
-                                elapsed_cycles += 4;
-                                break;
+            x = Y(opcode) != INDIRECT_HL ? R(Y(opcode)) : 0;
+            Z80_OUTPUT_BYTE(C, B, x);
 
-                        }
+            elapsed_cycles += 4;
 
-                        case OUT_C_R: {
+            break;
+        }
 
-                                int     x;
+        case OUTI_OUTD: {
 
-                                x = Y(opcode) != INDIRECT_HL
-                                        ? R(Y(opcode))
-                                        : 0;
-                                Z80_OUTPUT_BYTE(C, B, x);
+            int x, f;
 
-                                elapsed_cycles += 4;
+            READ_BYTE(HL, x);
+            Z80_OUTPUT_BYTE(C, B, x);
 
-                                break;
+            HL += opcode == OPCODE_OUTI ? +1 : -1;
 
-                        }
+            f = SZYX_FLAGS_TABLE[--B & 0xff] | (x >> (7 - Z80_N_FLAG_SHIFT));
+            x += HL & 0xff;
+            f |= x & 0x0100 ? HC_FLAGS : 0;
+            f |= SZYXP_FLAGS_TABLE[(x & 0x07) ^ B] & Z80_P_FLAG;
+            F = f;
 
-                        case OUTI_OUTD: {
+            break;
+        }
 
-                                int     x, f;
+        case OTIR_OTDR: {
 
-                                READ_BYTE(HL, x);
-                                Z80_OUTPUT_BYTE(C, B, x);
+            int d, b, hl, x, f;
 
-                                HL += opcode == OPCODE_OUTI ? +1 : -1;
+            d = opcode == OPCODE_OTIR ? +1 : -1;
 
-                                f = SZYX_FLAGS_TABLE[--B & 0xff]
-                                        | (x >> (7 - Z80_N_FLAG_SHIFT));
-                                x += HL & 0xff;
-                                f |= x & 0x0100 ? HC_FLAGS : 0;
-                                f |= SZYXP_FLAGS_TABLE[(x & 0x07) ^ B]
-                                        & Z80_P_FLAG;
-                                F = f;
+            b = B;
+            hl = HL;
 
-                                break;
+            r -= 2;
+            elapsed_cycles -= 8;
+            for (;;) {
 
-                        }
+                r += 2;
 
-                        case OTIR_OTDR: {
+                Z80_READ_BYTE(hl, x);
+                Z80_OUTPUT_BYTE(C, B, x);
 
-                                int     d, b, hl, x, f;
+                hl += d;
+                if (--b)
 
-                                d = opcode == OPCODE_OTIR ? +1 : -1;
+                    elapsed_cycles += 21;
 
-                                b = B;
-                                hl = HL;
+                else {
 
-                                r -= 2;
-                                elapsed_cycles -= 8;
-                                for ( ; ; ) {
+                    f = Z80_Z_FLAG;
+                    elapsed_cycles += 16;
+                    break;
+                }
 
-                                        r += 2;
+                if (elapsed_cycles < number_cycles)
 
-                                        Z80_READ_BYTE(hl, x);
-                                        Z80_OUTPUT_BYTE(C, B, x);
+                    continue;
 
-                                        hl += d;
-                                        if (--b)
+                else {
 
-                                                elapsed_cycles += 21;
+                    f = SZYX_FLAGS_TABLE[b];
+                    pc -= 2;
+                    break;
+                }
+            }
 
-                                        else {
+            HL = hl;
+            B = b;
 
-                                                f = Z80_Z_FLAG;
-                                                elapsed_cycles += 16;
-                                                break;
+            f |= x >> (7 - Z80_N_FLAG_SHIFT);
+            x += hl & 0xff;
+            f |= x & 0x0100 ? HC_FLAGS : 0;
+            f |= SZYXP_FLAGS_TABLE[(x & 0x07) ^ b] & Z80_P_FLAG;
+            F = f;
 
-                                        }
+            break;
+        }
 
-                                        if (elapsed_cycles < number_cycles)
+            /* Prefix group. */
 
-                                                continue;
+        case CB_PREFIX: {
 
-                                        else {
+            /* Special handling if the 0xcb prefix is
+             * prefixed by a 0xdd or 0xfd prefix.
+             */
 
-                                                f = SZYX_FLAGS_TABLE[b];
-                                                pc -= 2;
-                                                break;
+            if (registers != state->register_table) {
 
-                                        }
+                r--;
 
-                                }
+                /* Indexed memory access routine will
+                 * correctly update pc.
+                 */
 
-                                HL = hl;
-                                B = b;
+                Z80_FETCH_BYTE(pc + 1, opcode);
 
-                                f |= x >> (7 - Z80_N_FLAG_SHIFT);
-                                x += hl & 0xff;
-                                f |= x & 0x0100 ? HC_FLAGS : 0;
-                                f |= SZYXP_FLAGS_TABLE[(x & 0x07) ^ b]
-                                        & Z80_P_FLAG;
-                                F = f;
+            } else {
 
-                                break;
+                Z80_FETCH_BYTE(pc, opcode);
+                pc++;
+            }
+            instruction = CB_INSTRUCTION_TABLE[opcode];
 
-                        }
+            goto emulate_next_instruction;
+        }
 
-                        /* Prefix group. */
+        case DD_PREFIX: {
 
-                        case CB_PREFIX: {
-
-                                /* Special handling if the 0xcb prefix is
-                                 * prefixed by a 0xdd or 0xfd prefix.
-                                 */
-
-                                if (registers != state->register_table) {
-
-                                        r--;
-
-                                        /* Indexed memory access routine will
-                                         * correctly update pc.
-                                         */
-
-                                        Z80_FETCH_BYTE(pc + 1, opcode);
-
-                                } else {
-
-                                        Z80_FETCH_BYTE(pc, opcode);
-                                        pc++;
-
-                                }
-                                instruction = CB_INSTRUCTION_TABLE[opcode];
-
-                                goto emulate_next_instruction;
-
-                        }
-
-                        case DD_PREFIX: {
-
-                                registers = state->dd_register_table;
+            registers = state->dd_register_table;
 
 #ifdef Z80_PREFIX_FAILSAFE
 
-                                /* Ensure that at least number_cycles cycles
-                                 * are executed.
-                                 */
+            /* Ensure that at least number_cycles cycles
+             * are executed.
+             */
 
-                                if (elapsed_cycles < number_cycles) {
+            if (elapsed_cycles < number_cycles) {
 
-                                        Z80_FETCH_BYTE(pc, opcode);
-                                        pc++;
-                                        goto emulate_next_opcode;
+                Z80_FETCH_BYTE(pc, opcode);
+                pc++;
+                goto emulate_next_opcode;
 
-                                } else {
+            } else {
 
-					state->status = Z80_STATUS_PREFIX;
-                                        pc--;
-                                        elapsed_cycles -= 4;
-                                        //goto stop_emulation;
-                                        break;
-
-                                }
+                state->status = Z80_STATUS_PREFIX;
+                pc--;
+                elapsed_cycles -= 4;
+                // goto stop_emulation;
+                break;
+            }
 
 #else
 
-                                Z80_FETCH_BYTE(pc, opcode);
-                                pc++;
-                                goto emulate_next_opcode;
+            Z80_FETCH_BYTE(pc, opcode);
+            pc++;
+            goto emulate_next_opcode;
 
 #endif
+        }
 
-                        }
+        case FD_PREFIX: {
 
-                        case FD_PREFIX: {
-
-                                registers = state->fd_register_table;
+            registers = state->fd_register_table;
 
 #ifdef Z80_PREFIX_FAILSAFE
 
-                                if (elapsed_cycles < number_cycles) {
+            if (elapsed_cycles < number_cycles) {
 
-                                        Z80_FETCH_BYTE(pc, opcode);
-                                        pc++;
-                                        goto emulate_next_opcode;
+                Z80_FETCH_BYTE(pc, opcode);
+                pc++;
+                goto emulate_next_opcode;
 
-                                } else {
+            } else {
 
-					state->status = Z80_STATUS_PREFIX;
-                                        pc--;
-                                        elapsed_cycles -= 4;
-                                        //goto stop_emulation;
-                                        break;
-
-                                }
+                state->status = Z80_STATUS_PREFIX;
+                pc--;
+                elapsed_cycles -= 4;
+                // goto stop_emulation;
+                break;
+            }
 
 #else
 
-                                Z80_FETCH_BYTE(pc, opcode);
-                                pc++;
-                                goto emulate_next_opcode;
+            Z80_FETCH_BYTE(pc, opcode);
+            pc++;
+            goto emulate_next_opcode;
 
 #endif
+        }
 
-                        }
+        case ED_PREFIX: {
 
-                        case ED_PREFIX: {
+            registers = state->register_table;
+            Z80_FETCH_BYTE(pc, opcode);
+            pc++;
+            instruction = ED_INSTRUCTION_TABLE[opcode];
+            // Serial.println(instruction);
+            goto emulate_next_instruction;
+        }
 
-                                registers = state->register_table;
-                                Z80_FETCH_BYTE(pc, opcode);
-                                pc++;
-                                instruction = ED_INSTRUCTION_TABLE[opcode];
-                                //Serial.println(instruction);
-                                goto emulate_next_instruction;
+            /* Special/pseudo instruction group. */
 
-                        }
-
-                        /* Special/pseudo instruction group. */
-
-                        case ED_UNDEFINED: {
+        case ED_UNDEFINED: {
 
 #ifdef Z80_CATCH_ED_UNDEFINED
 
-                                state->status = Z80_STATUS_FLAG_ED_UNDEFINED;
-                                pc -= 2;
-                                goto stop_emulation;
+            state->status = Z80_STATUS_FLAG_ED_UNDEFINED;
+            pc -= 2;
+            goto stop_emulation;
 
 #else
-                                Serial.println("UNDEFINED ED");
-                                elapsed_cycles +=4;
-                                break;
+            Serial.println("UNDEFINED ED");
+            elapsed_cycles += 4;
+            break;
 
 #endif
-
-                        }
-
-                }
-                if (elapsed_cycles >= number_cycles)
-
-                        goto stop_emulation;
-
         }
+        }
+        if (elapsed_cycles >= number_cycles)
+
+            goto stop_emulation;
+    }
 
 stop_emulation:
 
-        state->r = (state->r & 0x80) | (r & 0x7f);
-        state->pc = pc & 0xffff;
-        return elapsed_cycles;
+    state->r = (state->r & 0x80) | (r & 0x7f);
+    state->pc = pc & 0xffff;
+    return elapsed_cycles;
 }
