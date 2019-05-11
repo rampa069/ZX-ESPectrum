@@ -6,6 +6,7 @@
  * This code is free, do whatever you want with it.
  */
 #include "Arduino.h"
+#include "Emulator/Memory.h"
 #include "Emulator/z80emu/z80emu.h"
 #include "Emulator/z80user.h"
 #include "Emulator/z80emu/instructions.h"
@@ -77,7 +78,7 @@ static const int OVERFLOW_TABLE[4] = {
 
 };
 
-unsigned int ts1;
+unsigned long ts1;
 
 static int	emulate (Z80_STATE * state,
 			int opcode,
@@ -275,7 +276,7 @@ start_emulation:
 
 
                 registers = state->register_table;
-                //if (opcode == 0xd3)
+                //if (opcode != 0xdb)
                 delayMicroseconds(2);
 
 emulate_next_opcode:
@@ -439,7 +440,7 @@ emulate_next_instruction:
 
                                 AF = (a << 8) | f;
 
-                                elapsed_cycles++;
+                                elapsed_cycles+=9;
 
                                 break;
 
@@ -458,7 +459,7 @@ emulate_next_instruction:
 
                                 }
 
-                                elapsed_cycles++;
+                                elapsed_cycles+=9;
 
                                 break;
 
@@ -524,7 +525,7 @@ emulate_next_instruction:
                         case PUSH_SS: {
 
                                 PUSH(SS(P(opcode)));
-                                elapsed_cycles++;
+                                //elapsed_cycles++;
                                 break;
 
                         }
@@ -639,7 +640,10 @@ emulate_next_instruction:
 
                                         if (--bc)
 
-                                                elapsed_cycles += 21;
+                                                {
+                                                  //elapsed_cycles += 21;
+
+                                                }
 
                                         else {
 
@@ -1026,7 +1030,7 @@ emulate_next_instruction:
                                         INC(x);
                                         WRITE_BYTE(HL, x);
 
-                                        elapsed_cycles++;
+                                        elapsed_cycles+=11;
 
                                 } else {
 
@@ -1062,7 +1066,7 @@ emulate_next_instruction:
                                         DEC(x);
                                         WRITE_BYTE(HL, x);
 
-                                        elapsed_cycles++;
+                                        elapsed_cycles+=11;
 
                                 } else {
 
@@ -1200,7 +1204,10 @@ emulate_next_instruction:
 #ifdef Z80_CATCH_HALT
 
                                 state->status = Z80_STATUS_FLAG_HALT;
-                                delay(20);
+                                //int delay_halt=millis()-ts1;
+                                //Serial.println(elapsed_cycles);
+                                elapsed_cycles+=4;
+
 
 #else
 
@@ -1216,7 +1223,8 @@ emulate_next_instruction:
 
 #endif
 
-				goto stop_emulation;
+				//goto stop_emulation;
+        break;
 
                         }
 
@@ -1503,7 +1511,7 @@ emulate_next_instruction:
                                         RLC(x);
                                         WRITE_BYTE(HL, x);
 
-                                        elapsed_cycles++;
+                                        elapsed_cycles+=15;
 
                                 } else {
 
@@ -1547,7 +1555,7 @@ emulate_next_instruction:
                                         RL(x);
                                         WRITE_BYTE(HL, x);
 
-                                        elapsed_cycles++;
+                                        elapsed_cycles+=15;
 
                                 } else {
 
@@ -1590,7 +1598,7 @@ emulate_next_instruction:
                                         RRC(x);
                                         WRITE_BYTE(HL, x);
 
-                                        elapsed_cycles++;
+                                        elapsed_cycles+=15;
 
                                 } else {
 
@@ -1633,7 +1641,7 @@ emulate_next_instruction:
                                         RR_INSTRUCTION(x);
                                         WRITE_BYTE(HL, x);
 
-                                        elapsed_cycles++;
+                                        elapsed_cycles+=15;
 
                                 } else {
 
@@ -1676,7 +1684,7 @@ emulate_next_instruction:
                                         SLA(x);
                                         WRITE_BYTE(HL, x);
 
-                                        elapsed_cycles++;
+                                        elapsed_cycles+=15;
 
                                 } else {
 
@@ -1719,7 +1727,7 @@ emulate_next_instruction:
                                         SLL(x);
                                         WRITE_BYTE(HL, x);
 
-                                        elapsed_cycles++;
+                                        elapsed_cycles+=15;
 
                                 } else {
 
@@ -1762,7 +1770,7 @@ emulate_next_instruction:
                                         SRA(x);
                                         WRITE_BYTE(HL, x);
 
-                                        elapsed_cycles++;
+                                        elapsed_cycles+=15;
 
                                 } else {
 
@@ -1805,7 +1813,7 @@ emulate_next_instruction:
                                         SRL(x);
                                         WRITE_BYTE(HL, x);
 
-                                        elapsed_cycles++;
+                                        elapsed_cycles+=15;
 
                                 } else {
 
@@ -1885,7 +1893,7 @@ emulate_next_instruction:
 
                                         d = HL;
 
-                                        elapsed_cycles++;
+                                        elapsed_cycles+=12;
 
                                 } else {
 
@@ -1933,7 +1941,7 @@ emulate_next_instruction:
                                         x |= 1 << Y(opcode);
                                         WRITE_BYTE(HL, x);
 
-                                        elapsed_cycles++;
+                                        elapsed_cycles+= 15;
 
                                 } else {
 
@@ -1976,7 +1984,7 @@ emulate_next_instruction:
                                         x &= ~(1 << Y(opcode));
                                         WRITE_BYTE(HL, x);
 
-                                        elapsed_cycles++;
+                                        elapsed_cycles+=15;
 
                                 } else {
 
@@ -2130,7 +2138,7 @@ emulate_next_instruction:
                                 PUSH(pc);
                                 pc = nn;
 
-                                elapsed_cycles++;
+                                elapsed_cycles+=10;
 
                                 break;
 
@@ -2146,7 +2154,7 @@ emulate_next_instruction:
                                         PUSH(pc);
                                         pc = nn;
 
-                                        elapsed_cycles++;
+                                        elapsed_cycles+=10;
 
                                 } else {
 
@@ -2179,7 +2187,7 @@ emulate_next_instruction:
                                         POP(pc);
 
                                 }
-                                elapsed_cycles++;
+                                ;
                                 break;
 
                         }
@@ -2194,17 +2202,23 @@ emulate_next_instruction:
                                 state->status = opcode == OPCODE_RETI
                                         ? Z80_STATUS_FLAG_RETI
                                         : Z80_STATUS_FLAG_RETN;
-                                goto stop_emulation;
+                                        elapsed_cycles +=4;
+                                        //delay.println(elapsed_cycles);
+
+                                        break;
+                                //goto stop_emulation;
 
 #elif defined(Z80_CATCH_RETI)
 
                                 state->status = Z80_STATUS_FLAG_RETI;
-                                goto stop_emulation;
+                                //goto stop_emulation;
+                                break;
 
 #elif defined(Z80_CATCH_RETN)
 
                                 state->status = Z80_STATUS_FLAG_RETN;
-                                goto stop_emulation;
+                                //goto stop_emulation;
+                                break;
 
 #else
 
@@ -2218,7 +2232,7 @@ emulate_next_instruction:
 
                                 PUSH(pc);
                                 pc = RST_TABLE[Y(opcode)];
-                                elapsed_cycles++;
+                                elapsed_cycles+=11;
                                 break;
 
                         }
@@ -2233,7 +2247,7 @@ emulate_next_instruction:
                                 Z80_INPUT_BYTE(n, A, inputResult);
                                 A = inputResult;
 
-                                elapsed_cycles += 4;
+                                elapsed_cycles += 12;
 
                                 break;
 
@@ -2243,13 +2257,18 @@ emulate_next_instruction:
 
                                 int     x;
                                 Z80_INPUT_BYTE(C, B, x);
+
+
+                                  delay(2);
+
                                 if (Y(opcode) != INDIRECT_HL)
 
                                         R(Y(opcode)) = x;
 
                                 F = SZYXP_FLAGS_TABLE[x] | (F & Z80_C_FLAG);
 
-                                elapsed_cycles += 4;
+                                //elapsed_cycles += 12;
+                                elapsed_cycles+=6000;
 
                                 break;
 
@@ -2533,7 +2552,8 @@ emulate_next_instruction:
 					state->status = Z80_STATUS_PREFIX;
                                         pc--;
                                         elapsed_cycles -= 4;
-                                        goto stop_emulation;
+                                        //goto stop_emulation;
+                                        break;
 
                                 }
 
@@ -2564,7 +2584,8 @@ emulate_next_instruction:
 					state->status = Z80_STATUS_PREFIX;
                                         pc--;
                                         elapsed_cycles -= 4;
-                                        goto stop_emulation;
+                                        //goto stop_emulation;
+                                        break;
 
                                 }
 
@@ -2584,7 +2605,7 @@ emulate_next_instruction:
                                 Z80_FETCH_BYTE(pc, opcode);
                                 pc++;
                                 instruction = ED_INSTRUCTION_TABLE[opcode];
-
+                                //Serial.println(instruction);
                                 goto emulate_next_instruction;
 
                         }
@@ -2600,7 +2621,8 @@ emulate_next_instruction:
                                 goto stop_emulation;
 
 #else
-
+                                Serial.println("UNDEFINED ED");
+                                elapsed_cycles +=4;
                                 break;
 
 #endif
@@ -2608,7 +2630,6 @@ emulate_next_instruction:
                         }
 
                 }
-
                 if (elapsed_cycles >= number_cycles)
 
                         goto stop_emulation;

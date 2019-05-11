@@ -55,7 +55,6 @@ volatile byte borderTemp = 7;
 volatile byte flashing = 0;
 volatile boolean xULAStop = false;
 volatile boolean xULAStopped = false;
-volatile boolean writeScreen = false;
 volatile byte tick;
 const int SAMPLING_RATE = 44100;
 const int BUFFER_SIZE = 2000;
@@ -250,6 +249,7 @@ void videoTask(void *parameter) {
             }
         }
         tick = 1;
+        //Z80Interrupt(&_zxCpu, 0xff, &_zxContext);
         ts2 = millis();
 
         TIMERG0.wdt_wprotect = TIMG_WDT_WKEY_VALUE;
@@ -379,18 +379,18 @@ void do_keyboard() {
  +-------------+
  */
 void loop() {
-
-    // Serial.println("Loop");
+    unsigned long ts1,ts2;
     do_keyboard();
     do_OSD();
-    //Z80Emulate(&_zxCpu, _next_total - _total, &_zxContext);
+    ts1=millis();
     zx_loop();
+    ts2=millis();
     if(halfsec) {
             flashing = ~flashing;
     }
     sp_int_ctr++;
     halfsec = !(sp_int_ctr % 25);
-
+    Serial.printf("PC:  %d time: %d\n",_zxCpu.pc, ts2-ts1);
 
     TIMERG0.wdt_wprotect = TIMG_WDT_WKEY_VALUE;
     TIMERG0.wdt_feed = 1;
