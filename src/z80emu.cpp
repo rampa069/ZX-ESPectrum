@@ -6,6 +6,7 @@
  * This code is free, do whatever you want with it.
  */
 #include "Arduino.h"
+#include "Emulator/Memory.h"
 #include "Emulator/z80emu/z80emu.h"
 #include "Emulator/z80user.h"
 #include "Emulator/z80emu/instructions.h"
@@ -276,7 +277,7 @@ start_emulation:
 
                 registers = state->register_table;
                 //if (opcode != 0xdb)
-                delayMicroseconds(1);
+                delayMicroseconds(2);
 
 emulate_next_opcode:
 
@@ -639,7 +640,10 @@ emulate_next_instruction:
 
                                         if (--bc)
 
-                                                elapsed_cycles += 21;
+                                                {
+                                                  //elapsed_cycles += 21;
+
+                                                }
 
                                         else {
 
@@ -1200,7 +1204,7 @@ emulate_next_instruction:
 #ifdef Z80_CATCH_HALT
 
                                 state->status = Z80_STATUS_FLAG_HALT;
-                                int delay_halt=millis()-ts1;
+                                //int delay_halt=millis()-ts1;
                                 //Serial.println(elapsed_cycles);
                                 elapsed_cycles+=4;
 
@@ -2253,14 +2257,18 @@ emulate_next_instruction:
 
                                 int     x;
                                 Z80_INPUT_BYTE(C, B, x);
-                                delay(2);
+
+
+                                  delay(2);
+
                                 if (Y(opcode) != INDIRECT_HL)
 
                                         R(Y(opcode)) = x;
 
                                 F = SZYXP_FLAGS_TABLE[x] | (F & Z80_C_FLAG);
 
-                                elapsed_cycles += 12;
+                                //elapsed_cycles += 12;
+                                elapsed_cycles+=6000;
 
                                 break;
 

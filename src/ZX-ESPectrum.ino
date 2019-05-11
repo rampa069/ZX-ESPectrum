@@ -55,7 +55,6 @@ volatile byte borderTemp = 7;
 volatile byte flashing = 0;
 volatile boolean xULAStop = false;
 volatile boolean xULAStopped = false;
-volatile boolean writeScreen = false;
 volatile byte tick;
 const int SAMPLING_RATE = 44100;
 const int BUFFER_SIZE = 2000;
@@ -391,7 +390,7 @@ void loop() {
     }
     sp_int_ctr++;
     halfsec = !(sp_int_ctr % 25);
-    //Serial.println(ts2-ts1);
+    Serial.printf("PC:  %d time: %d\n",_zxCpu.pc, ts2-ts1);
 
     TIMERG0.wdt_wprotect = TIMG_WDT_WKEY_VALUE;
     TIMERG0.wdt_feed = 1;

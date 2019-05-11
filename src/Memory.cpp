@@ -23,6 +23,7 @@ volatile byte bank_latch = 0;
 volatile byte video_latch = 0;
 volatile byte rom_latch = 0;
 volatile byte paging_lock = 0;
+volatile boolean writeScreen;
 byte sp3_mode = 0;
 byte sp3_rom = 0;
 byte rom_in_use;

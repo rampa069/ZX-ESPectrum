@@ -67,7 +67,7 @@
  * these pathological cases.
  */
 
-//#define Z80_HANDLE_SELF_MODIFYING_CODE
+#define Z80_HANDLE_SELF_MODIFYING_CODE
 
 /* For interrupt mode 2, bit 0 of the 16-bit address to the interrupt vector
  * can be masked to zero. Some documentation states that this bit is forced to

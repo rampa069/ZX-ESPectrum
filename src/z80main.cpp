@@ -18,7 +18,7 @@ Z80_STATE _zxCpu;
 extern byte borderTemp;
 extern byte z80ports_in[128];
 extern byte tick;
-extern boolean writeScreen;
+
 
 CONTEXT _zxContext;
 static uint16_t _attributeCount;
