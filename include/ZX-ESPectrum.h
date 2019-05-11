@@ -15,4 +15,3 @@ extern byte oldKeymap[256];
 // Declared methods
 unsigned int zxcolor(int c, int bright);
 void do_keyboard();
-void do_OSD();

@@ -33,6 +33,7 @@ unsigned short osdInsideY();
 void osdHome();
 void osdAt(byte row, byte col);
 void drawOSD();
+void do_OSD();
 // Error
 void errorPanel(String errormsg);
 void errorHalt(String errormsg);
