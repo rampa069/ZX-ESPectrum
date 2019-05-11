@@ -380,18 +380,18 @@ void do_keyboard() {
  +-------------+
  */
 void loop() {
-
-    // Serial.println("Loop");
+    unsigned long ts1,ts2;
     do_keyboard();
     do_OSD();
-    //Z80Emulate(&_zxCpu, _next_total - _total, &_zxContext);
+    ts1=millis();
     zx_loop();
+    ts2=millis();
     if(halfsec) {
             flashing = ~flashing;
     }
     sp_int_ctr++;
     halfsec = !(sp_int_ctr % 25);
-
+    //Serial.println(ts2-ts1);
 
     TIMERG0.wdt_wprotect = TIMG_WDT_WKEY_VALUE;
     TIMERG0.wdt_feed = 1;

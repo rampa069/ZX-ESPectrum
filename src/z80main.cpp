@@ -69,21 +69,10 @@ int32_t zx_loop() {
 
     ts1 = millis();
     //_total += Z80Emulate(&_zxCpu, _next_total - _total, &_zxContext);
-    Z80Emulate(&_zxCpu, CYCLES_PER_STEP, &_zxContext);
+    _total=Z80Emulate(&_zxCpu, CYCLES_PER_STEP, &_zxContext);
     Z80Interrupt(&_zxCpu, 0xff, &_zxContext);
-    ts2 = millis();
+    //Serial.println(_total);
 
-    //Serial.println(_zxCpu.status);
-    //if (_total >= _next_total) {
-    //    _next_total += CYCLES_PER_STEP;
-
-
-
-    //     Z80Interrupt(&_zxCpu, 0xff, &_zxContext);
-         //if ((ts2 - ts1) < 20)
-         //    delay(20 - (ts2 - ts1));
-
-    //}
     return result;
 }
 
@@ -203,8 +192,8 @@ extern "C" void writeword(uint16_t addr, uint16_t data) {
 
 extern "C" uint8_t input(uint8_t portLow, uint8_t portHigh) {
     int16_t kbdarrno = 0;
-    delay(3);
-    Serial.print ("IN ");
+    //delay(2);
+    //Serial.print ("IN ");
     if (portLow == 0xFE) {
         // Keyboard
 
