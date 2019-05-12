@@ -375,6 +375,7 @@ void do_keyboard() {
    +-------------+
  */
 void loop() {
+    static byte last_ts = 0;
     unsigned long ts1, ts2;
     do_keyboard();
     do_OSD();
@@ -386,7 +387,10 @@ void loop() {
     }
     sp_int_ctr++;
     halfsec = !(sp_int_ctr % 25);
-    Serial.printf("PC:  %d time: %d\n", _zxCpu.pc, ts2 - ts1);
+    if ((ts2 - ts1) != last_ts) {
+        Serial.printf("PC:  %d time: %d\n", _zxCpu.pc, ts2 - ts1);
+        last_ts = ts2 - ts1;
+    }
 
     TIMERG0.wdt_wprotect = TIMG_WDT_WKEY_VALUE;
     TIMERG0.wdt_feed = 1;
