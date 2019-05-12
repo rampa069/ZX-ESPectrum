@@ -201,6 +201,7 @@ void videoTask(void *parameter) {
             } else {
                 for (int bor = 32; bor < 52; bor++) {
                     vga.dotFast(bor, vga_lin, zxcolor(borderTemp, 0));
+                    vga.dotFast(bor + 276, vga_lin, zxcolor(borderTemp, 0));
                 }
 
                 for (ff = 0; ff < 32; ff++) // foreach byte in line
@@ -238,20 +239,17 @@ void videoTask(void *parameter) {
                             vga.dotFast(zx_vidcalc + 52, calc_y + 3, zx_back_color);
                         writeScreen = false;
                     }
-                    for (int bor = 32; bor < 52; bor++) {
-                        vga.dotFast(bor + 276, vga_lin, zxcolor(borderTemp, 0));
-                    }
+
                 }
             }
         }
         tick = 1;
-        // Z80Interrupt(&_zxCpu, 0xff, &_zxContext);
         ts2 = millis();
 
-        TIMERG0.wdt_wprotect = TIMG_WDT_WKEY_VALUE;
-        TIMERG0.wdt_feed = 1;
-        TIMERG0.wdt_wprotect = 0;
-        // Serial.printf("ULA: %d\n", ts2 - ts1);
+        //TIMERG0.wdt_wprotect = TIMG_WDT_WKEY_VALUE;
+        //TIMERG0.wdt_feed = 1;
+        //TIMERG0.wdt_wprotect = 0;
+        //Serial.printf("ULA: %d\n", ts2 - ts1);
         if (ts2 - ts1 < 20) {
             delay(20 - (ts2 - ts1));
         }
