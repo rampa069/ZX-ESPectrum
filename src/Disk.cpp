@@ -22,6 +22,9 @@ String cfg_ram_file = NO_RAM_FILE;
 String cfg_rom_set = "SINCLAIR";
 String cfg_sna_file_list;
 boolean cfg_slog_on = true;
+boolean cfg_wconn = false;
+String cfg_wssid = "none";
+String cfg_wpass = "none";
 
 void IRAM_ATTR mount_spiffs() {
     if (!SPIFFS.begin())
@@ -335,19 +338,31 @@ void config_read() {
                     Serial.end();
             } else if (line.startsWith("ram:")) {
                 cfg_ram_file = line.substring(line.lastIndexOf(':') + 1);
-                Serial.printf("  + ram:%s\n", cfg_ram_file.c_str());
+                Serial.printf("  + ram: '%s'\n", cfg_ram_file.c_str());
             } else if (line.startsWith("arch:")) {
                 cfg_arch = line.substring(line.lastIndexOf(':') + 1);
-                Serial.printf("  + arch:%s\n", cfg_arch.c_str());
+                Serial.printf("  + arch: '%s'\n", cfg_arch.c_str());
             } else if (line.startsWith("romset:")) {
                 cfg_rom_set = line.substring(line.lastIndexOf(':') + 1);
-                Serial.printf("  + romset:%s\n", cfg_rom_set.c_str());
+                Serial.printf("  + romset: '%s'\n", cfg_rom_set.c_str());
             } else if (line.startsWith("demo_on:")) {
                 cfg_demo_mode_on = (line.substring(line.lastIndexOf(':') + 1) == "true");
-                Serial.printf("  + demo_on:%s\n", (cfg_demo_mode_on ? "true" : "false"));
+                Serial.printf("  + demo_on: '%s'\n", (cfg_demo_mode_on ? "true" : "false"));
             } else if (line.startsWith("demo_every:")) {
-                // cfg_demo_every = line.substring(line.lastIndexOf(':') + 1).toInt();
-                Serial.printf("  + demo_every:%u\n", cfg_demo_every);
+                cfg_demo_every = line.substring(line.lastIndexOf(':') + 1).toInt();
+                Serial.printf("  + demo_every: '%u'\n", cfg_demo_every);
+            } else if (line.startsWith("wconn:")) {
+                cfg_wconn = (line.substring(line.lastIndexOf(':') + 1) == "true");
+                Serial.printf("  + wconn: '%s'\n", (cfg_wconn ? "true" : "false"));
+            } else if (line.startsWith("wssid:")) {
+                cfg_wssid = line.substring(line.lastIndexOf(':') + 1);
+                Serial.printf("  + wssid: '%s'\n", cfg_wssid.c_str());
+            } else if (line.startsWith("wpass:")) {
+                cfg_wssid = line.substring(line.lastIndexOf(':') + 1);
+                Serial.printf("  + wpass: '%s'\n", cfg_wssid.c_str());
+            } else if (line.startsWith("slog:")) {
+                cfg_slog_on = (line.substring(line.lastIndexOf(':') + 1) == "true");
+                Serial.printf("  + slog_on: '%s'\n", (cfg_slog_on ? "true" : "false"));
             }
             line = "";
         } else {
@@ -365,16 +380,31 @@ void config_save() {
     KB_INT_STOP;
     Serial.printf("Saving config file '%s':\n", DISK_BOOT_FILENAME);
     File f = SPIFFS.open(DISK_BOOT_FILENAME, FILE_WRITE);
+    // Architecture
     Serial.printf("  + arch:%s\n", cfg_arch.c_str());
     f.printf("arch:%s\n", cfg_arch.c_str());
+    // ROM set
     Serial.printf("  + romset:%s\n", cfg_rom_set.c_str());
     f.printf("romset:%s\n", cfg_rom_set.c_str());
+    // RAM SNA
     Serial.printf("  + ram:%s\n", cfg_ram_file.c_str());
     f.printf("ram:%s\n", cfg_ram_file.c_str());
+    // Demo ON/OFF
     Serial.printf("  + demo_on:%s\n", (cfg_demo_mode_on ? "true" : "false"));
     f.printf("demo_on:%s\n", (cfg_demo_mode_on ? "true" : "false"));
+    // Demo time
     Serial.printf("  + demo_every:%u\n", cfg_demo_every);
     f.printf("demo_every:%u\n", cfg_demo_every);
+    // WiFi ON/OFF
+    Serial.printf("  + wconn:%s\n", (cfg_wconn ? "true" : "false"));
+    f.printf("wconn:%s\n", (cfg_wconn ? "true" : "false"));
+    // WiFi SSID
+    Serial.printf("  + wssid:%s\n", cfg_wssid.c_str());
+    f.printf("wssid:%s\n", cfg_wssid.c_str());
+    // WiFi Password
+    Serial.printf("  + wpass:%s\n", cfg_wpass.c_str());
+    f.printf("wpass:%s\n", cfg_wpass.c_str());
+    // Serial logging
     Serial.printf("  + slog:%s\n", (cfg_slog_on ? "true" : "false"));
     f.printf("slog:%s\n", (cfg_slog_on ? "true" : "false"));
     f.close();

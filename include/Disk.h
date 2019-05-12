@@ -16,6 +16,9 @@ extern String cfg_ram_file;
 extern String cfg_rom_set;
 extern String cfg_sna_file_list;
 extern boolean cfg_slog_on;
+extern boolean cfg_wconn;
+extern String cfg_wssid;
+extern String cfg_wpass;
 
 // Declared methods
 void IRAM_ATTR mount_spiffs();

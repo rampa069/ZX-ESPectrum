@@ -12,6 +12,9 @@
 #define ULA_ON "ULA ON"
 #define ULA_OFF "ULA OFF"
 
+// WiFi
+#define MSG_WIFI_CONN_BEGIN "Connecting to WiFi"
+
 // Error
 #define ERROR_TITLE "  !!!   ERROR - CLIVE MEDITATION   !!!  "
 #define ERROR_BOTTOM "  Sir Clive is smoking in the Rolls...  "

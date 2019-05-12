@@ -19,6 +19,7 @@
 #include "def/files.h"
 #include "def/hardware.h"
 #include "def/msg.h"
+#include "net.h"
 
 #include "driver/timer.h"
 #include "soc/timer_group_struct.h"
@@ -166,6 +167,9 @@ void setup() {
     if ((String)cfg_ram_file != (String)NO_RAM_FILE) {
         load_ram("/sna/" + cfg_ram_file);
     }
+
+    // wifiConn();
+
     Serial.println("End of setup");
 }
 
@@ -386,7 +390,7 @@ void loop() {
     }
     sp_int_ctr++;
     halfsec = !(sp_int_ctr % 25);
-    Serial.printf("PC:  %d time: %d\n", _zxCpu.pc, ts2 - ts1);
+    // Serial.printf("PC:  %d time: %d\n", _zxCpu.pc, ts2 - ts1);
 
     TIMERG0.wdt_wprotect = TIMG_WDT_WKEY_VALUE;
     TIMERG0.wdt_feed = 1;
