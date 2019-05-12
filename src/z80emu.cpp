@@ -572,12 +572,12 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
                 if (--bc)
 
                 {
-                     //elapsed_cycles += 21;
+                     elapsed_cycles += 17;
                 }
 
                 else {
 
-                    elapsed_cycles += 16;
+                    elapsed_cycles += 12;
                     break;
                 }
 
@@ -827,7 +827,7 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
 
             READ_N(n);
             AND(n);
-            elapsed_cycles +=7;
+            elapsed_cycles +=3;
 
             break;
         }
@@ -1303,6 +1303,7 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
 
             A = (A << 1) | (A >> 7);
             F = (F & SZPV_FLAGS) | (A & (YX_FLAGS | Z80_C_FLAG));
+            elapsed_cycles +=4;
             break;
         }
 
@@ -1322,7 +1323,7 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
                 | (A >> 7);
             A = a | (F & Z80_C_FLAG);
             F = f;
-
+            elapsed_cycles +=4;
             break;
         }
 
@@ -1341,7 +1342,7 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
 #endif
 
                 | c;
-
+            elapsed_cycles +=4;
             break;
         }
 
@@ -1360,13 +1361,14 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
 #endif
 
                 | c;
-
+                elapsed_cycles +=4;
             break;
         }
 
         case RLC_R: {
 
             RLC(R(Z(opcode)));
+            elapsed_cycles +=4;
             break;
         }
 
@@ -1408,6 +1410,7 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
         case RL_R: {
 
             RL(R(Z(opcode)));
+            elapsed_cycles +=4;
             break;
         }
 
@@ -1448,6 +1451,7 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
         case RRC_R: {
 
             RRC(R(Z(opcode)));
+            elapsed_cycles +=4;
             break;
         }
 
@@ -1488,6 +1492,7 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
         case RR_R: {
 
             RR_INSTRUCTION(R(Z(opcode)));
+            elapsed_cycles +=4;
             break;
         }
 
@@ -1528,6 +1533,7 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
         case SLA_R: {
 
             SLA(R(Z(opcode)));
+            elapsed_cycles +=4;
             break;
         }
 
@@ -1568,6 +1574,7 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
         case SLL_R: {
 
             SLL(R(Z(opcode)));
+            elapsed_cycles +=4;
             break;
         }
 
@@ -1608,6 +1615,7 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
         case SRA_R: {
 
             SRA(R(Z(opcode)));
+            elapsed_cycles +=4;
             break;
         }
 
@@ -1648,6 +1656,7 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
         case SRL_R: {
 
             SRL(R(Z(opcode)));
+            elapsed_cycles +=4;
             break;
         }
 
@@ -2417,4 +2426,25 @@ stop_emulation:
     state->r = (state->r & 0x80) | (r & 0x7f);
     state->pc = pc & 0xffff;
     return elapsed_cycles;
+}
+
+unsigned char delay_contention(word address, unsigned int tstates)
+{
+  int modulo;
+
+  if (tstates < 14335 || tstates > 14463 || address < 0x4000 || address > 0x7fff)
+    return 0;
+
+  modulo = tstates % 8;
+
+  switch (modulo)
+  {
+   case 0: return 6; break;
+   case 1: return 5; break;
+   case 2: return 4; break;
+   case 3: return 3; break;
+   case 4: return 2; break;
+   case 5: return 1; break;
+   default: return 0; break;
+  }
 }
