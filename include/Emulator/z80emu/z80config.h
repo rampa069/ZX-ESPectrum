@@ -60,7 +60,7 @@
  * account for memory wait states on code read.
  */
 
-/* #define Z80_FALSE_CONDITION_FETCH */
+#define Z80_FALSE_CONDITION_FETCH */
 
 /* It may be possible to overwrite the opcode of the currently executing LDIR,
  * LDDR, INIR, or OTDR instruction. Define this macro if you need to handle
