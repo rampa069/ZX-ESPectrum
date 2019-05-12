@@ -410,6 +410,7 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
         case LD_RR_NN: {
 
             READ_NN(RR(P(opcode)));
+            elapsed_cycles += 6;
             break;
         }
 
@@ -419,6 +420,7 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
 
             READ_NN(nn);
             READ_WORD(nn, HL_IX_IY);
+            elapsed_cycles += 12;
             break;
         }
 
@@ -428,6 +430,7 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
 
             READ_NN(nn);
             READ_WORD(nn, RR(P(opcode)));
+            elapsed_cycles += 26;
             break;
         }
 
@@ -2052,7 +2055,7 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
             Z80_INPUT_BYTE(n, A, inputResult);
             A = inputResult;
 
-            elapsed_cycles += 12;
+            elapsed_cycles += 7;
 
             break;
         }
