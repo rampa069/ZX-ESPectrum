@@ -73,18 +73,18 @@ void setup() {
     // Turn off peripherals to gain memory (?do they release properly)
     esp_bt_controller_deinit();
     esp_bt_controller_mem_release(ESP_BT_MODE_BTDM);
-    // esp_wifi_set_mode(WIFI_MODE_NULL);
 
     Serial.begin(115200);
     if (cfg_slog_on) {
         Serial.println(MSG_VGA_INIT);
     }
 
-#ifdef COLOUR_8
-    vga.init(vga.MODE360x200, redPin, greenPin, bluePin, hsyncPin, vsyncPin);
-#endif
-
     Serial.printf("HEAP BEGIN %d\n", ESP.getFreeHeap());
+
+    mount_spiffs();
+    config_read();
+    wifiConn();
+    Serial.printf("HEAP AFTER WIFI %d\n", ESP.getFreeHeap());
 
 #ifdef BOARD_HAS_PSRAM
     rom0 = (byte *)ps_malloc(16384);
@@ -128,9 +128,6 @@ void setup() {
 
     vga.clear(0);
 
-    mount_spiffs();
-    config_read();
-
     pinMode(SPEAKER_PIN, OUTPUT);
     pinMode(EAR_PIN, INPUT);
     pinMode(MIC_PIN, OUTPUT);
@@ -167,8 +164,6 @@ void setup() {
     if ((String)cfg_ram_file != (String)NO_RAM_FILE) {
         load_ram("/sna/" + cfg_ram_file);
     }
-
-    // wifiConn();
 
     Serial.println("End of setup");
 }

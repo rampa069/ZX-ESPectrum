@@ -358,8 +358,8 @@ void config_read() {
                 cfg_wssid = line.substring(line.lastIndexOf(':') + 1);
                 Serial.printf("  + wssid: '%s'\n", cfg_wssid.c_str());
             } else if (line.startsWith("wpass:")) {
-                cfg_wssid = line.substring(line.lastIndexOf(':') + 1);
-                Serial.printf("  + wpass: '%s'\n", cfg_wssid.c_str());
+                cfg_wpass = line.substring(line.lastIndexOf(':') + 1);
+                Serial.printf("  + wpass: '%s'\n", cfg_wpass.c_str());
             } else if (line.startsWith("slog:")) {
                 cfg_slog_on = (line.substring(line.lastIndexOf(':') + 1) == "true");
                 Serial.printf("  + slog_on: '%s'\n", (cfg_slog_on ? "true" : "false"));
