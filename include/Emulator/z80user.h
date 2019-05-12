@@ -119,6 +119,7 @@ typedef struct CONTEXT {
 #define Z80_INPUT_BYTE(portLow, portHigh, x)               \
 {                                                          \
         (x) = ((CONTEXT*)context)->input(portLow, portHigh); \
+																															\
 }
 
 #define Z80_OUTPUT_BYTE(portLow, portHigh, x)              \
