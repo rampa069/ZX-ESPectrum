@@ -5,6 +5,7 @@ extern volatile boolean xULAStopped;
 
 // Stop ULA service
 void stopULA() {
+    return;
     xULAStop = true;
     while (!xULAStopped) {
         delay(5);
@@ -13,6 +14,7 @@ void stopULA() {
 
 // Start ULA service
 void startULA() {
+    return;
     xULAStop = false;
     while (xULAStopped) {
         delay(5);
@@ -21,6 +23,7 @@ void startULA() {
 
 // Just one ULA step
 void stepULA() {
+    return;
     startULA();
     stopULA();
 }
