@@ -235,7 +235,8 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
 
         registers = state->register_table;
         // if (opcode != 0xdb)
-        delayMicroseconds((elapsed_cycles-last_cycles)/5);
+        //delayMicroseconds((elapsed_cycles-last_cycles)/5);
+        delayMicroseconds(1);
         last_cycles = elapsed_cycles;
 
 

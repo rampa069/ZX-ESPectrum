@@ -174,8 +174,8 @@ void videoTask(void *unused) {
     unsigned int ff, i, byte_offset;
     unsigned char color_attrib, pixel_map, flash, bright;
     unsigned int zx_vidcalc, calc_y;
-    unsigned int old_border;
-    unsigned int ts1, ts2;
+    //unsigned int old_border;
+    //unsigned int ts1, ts2;
     word zx_fore_color, zx_back_color, tmp_color;
     byte active_latch;
 
@@ -189,18 +189,18 @@ void videoTask(void *unused) {
             break;
 
         // while (xULAStop) {
-        xULAStopped = true;
+        //xULAStopped = true;
         //     delay(5);
         //}
         // xULAStopped = false;
 
-        ts1 = millis();
+        //ts1 = millis();
 
         // if (flashing++ > 32)
         //    flashing = 0;
 
         for (unsigned int vga_lin = 0; vga_lin < 200; vga_lin++) {
-            tick = 0;
+            //tick = 0;
             if (vga_lin < 3 || vga_lin > 194) {
                 for (int bor = 32; bor < 328; bor++)
                     vga.dotFast(bor, vga_lin, zxcolor(borderTemp, 0));
@@ -248,16 +248,16 @@ void videoTask(void *unused) {
                 }
             }
         }
-        tick = 1;
-        ts2 = millis();
+        //tick = 1;
+        //ts2 = millis();
 
         // TIMERG0.wdt_wprotect = TIMG_WDT_WKEY_VALUE;
         // TIMERG0.wdt_feed = 1;
         // TIMERG0.wdt_wprotect = 0;
         // Serial.printf("ULA: %d\n", ts2 - ts1);
-        if (ts2 - ts1 < 20) {
-            delay(20 - (ts2 - ts1));
-        }
+        //if (ts2 - ts1 < 20) {
+        //    delay(20 - (ts2 - ts1));
+        //}
         xQueueReceive(vidQueue, &param, portMAX_DELAY);
         videoTaskIsRunning = false;
     }
@@ -387,7 +387,6 @@ void do_keyboard() {
 void loop() {
     static byte last_ts = 0;
     unsigned long ts1, ts2;
-    byte updatescreen;
 
     if (halfsec) {
         flashing = ~flashing;
