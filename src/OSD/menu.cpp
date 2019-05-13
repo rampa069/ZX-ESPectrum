@@ -125,7 +125,6 @@ unsigned short do_Menu(String menu) {
     unsigned short focus = 1;
     unsigned short focus_new = 1;
 
-    stepULA();
     drawMenu(menu, focus, MENU_REDRAW);
     while (1) {
         if (checkAndCleanKey(KEY_CURSOR_UP)) {

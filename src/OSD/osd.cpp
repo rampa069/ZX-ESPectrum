@@ -49,13 +49,10 @@ void do_OSD() {
     if (checkAndCleanKey(KEY_F12)) {
         cycle_sna = true;
     } else if (checkAndCleanKey(KEY_F2)) {
-        stopULA(); // ULA Stopped
         byte opt = do_Menu(MENU_TEST);
         Serial.printf("Selected option %u", opt);
-        startULA();
     } else if (checkAndCleanKey(KEY_F1)) {
         // Main menu
-        stopULA(); // ULA Stopped
         byte opt = do_Menu(MENU_MAIN);
         if (opt == 1) {
             // Change ROM
@@ -138,12 +135,8 @@ void do_OSD() {
             }
         }
         // Exit
-        startULA();
     }
 
-    if (cfg_demo_every < 60) {
-        cfg_demo_every = 60;
-    }
     if (cycle_sna || (cfg_demo_mode_on && ((millis() / 1000) - last_demo_ts) > cfg_demo_every)) {
         // Cycle over snapshots
         last_sna_row++;

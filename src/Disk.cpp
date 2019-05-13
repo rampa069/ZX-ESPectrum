@@ -346,7 +346,7 @@ void config_read() {
                 cfg_demo_mode_on = (line.substring(line.lastIndexOf(':') + 1) == "true");
                 Serial.printf("  + demo_on:%s\n", (cfg_demo_mode_on ? "true" : "false"));
             } else if (line.startsWith("demo_every:")) {
-                // cfg_demo_every = line.substring(line.lastIndexOf(':') + 1).toInt();
+                cfg_demo_every = line.substring(line.lastIndexOf(':') + 1).toInt();
                 Serial.printf("  + demo_every:%u\n", cfg_demo_every);
             }
             line = "";
