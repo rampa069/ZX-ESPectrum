@@ -64,6 +64,7 @@ int halfsec, sp_int_ctr, evenframe, updateframe;
 QueueHandle_t vidQueue;
 TaskHandle_t videoTaskHandle;
 volatile bool videoTaskIsRunning = false;
+uint16_t *param;
 
 // SETUP *************************************
 #ifdef COLOUR_8
@@ -183,21 +184,12 @@ void videoTask(void *unused) {
     uint16_t *param;
 
     while (1) {
-
         xQueuePeek(vidQueue, &param, portMAX_DELAY);
         if ((int)param == 1)
             break;
 
-        // while (xULAStop) {
         xULAStopped = true;
-        //     delay(5);
-        //}
-        // xULAStopped = false;
-
         ts1 = millis();
-
-        // if (flashing++ > 32)
-        //    flashing = 0;
 
         for (unsigned int vga_lin = 0; vga_lin < 200; vga_lin++) {
             tick = 0;
@@ -248,16 +240,13 @@ void videoTask(void *unused) {
                 }
             }
         }
+
         tick = 1;
         ts2 = millis();
-
-        // TIMERG0.wdt_wprotect = TIMG_WDT_WKEY_VALUE;
-        // TIMERG0.wdt_feed = 1;
-        // TIMERG0.wdt_wprotect = 0;
-        // Serial.printf("ULA: %d\n", ts2 - ts1);
         if (ts2 - ts1 < 20) {
             delay(20 - (ts2 - ts1));
         }
+
         xQueueReceive(vidQueue, &param, portMAX_DELAY);
         videoTaskIsRunning = false;
     }
@@ -385,8 +374,8 @@ void do_keyboard() {
    +-------------+
  */
 void loop() {
-    static byte last_ts = 0;
-    unsigned long ts1, ts2;
+    // static byte last_ts = 0;
+    // unsigned long ts1, ts2;
     byte updatescreen;
 
     if (halfsec) {
@@ -394,8 +383,6 @@ void loop() {
     }
     sp_int_ctr++;
     halfsec = !(sp_int_ctr % 25);
-
-    uint16_t *param;
 
     do_keyboard();
     do_OSD();

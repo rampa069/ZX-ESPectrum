@@ -5,6 +5,12 @@
 #include "def/files.h"
 #include "def/msg.h"
 #include "osd.h"
+#include <Arduino.h>
+
+extern QueueHandle_t vidQueue;
+extern TaskHandle_t videoTaskHandle;
+extern volatile bool videoTaskIsRunning;
+extern uint16_t *param;
 
 // Menu row count
 unsigned short menuRowCount(String menu) {
@@ -76,7 +82,10 @@ void drawMenu(String menu, byte focus, boolean new_draw) {
     Serial.printf("Menu x:%u, y:%u, w:%u, h:%u\n", x, y, w, h);
 
     if (new_draw) {
-        delay(50);
+        xQueueSend(vidQueue, &param, portMAX_DELAY);
+        // Wait while ULA loop is finishing
+        delay(45);
+        // Set font
         vga.setFont(Font6x8);
         // Menu border
         vga.rect(x, y, w, h, zxcolor(0, 0));
@@ -145,6 +154,5 @@ unsigned short do_Menu(String menu) {
             focus = focus_new;
             drawMenu(menu, focus, MENU_UPDATE);
         }
-        delay(50);
     }
 }
