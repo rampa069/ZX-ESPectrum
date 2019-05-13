@@ -84,10 +84,6 @@ void setup() {
         Serial.println(MSG_VGA_INIT);
     }
 
-#ifdef COLOUR_8
-    vga.init(vga.MODE360x200, redPin, greenPin, bluePin, hsyncPin, vsyncPin);
-#endif
-
     Serial.printf("HEAP BEGIN %d\n", ESP.getFreeHeap());
 
 #ifdef BOARD_HAS_PSRAM
