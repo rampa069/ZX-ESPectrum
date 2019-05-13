@@ -86,6 +86,7 @@ extern "C" {
  *      instruction     Type of the currently executing instruction, see
  *                      instructions.h for a list.
  */
+unsigned char delay_contention(word address, unsigned int tstates);
 
 typedef struct CONTEXT {
 	uint8_t(*readbyte)(uint16_t);
@@ -99,11 +100,13 @@ typedef struct CONTEXT {
 #define Z80_READ_BYTE(address, x)                          \
 {                                                          \
         (x) = ((CONTEXT*)context)->readbyte(address);      \
+				elapsed_cycles += delay_contention(address,elapsed_cycles); \
 }
 
 #define Z80_WRITE_BYTE(address, x)                         \
 {                                                          \
         ((CONTEXT*)context)->writebyte(address, x);        \
+				elapsed_cycles += delay_contention(address,elapsed_cycles); \
 }
 
 #define Z80_READ_WORD(address, x)                          \

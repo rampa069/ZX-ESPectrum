@@ -1,11 +1,9 @@
 #include "Disk.h"
 #include "ZX-ESPectrum.h"
+#include "def/Font.h"
 #include "def/files.h"
 #include "def/msg.h"
-#include "def/Font.h"
 #include "osd.h"
-
-
 
 // Shows a red panel with error text
 void errorPanel(String errormsg) {
@@ -30,7 +28,6 @@ void errorPanel(String errormsg) {
 
 // Error panel and infinite loop
 void errorHalt(String errormsg) {
-    stopULA();
     errorPanel(errormsg);
     while (1) {
         do_keyboard();
