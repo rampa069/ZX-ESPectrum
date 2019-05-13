@@ -1094,8 +1094,7 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
 #ifdef Z80_CATCH_HALT
 
             state->status = Z80_STATUS_FLAG_HALT;
-            // int delay_halt=millis()-ts1;
-            // Serial.println(elapsed_cycles);
+
             elapsed_cycles += 4;
 
 #else
@@ -1940,8 +1939,7 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
                 Z80_FETCH_BYTE(pc, e);
                 pc += ((signed char)e) + 1;
 
-                //elapsed_cycles += 13;
-                //delayMicroseconds(10);
+
                 elapsed_cycles += 9;
 
             } else {
@@ -2079,7 +2077,7 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
             Z80_INPUT_BYTE(C, B, x);
 
 
-             //delay(1);
+
 
             if (Y(opcode) != INDIRECT_HL)
 

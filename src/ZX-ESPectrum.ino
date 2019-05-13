@@ -61,6 +61,11 @@ const int BUFFER_SIZE = 2000;
 
 int halfsec, sp_int_ctr, evenframe, updateframe;
 
+QueueHandle_t vidQueue;
+TaskHandle_t videoTaskHandle;
+volatile bool videoTaskIsRunning = false;
+
+
 // SETUP *************************************
 #ifdef COLOUR_8
 VGA3Bit vga;
@@ -154,13 +159,8 @@ void setup() {
     Serial.printf("%s %u\n", MSG_EXEC_ON_CORE, xPortGetCoreID());
     Serial.printf("%s Z80 RESET: %ub\n", MSG_FREE_HEAP_AFTER, ESP.getFreeHeap());
 
-    xTaskCreatePinnedToCore(videoTask,   /* Function to implement the task */
-                            "videoTask", /* Name of the task */
-                            2048,        /* Stack size in words */
-                            NULL,        /* Task input parameter */
-                            20,          /* Priority of the task */
-                            NULL,        /* Task handle. */
-                            0);          /* Core where the task should run */
+    vidQueue = xQueueCreate(1, sizeof(uint16_t*));
+    xTaskCreatePinnedToCore(&videoTask, "videoTask", 1024*4, NULL, 5, &videoTaskHandle, 0);
 
     load_rom(cfg_arch, cfg_rom_set);
     if ((String)cfg_ram_file != (String)NO_RAM_FILE) {
@@ -171,7 +171,7 @@ void setup() {
 
 // VIDEO core 0 *************************************
 
-void videoTask(void *parameter) {
+void videoTask(void * unused) {
     unsigned int ff, i, byte_offset;
     unsigned char color_attrib, pixel_map, flash, bright;
     unsigned int zx_vidcalc, calc_y;
@@ -180,13 +180,21 @@ void videoTask(void *parameter) {
     word zx_fore_color, zx_back_color, tmp_color;
     byte active_latch;
 
+    videoTaskIsRunning = true;
+    uint16_t* param;
+
     while (1) {
 
-        while (xULAStop) {
+    xQueuePeek(vidQueue, &param, portMAX_DELAY);
+    if ((int) param == 1)
+      break;
+
+
+        //while (xULAStop) {
             xULAStopped = true;
-            delay(5);
-        }
-        xULAStopped = false;
+        //     delay(5);
+        //}
+        //xULAStopped = false;
 
         ts1 = millis();
 
@@ -246,6 +254,8 @@ void videoTask(void *parameter) {
         tick = 1;
         ts2 = millis();
 
+
+
         //TIMERG0.wdt_wprotect = TIMG_WDT_WKEY_VALUE;
         //TIMERG0.wdt_feed = 1;
         //TIMERG0.wdt_wprotect = 0;
@@ -253,7 +263,14 @@ void videoTask(void *parameter) {
         if (ts2 - ts1 < 20) {
             delay(20 - (ts2 - ts1));
         }
+        xQueueReceive(vidQueue, &param, portMAX_DELAY);
+        videoTaskIsRunning = false;
     }
+    videoTaskIsRunning = false;
+    vTaskDelete(NULL);
+
+  while (1) {}
+
 }
 
 // SPECTRUM SCREEN DISPLAY
@@ -375,20 +392,35 @@ void do_keyboard() {
 void loop() {
     static byte last_ts = 0;
     unsigned long ts1, ts2;
-    do_keyboard();
-    do_OSD();
-    ts1 = millis();
-    zx_loop();
-    ts2 = millis();
+    byte updatescreen;
+
+
     if (halfsec) {
         flashing = ~flashing;
     }
     sp_int_ctr++;
     halfsec = !(sp_int_ctr % 25);
+
+    uint16_t* param ;
+
+    do_keyboard();
+    do_OSD();
+
+    //ts1 = millis();
+    zx_loop();
+    //ts2 = millis();
+
+
+    xQueueSend(vidQueue,&param,portMAX_DELAY);
+
+    while(videoTaskIsRunning) {}
+
+
+    /*
     if ((ts2 - ts1) != last_ts) {
         Serial.printf("PC:  %d time: %d\n", _zxCpu.pc, ts2 - ts1);
         last_ts = ts2 - ts1;
-    }
+    }*/
 
     TIMERG0.wdt_wprotect = TIMG_WDT_WKEY_VALUE;
     TIMERG0.wdt_feed = 1;
