@@ -54,3 +54,5 @@ unsigned short do_Menu(String menu);
 // SNA Management
 void changeSna(String sna_filename);
 void setDemoMode(boolean on, unsigned short every);
+// ULA
+void stepULA();
