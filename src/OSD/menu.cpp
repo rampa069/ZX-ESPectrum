@@ -76,6 +76,7 @@ void drawMenu(String menu, byte focus, boolean new_draw) {
     Serial.printf("Menu x:%u, y:%u, w:%u, h:%u\n", x, y, w, h);
 
     if (new_draw) {
+        delay(50);
         vga.setFont(Font6x8);
         // Menu border
         vga.rect(x, y, w, h, zxcolor(0, 0));
