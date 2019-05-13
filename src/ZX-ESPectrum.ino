@@ -175,8 +175,7 @@ void videoTask(void *unused) {
     unsigned int ff, i, byte_offset;
     unsigned char color_attrib, pixel_map, flash, bright;
     unsigned int zx_vidcalc, calc_y;
-    unsigned int old_border;
-    unsigned int ts1, ts2;
+
     word zx_fore_color, zx_back_color, tmp_color;
     byte active_latch;
 
@@ -188,11 +187,8 @@ void videoTask(void *unused) {
         if ((int)param == 1)
             break;
 
-        xULAStopped = true;
-        ts1 = millis();
-
         for (unsigned int vga_lin = 0; vga_lin < 200; vga_lin++) {
-            tick = 0;
+            // tick = 0;
             if (vga_lin < 3 || vga_lin > 194) {
                 for (int bor = 32; bor < 328; bor++)
                     vga.dotFast(bor, vga_lin, zxcolor(borderTemp, 0));
@@ -205,15 +201,16 @@ void videoTask(void *unused) {
                 for (ff = 0; ff < 32; ff++) // foreach byte in line
                 {
 
-                    byte_offset = (vga_lin - 3) * 32 + ff; //*2+1;
+                    byte_offset = (vga_lin - 3) * 32 + ff;
+                    calc_y = calcY(byte_offset);
+
                     if (!video_latch) {
-                        color_attrib = ram5[0x1800 + (calcY(byte_offset) / 8) * 32 + ff]; // get 1 of 768 attrib values
+                        color_attrib = ram5[0x1800 + (calc_y / 8) * 32 + ff]; // get 1 of 768 attrib values
                         pixel_map = ram5[byte_offset];
                     } else {
-                        color_attrib = ram7[0x1800 + (calcY(byte_offset) / 8) * 32 + ff]; // get 1 of 768 attrib values
+                        color_attrib = ram7[0x1800 + (calc_y / 8) * 32 + ff]; // get 1 of 768 attrib values
                         pixel_map = ram7[byte_offset];
                     }
-                    calc_y = calcY(byte_offset);
 
                     for (i = 0; i < 8; i++) // foreach pixel within a byte
                     {
@@ -230,21 +227,13 @@ void videoTask(void *unused) {
                             zx_back_color = tmp_color;
                         }
 
-                        writeScreen = true;
                         if ((pixel_map & bitpos) != 0)
                             vga.dotFast(zx_vidcalc + 52, calc_y + 3, zx_fore_color);
                         else
                             vga.dotFast(zx_vidcalc + 52, calc_y + 3, zx_back_color);
-                        writeScreen = false;
                     }
                 }
             }
-        }
-
-        tick = 1;
-        ts2 = millis();
-        if (ts2 - ts1 < 20) {
-            delay(20 - (ts2 - ts1));
         }
 
         xQueueReceive(vidQueue, &param, portMAX_DELAY);
@@ -374,9 +363,8 @@ void do_keyboard() {
    +-------------+
  */
 void loop() {
-    // static byte last_ts = 0;
-    // unsigned long ts1, ts2;
-    byte updatescreen;
+    static byte last_ts = 0;
+    unsigned long ts1, ts2;
 
     if (halfsec) {
         flashing = ~flashing;

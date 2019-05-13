@@ -217,7 +217,7 @@ int Z80Emulate(Z80_STATE *state, int number_cycles, void *context) {
 static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_cycles, void *context) {
     int pc, r;
 
-    int last_cycles=0;
+    int last_cycles = 0;
     pc = state->pc;
     r = state->r & 0x7f;
 
@@ -235,9 +235,9 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
 
         registers = state->register_table;
         // if (opcode != 0xdb)
-        delayMicroseconds((elapsed_cycles-last_cycles)/5);
+        delayMicroseconds((elapsed_cycles - last_cycles) / 5);
+        // delayMicroseconds(1);
         last_cycles = elapsed_cycles;
-
 
     emulate_next_opcode:
 
@@ -572,7 +572,7 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
                 if (--bc)
 
                 {
-                     elapsed_cycles += 17;
+                    elapsed_cycles += 17;
                 }
 
                 else {
@@ -680,11 +680,10 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
                     break;
                 }
 
-                if (elapsed_cycles < number_cycles)
-                {
+                if (elapsed_cycles < number_cycles) {
 
-                    //continue;
-                  }
+                    // continue;
+                }
 
                 else {
 
@@ -736,7 +735,7 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
 
             READ_INDIRECT_HL(x);
             ADD(x);
-            elapsed_cycles +=3;
+            elapsed_cycles += 3;
             break;
         }
 
@@ -761,7 +760,7 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
 
             READ_INDIRECT_HL(x);
             ADC(x);
-            elapsed_cycles +=3;
+            elapsed_cycles += 3;
             break;
         }
 
@@ -786,7 +785,7 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
 
             READ_INDIRECT_HL(x);
             SUB(x);
-            elapsed_cycles +=3;
+            elapsed_cycles += 3;
             break;
         }
 
@@ -811,7 +810,7 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
 
             READ_INDIRECT_HL(x);
             SBC(x);
-            elapsed_cycles +=3;
+            elapsed_cycles += 3;
             break;
         }
 
@@ -827,7 +826,7 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
 
             READ_N(n);
             AND(n);
-            elapsed_cycles +=3;
+            elapsed_cycles += 3;
 
             break;
         }
@@ -838,7 +837,7 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
 
             READ_INDIRECT_HL(x);
             AND(x);
-            elapsed_cycles +=3;
+            elapsed_cycles += 3;
 
             break;
         }
@@ -864,7 +863,7 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
 
             READ_INDIRECT_HL(x);
             OR(x);
-            elapsed_cycles +=3;
+            elapsed_cycles += 3;
             break;
         }
 
@@ -889,7 +888,7 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
 
             READ_INDIRECT_HL(x);
             XOR(x);
-            elapsed_cycles +=3;
+            elapsed_cycles += 3;
             break;
         }
 
@@ -914,7 +913,7 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
 
             READ_INDIRECT_HL(x);
             CP(x);
-            elapsed_cycles +=3;
+            elapsed_cycles += 3;
 
             break;
         }
@@ -935,7 +934,7 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
                 INC(x);
                 WRITE_BYTE(HL, x);
 
-                elapsed_cycles += 7 ;
+                elapsed_cycles += 7;
 
             } else {
 
@@ -1302,7 +1301,7 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
 
             A = (A << 1) | (A >> 7);
             F = (F & SZPV_FLAGS) | (A & (YX_FLAGS | Z80_C_FLAG));
-            elapsed_cycles +=4;
+            elapsed_cycles += 4;
             break;
         }
 
@@ -1322,7 +1321,7 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
                 | (A >> 7);
             A = a | (F & Z80_C_FLAG);
             F = f;
-            elapsed_cycles +=4;
+            elapsed_cycles += 4;
             break;
         }
 
@@ -1341,7 +1340,7 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
 #endif
 
                 | c;
-            elapsed_cycles +=4;
+            elapsed_cycles += 4;
             break;
         }
 
@@ -1360,14 +1359,14 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
 #endif
 
                 | c;
-                elapsed_cycles +=4;
+            elapsed_cycles += 4;
             break;
         }
 
         case RLC_R: {
 
             RLC(R(Z(opcode)));
-            elapsed_cycles +=4;
+            elapsed_cycles += 4;
             break;
         }
 
@@ -1409,7 +1408,7 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
         case RL_R: {
 
             RL(R(Z(opcode)));
-            elapsed_cycles +=4;
+            elapsed_cycles += 4;
             break;
         }
 
@@ -1450,7 +1449,7 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
         case RRC_R: {
 
             RRC(R(Z(opcode)));
-            elapsed_cycles +=4;
+            elapsed_cycles += 4;
             break;
         }
 
@@ -1491,7 +1490,7 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
         case RR_R: {
 
             RR_INSTRUCTION(R(Z(opcode)));
-            elapsed_cycles +=4;
+            elapsed_cycles += 4;
             break;
         }
 
@@ -1532,7 +1531,7 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
         case SLA_R: {
 
             SLA(R(Z(opcode)));
-            elapsed_cycles +=4;
+            elapsed_cycles += 4;
             break;
         }
 
@@ -1573,7 +1572,7 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
         case SLL_R: {
 
             SLL(R(Z(opcode)));
-            elapsed_cycles +=4;
+            elapsed_cycles += 4;
             break;
         }
 
@@ -1614,7 +1613,7 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
         case SRA_R: {
 
             SRA(R(Z(opcode)));
-            elapsed_cycles +=4;
+            elapsed_cycles += 4;
             break;
         }
 
@@ -1655,7 +1654,7 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
         case SRL_R: {
 
             SRL(R(Z(opcode)));
-            elapsed_cycles +=4;
+            elapsed_cycles += 4;
             break;
         }
 
@@ -1926,7 +1925,7 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
         case JP_HL: {
 
             pc = HL_IX_IY;
-            elapsed_cycles +=4;
+            elapsed_cycles += 4;
             break;
         }
 
@@ -1938,7 +1937,6 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
 
                 Z80_FETCH_BYTE(pc, e);
                 pc += ((signed char)e) + 1;
-
 
                 elapsed_cycles += 9;
 
@@ -1953,8 +1951,6 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
                 pc++;
 
                 elapsed_cycles += 4;
-
-
             }
             break;
         }
@@ -2076,9 +2072,6 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
             int x;
             Z80_INPUT_BYTE(C, B, x);
 
-
-
-
             if (Y(opcode) != INDIRECT_HL)
 
                 R(Y(opcode)) = x;
@@ -2086,7 +2079,7 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
             F = SZYXP_FLAGS_TABLE[x] | (F & Z80_C_FLAG);
 
             elapsed_cycles += 8;
-            //elapsed_cycles += 3000;
+            // elapsed_cycles += 3000;
 
             break;
         }
@@ -2206,7 +2199,7 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
 
             READ_N(n);
             Z80_OUTPUT_BYTE(n, A, A);
-            elapsed_cycles +=4;
+            elapsed_cycles += 4;
             break;
         }
 
@@ -2426,23 +2419,35 @@ stop_emulation:
     return elapsed_cycles;
 }
 
-unsigned char delay_contention(word address, unsigned int tstates)
-{
-  int modulo;
+unsigned char delay_contention(word address, unsigned int tstates) {
+    int modulo;
 
-  if (tstates < 14335 || tstates > 14463 || address < 0x4000 || address > 0x7fff)
-    return 0;
+    if (tstates < 14335 || tstates > 14463 || address < 0x4000 || address > 0x7fff)
+        return 0;
 
-  modulo = tstates % 8;
+    modulo = tstates % 8;
 
-  switch (modulo)
-  {
-   case 0: return 6; break;
-   case 1: return 5; break;
-   case 2: return 4; break;
-   case 3: return 3; break;
-   case 4: return 2; break;
-   case 5: return 1; break;
-   default: return 0; break;
-  }
+    switch (modulo) {
+    case 0:
+        return 6;
+        break;
+    case 1:
+        return 5;
+        break;
+    case 2:
+        return 4;
+        break;
+    case 3:
+        return 3;
+        break;
+    case 4:
+        return 2;
+        break;
+    case 5:
+        return 1;
+        break;
+    default:
+        return 0;
+        break;
+    }
 }

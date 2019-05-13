@@ -19,7 +19,6 @@ extern byte borderTemp;
 extern byte z80ports_in[128];
 extern byte tick;
 
-
 CONTEXT _zxContext;
 static uint16_t _attributeCount;
 int _total;
@@ -69,9 +68,9 @@ int32_t zx_loop() {
 
     ts1 = millis();
     //_total += Z80Emulate(&_zxCpu, _next_total - _total, &_zxContext);
-    _total=Z80Emulate(&_zxCpu, CYCLES_PER_STEP, &_zxContext);
+    _total = Z80Emulate(&_zxCpu, CYCLES_PER_STEP, &_zxContext);
     Z80Interrupt(&_zxCpu, 0xff, &_zxContext);
-    //Serial.println(_total);
+    // Serial.println(_total);
 
     return result;
 }
@@ -192,12 +191,12 @@ extern "C" void writeword(uint16_t addr, uint16_t data) {
 
 extern "C" uint8_t input(uint8_t portLow, uint8_t portHigh) {
     int16_t kbdarrno = 0;
-    //delay(2);
-    //Serial.print ("IN ");
+    // delay(2);
+    // Serial.print ("IN ");
     if (portLow == 0xFE) {
         // Keyboard
 
-    switch (portHigh) {
+        switch (portHigh) {
 
         case 0xfe:
             kbdarrno = 0;
@@ -266,7 +265,7 @@ extern "C" void output(uint8_t portLow, uint8_t portHigh, uint8_t data) {
     switch (portLow) {
     case 0xFE: {
 
-        //delayMicroseconds(CONTENTION_TIME);
+        // delayMicroseconds(CONTENTION_TIME);
 
         // border color (no bright colors)
         bitWrite(borderTemp, 0, bitRead(data, 0));
