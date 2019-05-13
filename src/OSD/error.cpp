@@ -9,8 +9,12 @@
 void errorPanel(String errormsg) {
     unsigned short x = scrAlignCenterX(OSD_W);
     unsigned short y = scrAlignCenterY(OSD_H);
+
     if (cfg_slog_on)
         Serial.println(errormsg);
+
+    stepULA();
+
     vga.fillRect(x, y, OSD_W, OSD_H, zxcolor(0, 0));
     vga.rect(x, y, OSD_W, OSD_H, zxcolor(7, 0));
     vga.rect(x + 1, y + 1, OSD_W - 2, OSD_H - 2, zxcolor(2, 1));
@@ -62,6 +66,8 @@ void osdCenteredMsg(String msg, byte warn_level) {
         ink = zxcolor(7, 0);
         paper = zxcolor(1, 0);
     }
+
+    stepULA();
 
     vga.fillRect(x, y, w, h, paper);
     // vga.rect(x - 1, y - 1, w + 2, h + 2, ink);
