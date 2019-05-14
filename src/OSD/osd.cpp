@@ -9,10 +9,7 @@
 #include "def/msg.h"
 
 // Cursor to OSD first row,col
-void osdHome() {
-    Serial.printf("OSD HOME X:%d Y:%d\n", osdInsideX(), osdInsideY());
-    vga.setCursor(osdInsideX(), osdInsideY());
-}
+void osdHome() { vga.setCursor(osdInsideX(), osdInsideY()); }
 
 // Cursor positioning
 void osdAt(byte row, byte col) {
@@ -22,7 +19,6 @@ void osdAt(byte row, byte col) {
         col = 0;
     unsigned short y = (row * OSD_FONT_H) + osdInsideY();
     unsigned short x = (col * OSD_FONT_W) + osdInsideX();
-    Serial.printf("OSD AT ROW:%d/%d-->%dpx COL:%d/%d-->%dpx\n", row, osdMaxRows(), y, col, osdMaxCols(), x);
     vga.setCursor(x, y);
 }
 
@@ -50,7 +46,6 @@ void do_OSD() {
         cycle_sna = true;
     } else if (checkAndCleanKey(KEY_F2)) {
         byte opt = do_Menu(MENU_TEST);
-        Serial.printf("Selected option %u", opt);
     } else if (checkAndCleanKey(KEY_F1)) {
         // Main menu
         byte opt = do_Menu(MENU_MAIN);

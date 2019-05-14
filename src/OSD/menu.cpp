@@ -32,7 +32,14 @@ byte menuColMax(String menu) {
         }
         col_count++;
     }
-    return max;
+    if (menuRowCount(menu) > MENU_MAX_ROWS)
+        max++;
+
+    if (max > osdMaxCols()) {
+        return osdMaxCols();
+    } else {
+        return max;
+    }
 }
 
 // Menu get a row
@@ -56,24 +63,23 @@ unsigned short menuPixelHeight(char *menu) { return (menuRowCount(menu) * OSD_FO
 
 void menuPrintRow(String line, byte cols) {
     vga.print(" ");
-    vga.print(line.c_str());
-    for (byte i = line.length(); i < (cols - 1); i++)
-        vga.print(" ");
+    if (line.length() < cols) {
+        vga.print(line.c_str());
+        for (byte i = line.length(); i < (cols - 1); i++)
+            vga.print(" ");
+    } else {
+        vga.print(line.substring(0, cols - 1).c_str());
+    }
 }
 
 void drawMenu(String menu, byte focus, boolean new_draw) {
-    Serial.printf("DRAW MENU focus:%u new_draw:%s\n", focus, (new_draw ? "true" : "false"));
     const byte cols = menuColMax(menu) + 2;
-    Serial.printf("Max cols: %u\n", cols);
     const unsigned short real_rows = menuRowCount(menu);
-    Serial.printf("Real rows: %u\n", real_rows);
     const byte rows = menuVirtualRows(menu);
-    Serial.printf("Rows: %u\n", rows);
     const byte w = (cols * OSD_FONT_W) + 2;
     const byte h = (rows * OSD_FONT_H) + 2;
     const unsigned short x = scrAlignCenterX(w);
     const unsigned short y = scrAlignCenterY(h);
-    Serial.printf("Menu x:%u, y:%u, w:%u, h:%u\n", x, y, w, h);
 
     if (new_draw) {
         stepULA();

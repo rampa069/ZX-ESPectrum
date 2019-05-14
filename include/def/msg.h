@@ -46,7 +46,7 @@
     "joystick. AltGr to fire.\n"
 #define MENU_TEST                                                                                                      \
     "Test Menu\n"                                                                                                      \
-    "Option 01\n"                                                                                                      \
+    "Option 01 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n" \
     "Option 02\n"                                                                                                      \
     "Option 03\n"                                                                                                      \
     "Option 04\n"                                                                                                      \
