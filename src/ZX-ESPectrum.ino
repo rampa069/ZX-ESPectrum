@@ -114,19 +114,12 @@ void setup() {
 #endif
 
 #ifdef COLOUR_8
-    const int redPin = 14;
-    const int greenPin = 19;
-    const int bluePin = 27;
-    const int hsyncPin = 32;
-    const int vsyncPin = 33;
-    vga.init(vga.MODE360x200, redPin, greenPin, bluePin, hsyncPin, vsyncPin);
+    vga.init(vga.MODE360x200, RED_PIN, GREEN_PIN, BLUE_PIN, HSYNC_PIN, VSYNC_PIN);
 #else
-    const int redPins[] = {2, 2, 14, 14, 14};
-    const int greenPins[] = {15, 15, 19, 19, 19};
-    const int bluePins[] = {21, 21, 27, 27};
-    const int hsyncPin = 32;
-    const int vsyncPin = 33;
-    vga.init(vga.MODE360x200, redPins, greenPins, bluePins, hsyncPin, vsyncPin);
+    const int redPins[] = {RED_PINS};
+    const int greenPins[] = {GREEN_PINS};
+    const int bluePins[] = {BLUE_PINS};
+    vga.init(vga.MODE360x200, redPins, greenPins, bluePins, HSYNC_PIN, VSYNC_PIN);
 #endif
 
     Serial.printf("HEAP after vga  %d \n", ESP.getFreeHeap());

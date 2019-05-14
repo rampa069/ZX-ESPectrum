@@ -5,8 +5,22 @@
 #define KEYBOARD_DATA 25
 #define KEYBOARD_CLK 26
 
-//#define COLOUR_8
+// #define COLOUR_8
 #define COLOUR_16
+
+// 8bit pins
+#define RED_PIN 14
+#define GREEN_PIN 19
+#define BLUE_PIN 27
+
+// 16b pins
+#define RED_PINS 2, 2, 14, 14, 14
+#define GREEN_PINS 15, 15, 19, 19, 19
+#define BLUE_PINS 21, 21, 27, 27
+
+// VGA sync pins
+#define HSYNC_PIN 32
+#define VSYNC_PIN 33
 
 #ifdef COLOUR_8
 #define BLACK 0x08
