@@ -27,6 +27,9 @@
 // Scroll
 #define UP true
 #define DOWN false
+// Sound
+#define SND_CLICK_DURATION 50
+#define SND_CLICK_SPACE 5
 
 // OSD Interface
 // Calc
@@ -64,3 +67,5 @@ void changeSna(String sna_filename);
 void setDemoMode(boolean on, unsigned short every);
 // ULA
 void stepULA();
+// Sound
+void menuSound();

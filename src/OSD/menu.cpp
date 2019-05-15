@@ -123,20 +123,26 @@ unsigned short menuRun(String new_menu) {
     newMenu(new_menu);
     while (1) {
         if (checkAndCleanKey(KEY_CURSOR_UP)) {
-            if (focus == 1) {
+            menuSound();
+            Serial.printf("UP...: focus:%u begin:%u real:%u virtual:%u\n", focus, begin_row, real_rows, virtual_rows);
+            if (focus == 1 and begin_row > 1) {
                 menuScroll(DOWN);
-            } else {
+            } else if (focus > 1) {
                 focus--;
+                Serial.printf("       focus:%u begin:%u real:%u virtual:%u\n", focus, begin_row, real_rows, virtual_rows);
                 menuPrintRow(focus, IS_FOCUSED);
                 if (focus + 1 < virtual_rows) {
                     menuPrintRow(focus + 1, IS_NORMAL);
                 }
             }
         } else if (checkAndCleanKey(KEY_CURSOR_DOWN)) {
-            if (focus == MENU_MAX_ROWS - 1) {
+            menuSound();
+            Serial.printf("DOWN.: focus:%u begin:%u real:%u virtual:%u\n", focus, begin_row, real_rows, virtual_rows);
+            if (focus == virtual_rows - 1) {
                 menuScroll(UP);
-            } else {
+            } else if (focus < virtual_rows - 1) {
                 focus++;
+                Serial.printf("       focus:%u begin:%u real:%u virtual:%u\n", focus, begin_row, real_rows, virtual_rows);
                 menuPrintRow(focus, IS_FOCUSED);
                 if (focus - 1 > 0) {
                     menuPrintRow(focus - 1, IS_NORMAL);
@@ -152,13 +158,15 @@ unsigned short menuRun(String new_menu) {
 
 // Scroll
 void menuScroll(boolean dir) {
-    Serial.printf("SCROLL %s FOCUS:%u BEGIN:%u VR:%u RR:%u\n",
-        (dir == UP ? "UP" : "DOWN"), focus, begin_row, virtual_rows, real_rows);
+    Serial.printf("SCROLL %s %u --> ", (dir == UP ? "UP" : "DOWN"), begin_row);
     if (dir == DOWN and begin_row > 1) {
         begin_row--;
-    } else if (dir == UP and (begin_row + MENU_MAX_ROWS - 1) < real_rows) {
+        Serial.printf("%u OK\n", begin_row);
+    } else if (dir == UP and (begin_row + virtual_rows - 1) < real_rows) {
         begin_row++;
+        Serial.printf("%u OK\n", begin_row);
     } else {
+        Serial.printf("%u LIMIT REACHED\n", begin_row);
         return;
     }
     menuRedraw();
@@ -172,5 +180,15 @@ void menuRedraw() {
         } else {
             menuPrintRow(row, IS_NORMAL);
         }
+    }
+}
+
+// Menu sound
+void menuSound() {
+    const unsigned int snd_begin = millis();
+    while (millis() - snd_begin <= SND_CLICK_DURATION) {
+        digitalWrite(SPEAKER_PIN, 1);
+        delay(SND_CLICK_SPACE);
+        digitalWrite(SPEAKER_PIN, 0);
     }
 }
