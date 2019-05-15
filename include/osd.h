@@ -20,6 +20,13 @@
 #define ON true
 #define OFF false
 #define MENU_MAX_ROWS 23
+// Line type
+#define IS_TITLE 0
+#define IS_FOCUSED 1
+#define IS_NORMAL 2
+// Scroll
+#define UP true
+#define DOWN false
 
 // OSD Interface
 // Calc
@@ -39,18 +46,19 @@ void errorPanel(String errormsg);
 void errorHalt(String errormsg);
 void osdCenteredMsg(String msg, byte warn_level);
 // Menu
-// Menu row count
-unsigned short menuRowCount(String menu);
-byte menuVirtualRows(String menu);
-byte menuColMax(String menu);
-String menuGetRow(String menu, unsigned short row);
-unsigned short menuPixelWidth(char *menu);
-unsigned short menuPixelHeight(char *menu);
-void menuPrintRow(String line, byte cols);
-void drawMenu(String menu, byte focus, boolean new_draw);
+void newMenu(String new_menu);
+void menuRecalc();
+unsigned short menuRealRowFor(byte virtual_row_num);
+void menuPrintRow(byte virtual_row_num, byte line_type);
+void menuDraw();
+void menuRedraw();
 String getArchMenu();
 String getRomsetMenu(String arch);
-unsigned short do_Menu(String menu);
+unsigned short menuRun(String new_menu);
+void menuScroll(boolean up);
+// Rows
+unsigned short rowCount(String menu);
+String rowGet(String menu, unsigned short row_number);
 // SNA Management
 void changeSna(String sna_filename);
 void setDemoMode(boolean on, unsigned short every);

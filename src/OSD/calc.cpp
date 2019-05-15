@@ -1,3 +1,4 @@
+#include "ascii.h"
 #include "osd.h"
 #include <Arduino.h>
 

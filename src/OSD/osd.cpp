@@ -45,20 +45,20 @@ void do_OSD() {
     if (checkAndCleanKey(KEY_F12)) {
         cycle_sna = true;
     } else if (checkAndCleanKey(KEY_F2)) {
-        byte opt = do_Menu(MENU_TEST);
+        byte opt = menuRun(MENU_TEST);
     } else if (checkAndCleanKey(KEY_F1)) {
         // Main menu
-        byte opt = do_Menu(MENU_MAIN);
+        byte opt = menuRun(MENU_MAIN);
         if (opt == 1) {
             // Change ROM
             String arch_menu = getArchMenu();
-            byte arch_num = do_Menu(arch_menu);
+            byte arch_num = menuRun(arch_menu);
             if (arch_num > 0) {
-                String romset_menu = getRomsetMenu(menuGetRow(arch_menu, arch_num));
-                byte romset_num = do_Menu(romset_menu);
+                String romset_menu = getRomsetMenu(rowGet(arch_menu, arch_num));
+                byte romset_num = menuRun(romset_menu);
                 if (romset_num > 0) {
-                    cfg_arch = menuGetRow(arch_menu, arch_num);
-                    cfg_rom_set = menuGetRow(romset_menu, romset_num);
+                    cfg_arch = rowGet(arch_menu, arch_num);
+                    cfg_rom_set = rowGet(romset_menu, romset_num);
                     load_rom(cfg_arch, cfg_rom_set);
                     vTaskDelay(2);
 
@@ -69,16 +69,16 @@ void do_OSD() {
             }
         } else if (opt == 2) {
             // Change RAM
-            unsigned short snanum = do_Menu(cfg_sna_file_list);
+            unsigned short snanum = menuRun(cfg_sna_file_list);
             if (snanum > 0) {
                 if (cfg_demo_mode_on) {
                     setDemoMode(OFF, 0);
                 }
-                changeSna(menuGetRow(cfg_sna_file_list, snanum));
+                changeSna(rowGet(cfg_sna_file_list, snanum));
             }
         } else if (opt == 3) {
             // Reset
-            byte opt2 = do_Menu(MENU_RESET);
+            byte opt2 = menuRun(MENU_RESET);
             if (opt2 == 1) {
                 // Soft
                 zx_reset();
@@ -92,7 +92,7 @@ void do_OSD() {
             }
         } else if (opt == 4) {
             // Demo mode
-            byte opt2 = do_Menu(MENU_DEMO);
+            byte opt2 = menuRun(MENU_DEMO);
             if (opt2 == 1) {
                 setDemoMode(OFF, 0);
             } else {
@@ -135,10 +135,10 @@ void do_OSD() {
     if (cycle_sna || (cfg_demo_mode_on && ((millis() / 1000) - last_demo_ts) > cfg_demo_every)) {
         // Cycle over snapshots
         last_sna_row++;
-        if (last_sna_row > menuRowCount(cfg_sna_file_list) - 1) {
+        if (last_sna_row > rowCount(cfg_sna_file_list) - 1) {
             last_sna_row = 1;
         }
-        changeSna(menuGetRow(cfg_sna_file_list, last_sna_row));
+        changeSna(rowGet(cfg_sna_file_list, last_sna_row));
         last_demo_ts = millis() / 1000;
         cycle_sna = false;
     }

@@ -46,7 +46,7 @@
     "joystick. AltGr to fire.\n"
 #define MENU_TEST                                                                                                      \
     "Test Menu\n"                                                                                                      \
-    "Option 01 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n" \
+    "Option 01 Lorem ipsum dolor sit amet, consectetur adipiscing elit...\n"                                           \
     "Option 02\n"                                                                                                      \
     "Option 03\n"                                                                                                      \
     "Option 04\n"                                                                                                      \
@@ -55,7 +55,7 @@
     "Option 07\n"                                                                                                      \
     "Option 08\n"                                                                                                      \
     "Option 09\n"                                                                                                      \
-    "Option 10\n"                                                                                                      \
+    "Option 10 Lorem ipsum dolor sit amet, consectetur adipiscing elit...\n"                                           \
     "Option 11\n"                                                                                                      \
     "Option 12\n"                                                                                                      \
     "Option 13\n"                                                                                                      \
@@ -65,7 +65,7 @@
     "Option 17\n"                                                                                                      \
     "Option 18\n"                                                                                                      \
     "Option 19\n"                                                                                                      \
-    "Option 20\n"                                                                                                      \
+    "Option 20 Lorem ipsum dolor sit amet, consectetur adipiscing elit...\n"                                           \
     "Option 21\n"                                                                                                      \
     "Option 22\n"                                                                                                      \
     "Option 23\n"                                                                                                      \
@@ -76,7 +76,7 @@
     "Option 27\n"                                                                                                      \
     "Option 28\n"                                                                                                      \
     "Option 29\n"                                                                                                      \
-    "Option 30\n"                                                                                                      \
+    "Option 30 Lorem ipsum dolor sit amet, consectetur adipiscing elit...\n"                                           \
     "Option 31\n"                                                                                                      \
     "Option 32\n"                                                                                                      \
     "Option 33\n"                                                                                                      \
@@ -87,4 +87,5 @@
     "Option 37\n"                                                                                                      \
     "Option 38\n"                                                                                                      \
     "Option 39\n"                                                                                                      \
-    "Option 49\n"
+    "Option 49\n"                                                                                                      \
+    "Option 50 Lorem ipsum dolor sit amet, consectetur adipiscing elit...\n"
