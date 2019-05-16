@@ -59,6 +59,8 @@ String getArchMenu();
 String getRomsetMenu(String arch);
 unsigned short menuRun(String new_menu);
 void menuScroll(boolean up);
+void menuAt(short int row, short int col);
+void menuScrollBar();
 // Rows
 unsigned short rowCount(String menu);
 String rowGet(String menu, unsigned short row_number);
@@ -67,5 +69,3 @@ void changeSna(String sna_filename);
 void setDemoMode(boolean on, unsigned short every);
 // ULA
 void stepULA();
-// Sound
-void menuSound();

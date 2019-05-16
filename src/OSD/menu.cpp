@@ -5,6 +5,7 @@
 #include "def/files.h"
 #include "def/msg.h"
 #include "osd.h"
+#include <math.h>
 
 byte cols;                // Maximun columns
 unsigned short real_rows; // Real row count
@@ -56,27 +57,42 @@ void menuRecalc() {
 // Get real row number for a virtual one
 unsigned short menuRealRowFor(byte virtual_row_num) { return begin_row + virtual_row_num - 1; }
 
+// Menu relative AT
+void menuAt(short int row, short int col) {
+    if (col < 0)
+        col = cols - 2 - col;
+    if (row < 0)
+        row = virtual_rows - 2 - row;
+    vga.setCursor(x + 1 + (col * OSD_FONT_W), y + 1 + (row * OSD_FONT_H));
+}
+
 // Print a virtual row
 void menuPrintRow(byte virtual_row_num, byte line_type) {
+    byte margin;
     String line = rowGet(menu, menuRealRowFor(virtual_row_num));
+
     switch (line_type) {
     case IS_TITLE:
         vga.setTextColor(zxcolor(7, 0), zxcolor(0, 0));
+        margin = 2;
         break;
     case IS_FOCUSED:
         vga.setTextColor(zxcolor(0, 1), zxcolor(5, 1));
+        margin = (real_rows > virtual_rows ? 3 : 2);
         break;
     default:
         vga.setTextColor(zxcolor(0, 1), zxcolor(7, 1));
+        margin = (real_rows > virtual_rows ? 3 : 2);
     }
-    vga.setCursor(x + 1, y + 1 + (virtual_row_num * OSD_FONT_H));
+
+    menuAt(virtual_row_num, 0);
     vga.print(" ");
-    if (line.length() < cols - 2) {
+    if (line.length() < cols - margin) {
         vga.print(line.c_str());
-        for (byte i = line.length(); i < (cols - 2); i++)
+        for (byte i = line.length(); i < (cols - margin); i++)
             vga.print(" ");
     } else {
-        vga.print(line.substring(0, cols - 2).c_str());
+        vga.print(line.substring(0, cols - margin).c_str());
     }
     vga.print(" ");
 }
@@ -106,6 +122,7 @@ void menuDraw() {
         menuPrintRow(r, IS_NORMAL);
     }
     focus = 1;
+    menuScrollBar();
 }
 
 String getArchMenu() {
@@ -123,26 +140,20 @@ unsigned short menuRun(String new_menu) {
     newMenu(new_menu);
     while (1) {
         if (checkAndCleanKey(KEY_CURSOR_UP)) {
-            menuSound();
-            Serial.printf("UP...: focus:%u begin:%u real:%u virtual:%u\n", focus, begin_row, real_rows, virtual_rows);
             if (focus == 1 and begin_row > 1) {
                 menuScroll(DOWN);
             } else if (focus > 1) {
                 focus--;
-                Serial.printf("       focus:%u begin:%u real:%u virtual:%u\n", focus, begin_row, real_rows, virtual_rows);
                 menuPrintRow(focus, IS_FOCUSED);
                 if (focus + 1 < virtual_rows) {
                     menuPrintRow(focus + 1, IS_NORMAL);
                 }
             }
         } else if (checkAndCleanKey(KEY_CURSOR_DOWN)) {
-            menuSound();
-            Serial.printf("DOWN.: focus:%u begin:%u real:%u virtual:%u\n", focus, begin_row, real_rows, virtual_rows);
             if (focus == virtual_rows - 1) {
                 menuScroll(UP);
             } else if (focus < virtual_rows - 1) {
                 focus++;
-                Serial.printf("       focus:%u begin:%u real:%u virtual:%u\n", focus, begin_row, real_rows, virtual_rows);
                 menuPrintRow(focus, IS_FOCUSED);
                 if (focus - 1 > 0) {
                     menuPrintRow(focus - 1, IS_NORMAL);
@@ -158,18 +169,15 @@ unsigned short menuRun(String new_menu) {
 
 // Scroll
 void menuScroll(boolean dir) {
-    Serial.printf("SCROLL %s %u --> ", (dir == UP ? "UP" : "DOWN"), begin_row);
     if (dir == DOWN and begin_row > 1) {
         begin_row--;
-        Serial.printf("%u OK\n", begin_row);
     } else if (dir == UP and (begin_row + virtual_rows - 1) < real_rows) {
         begin_row++;
-        Serial.printf("%u OK\n", begin_row);
     } else {
-        Serial.printf("%u LIMIT REACHED\n", begin_row);
         return;
     }
     menuRedraw();
+    menuScrollBar();
 }
 
 // Redraw inside rows
@@ -183,12 +191,46 @@ void menuRedraw() {
     }
 }
 
-// Menu sound
-void menuSound() {
-    const unsigned int snd_begin = millis();
-    while (millis() - snd_begin <= SND_CLICK_DURATION) {
-        digitalWrite(SPEAKER_PIN, 1);
-        delay(SND_CLICK_SPACE);
-        digitalWrite(SPEAKER_PIN, 0);
+// Draw menu scroll bar
+void menuScrollBar() {
+    if (real_rows > virtual_rows) {
+        // Top handle
+        menuAt(1, -1);
+        if (begin_row > 1) {
+            vga.setTextColor(zxcolor(7, 0), zxcolor(0, 0));
+            vga.print("+");
+        } else {
+            vga.setTextColor(zxcolor(7, 0), zxcolor(0, 0));
+            vga.print("-");
+        }
+
+        // Complete bar
+        unsigned short holder_x = x + (OSD_FONT_W * (cols - 1)) + 1;
+        unsigned short holder_y = y + (OSD_FONT_H * 2);
+        unsigned short holder_h = OSD_FONT_H * (virtual_rows - 3);
+        unsigned short holder_w = OSD_FONT_W;
+        vga.fillRect(holder_x, holder_y, holder_w, holder_h, zxcolor(7, 0));
+        holder_y++;
+
+        // Scroll bar
+        unsigned short shown_pct = round(((float)virtual_rows / (float)real_rows) * 100.0);
+        unsigned short begin_pct = round(((float)(begin_row - 1) / (float)real_rows) * 100.0);
+        unsigned short bar_h = round(((float)holder_h / 100.0) * (float)shown_pct);
+        unsigned short bar_y = round(((float)holder_h / 100.0) * (float)begin_pct);
+        while ((bar_y + bar_h) >= holder_h) {
+            bar_h--;
+        }
+
+        vga.fillRect(holder_x + 1, holder_y + bar_y, holder_w - 2, bar_h, zxcolor(0, 0));
+
+        // Bottom handle
+        menuAt(-1, -1);
+        if ((begin_row + virtual_rows - 1) < real_rows) {
+            vga.setTextColor(zxcolor(7, 0), zxcolor(0, 0));
+            vga.print("+");
+        } else {
+            vga.setTextColor(zxcolor(7, 0), zxcolor(0, 0));
+            vga.print("-");
+        }
     }
 }

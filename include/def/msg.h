@@ -46,6 +46,7 @@
     "joystick. AltGr to fire.\n"
 #define MENU_TEST                                                                                                      \
     "Test Menu\n"                                                                                                      \
+    "........10........20........30........40........50........60........70........80\n"                               \
     "Option 01 Lorem ipsum dolor sit amet, consectetur adipiscing elit...\n"                                           \
     "Option 02\n"                                                                                                      \
     "Option 03\n"                                                                                                      \
@@ -71,7 +72,6 @@
     "Option 23\n"                                                                                                      \
     "Option 24\n"                                                                                                      \
     "Option 25\n"                                                                                                      \
-    "Option 25\n"                                                                                                      \
     "Option 26\n"                                                                                                      \
     "Option 27\n"                                                                                                      \
     "Option 28\n"                                                                                                      \
@@ -82,10 +82,18 @@
     "Option 33\n"                                                                                                      \
     "Option 34\n"                                                                                                      \
     "Option 35\n"                                                                                                      \
-    "Option 35\n"                                                                                                      \
     "Option 36\n"                                                                                                      \
     "Option 37\n"                                                                                                      \
     "Option 38\n"                                                                                                      \
     "Option 39\n"                                                                                                      \
+    "Option 40\n"                                                                                                      \
+    "Option 41\n"                                                                                                      \
+    "Option 42\n"                                                                                                      \
+    "Option 43\n"                                                                                                      \
+    "Option 44\n"                                                                                                      \
+    "Option 45\n"                                                                                                      \
+    "Option 46\n"                                                                                                      \
+    "Option 47\n"                                                                                                      \
+    "Option 38\n"                                                                                                      \
     "Option 49\n"                                                                                                      \
     "Option 50 Lorem ipsum dolor sit amet, consectetur adipiscing elit...\n"
