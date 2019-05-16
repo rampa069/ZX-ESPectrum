@@ -209,7 +209,7 @@ void menuScrollBar() {
         unsigned short holder_y = y + (OSD_FONT_H * 2);
         unsigned short holder_h = OSD_FONT_H * (virtual_rows - 3);
         unsigned short holder_w = OSD_FONT_W;
-        vga.fillRect(holder_x, holder_y, holder_w, holder_h, zxcolor(7, 0));
+        vga.fillRect(holder_x, holder_y, holder_w, holder_h + 1, zxcolor(7, 0));
         holder_y++;
 
         // Scroll bar
