@@ -8,3 +8,7 @@
 #define KEY_CURSOR_UP 0x75
 #define KEY_ALT_GR 0x11
 #define KEY_ENTER 0x5A
+#define KEY_HOME 0xE06C
+#define KEY_END 0xE069
+#define KEY_PAGE_UP 0xE07D
+#define KEY_PAGE_DOWN 0xE07A

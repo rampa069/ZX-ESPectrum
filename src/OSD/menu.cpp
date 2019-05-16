@@ -7,16 +7,18 @@
 #include "osd.h"
 #include <math.h>
 
-byte cols;                // Maximun columns
-unsigned short real_rows; // Real row count
-byte virtual_rows;        // Virtual maximun rows on screen
-byte w;                   // Width in pixels
-byte h;                   // Height in pixels
-byte x;                   // X vertical position
-byte y;                   // Y horizontal position
-String menu;              // Menu string
-unsigned short begin_row; // First real displayed row
-byte focus;               // Focused virtual row
+byte cols;                     // Maximun columns
+unsigned short real_rows;      // Real row count
+byte virtual_rows;             // Virtual maximun rows on screen
+byte w;                        // Width in pixels
+byte h;                        // Height in pixels
+byte x;                        // X vertical position
+byte y;                        // Y horizontal position
+String menu;                   // Menu string
+unsigned short begin_row;      // First real displayed row
+byte focus;                    // Focused virtual row
+byte last_focus;               // To check for changes
+unsigned short last_begin_row; // To check for changes
 
 // Set menu and force recalc
 void newMenu(String new_menu) {
@@ -43,7 +45,7 @@ void menuRecalc() {
     // Rows
     real_rows = rowCount(menu);
     virtual_rows = (real_rows > MENU_MAX_ROWS ? MENU_MAX_ROWS : real_rows);
-    begin_row = 1;
+    begin_row = last_begin_row = last_focus = focus = 1;
 
     // Size
     w = (cols * OSD_FONT_W) + 2;
@@ -159,6 +161,32 @@ unsigned short menuRun(String new_menu) {
                     menuPrintRow(focus - 1, IS_NORMAL);
                 }
             }
+        } else if (checkAndCleanKey(KEY_PAGE_UP)) {
+            if (begin_row > virtual_rows) {
+                focus = 1;
+                begin_row -= virtual_rows;
+            } else {
+                focus = 1;
+                begin_row = 1;
+            }
+            menuRedraw();
+        } else if (checkAndCleanKey(KEY_PAGE_DOWN)) {
+            if (real_rows - begin_row  - virtual_rows > virtual_rows) {
+                focus = 1;
+                begin_row += virtual_rows - 1;
+            } else {
+                focus = virtual_rows - 1;
+                begin_row = real_rows - virtual_rows + 1;
+            }
+            menuRedraw();
+        } else if (checkAndCleanKey(KEY_HOME)) {
+            focus = 1;
+            begin_row = 1;
+            menuRedraw();
+        } else if (checkAndCleanKey(KEY_END)) {
+            focus = virtual_rows - 1;
+            begin_row = real_rows - virtual_rows + 1;
+            menuRedraw();
         } else if (checkAndCleanKey(KEY_ENTER)) {
             return menuRealRowFor(focus);
         } else if (checkAndCleanKey(KEY_ESC) || checkAndCleanKey(KEY_F1)) {
@@ -177,17 +205,21 @@ void menuScroll(boolean dir) {
         return;
     }
     menuRedraw();
-    menuScrollBar();
 }
 
 // Redraw inside rows
 void menuRedraw() {
-    for (byte row = 1; row < virtual_rows; row++) {
-        if (row == focus) {
-            menuPrintRow(row, IS_FOCUSED);
-        } else {
-            menuPrintRow(row, IS_NORMAL);
+    if (focus != last_focus or begin_row != last_begin_row) {
+        for (byte row = 1; row < virtual_rows; row++) {
+            if (row == focus) {
+                menuPrintRow(row, IS_FOCUSED);
+            } else {
+                menuPrintRow(row, IS_NORMAL);
+            }
         }
+        menuScrollBar();
+        last_focus = focus;
+        last_begin_row = begin_row;
     }
 }
 
