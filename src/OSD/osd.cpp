@@ -46,6 +46,11 @@ void do_OSD() {
         cycle_sna = true;
     } else if (checkAndCleanKey(KEY_F2)) {
         byte opt = menuRun(MENU_TEST);
+    } else if (checkAndCleanKey(KEY_PAUSE)) {
+        osdCenteredMsg(OSD_PAUSE, LEVEL_INFO);
+        while (!checkAndCleanKey(KEY_PAUSE)) {
+            delay(5);
+        }
     } else if (checkAndCleanKey(KEY_F1)) {
         // Main menu
         byte opt = menuRun(MENU_MAIN);

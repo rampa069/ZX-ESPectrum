@@ -30,6 +30,7 @@
 #define OSD_OFF "OSD OFF"
 #define OSD_DEMO_MODE_ON "Demo Mode ON"
 #define OSD_DEMO_MODE_OFF "Demo Mode OFF"
+#define OSD_PAUSE "--=[PAUSED]=--"
 #define MENU_SNA_TITLE "Select Snapshot"
 #define MENU_MAIN "Main Menu\nChange ROM\nChange RAM\nReset\nDemo Mode\nHelp\nReturn\n"
 #define MENU_RESET "Reset Menu\nSoft reset\nHard reset\nCancel\n"
