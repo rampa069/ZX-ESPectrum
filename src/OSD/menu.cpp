@@ -27,7 +27,7 @@ void newMenu(String new_menu) {
 
 void menuRecalc() {
     // Columns
-    cols = 18;
+    cols = 20;
     byte col_count = 0;
     for (unsigned short i = 0; i < menu.length(); i++) {
         if (menu.charAt(i) == ASCII_NL) {
@@ -108,13 +108,13 @@ void menuDraw() {
     menuPrintRow(0, IS_TITLE);
     // Rainbow
     unsigned short rb_y = y + 8;
-    unsigned short rb_paint_x = x + w - 20;
+    unsigned short rb_paint_x = x + w - 30;
     byte rb_colors[] = {2, 6, 4, 5};
     for (byte c = 0; c < 4; c++) {
-        for (byte i = 0; i < 3; i++) {
-            vga.line(rb_paint_x + i, rb_y, rb_paint_x + 4 + i, rb_y - 8, zxcolor(rb_colors[c], 1));
+        for (byte i = 0; i < 5; i++) {
+            vga.line(rb_paint_x + i, rb_y, rb_paint_x + 8 + i, rb_y - 8, zxcolor(rb_colors[c], 1));
         }
-        rb_paint_x += 3;
+        rb_paint_x += 5;
     }
     // Focused first line
     menuPrintRow(1, IS_FOCUSED);
