@@ -196,13 +196,8 @@ void videoTask(void *unused) {
                     byte_offset = (vga_lin - 3) * 32 + ff;
                     calc_y = calcY(byte_offset);
 
-                    //if (!video_latch) {
-                        color_attrib = readbyte(0x5800 + (calc_y / 8) * 32 + ff); // get 1 of 768 attrib values
-                        pixel_map = readbyte(byte_offset+0x4000);
-                    //} else {
-                    //    color_attrib = ram7[0x1800 + (calc_y / 8) * 32 + ff]; // get 1 of 768 attrib values
-                    //    pixel_map = ram7[byte_offset];
-                    //}
+                    color_attrib = readbyte(0x5800 + (calc_y / 8) * 32 + ff); // get 1 of 768 attrib values
+                    pixel_map = readbyte(byte_offset+0x4000);
 
                     for (i = 0; i < 8; i++) // foreach pixel within a byte
                     {
