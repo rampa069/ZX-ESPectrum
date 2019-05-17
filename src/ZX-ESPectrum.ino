@@ -102,7 +102,7 @@ void setup() {
     ram2 = (byte *)ps_malloc(16384);
     ram3 = (byte *)ps_malloc(16384);
     ram4 = (byte *)ps_malloc(16384);
-    ram5 = (byte *)ps_malloc(16384);
+    ram5 = (byte *)malloc(16384);
     ram6 = (byte *)ps_malloc(16384);
     ram7 = (byte *)ps_malloc(16384);
 #else
@@ -196,13 +196,13 @@ void videoTask(void *unused) {
                     byte_offset = (vga_lin - 3) * 32 + ff;
                     calc_y = calcY(byte_offset);
 
-                    if (!video_latch) {
-                        color_attrib = ram5[0x1800 + (calc_y / 8) * 32 + ff]; // get 1 of 768 attrib values
-                        pixel_map = ram5[byte_offset];
-                    } else {
-                        color_attrib = ram7[0x1800 + (calc_y / 8) * 32 + ff]; // get 1 of 768 attrib values
-                        pixel_map = ram7[byte_offset];
-                    }
+                    //if (!video_latch) {
+                        color_attrib = readbyte(0x5800 + (calc_y / 8) * 32 + ff); // get 1 of 768 attrib values
+                        pixel_map = readbyte(byte_offset+0x4000);
+                    //} else {
+                    //    color_attrib = ram7[0x1800 + (calc_y / 8) * 32 + ff]; // get 1 of 768 attrib values
+                    //    pixel_map = ram7[byte_offset];
+                    //}
 
                     for (i = 0; i < 8; i++) // foreach pixel within a byte
                     {
