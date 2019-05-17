@@ -61,6 +61,7 @@ unsigned short menuRun(String new_menu);
 void menuScroll(boolean up);
 void menuAt(short int row, short int col);
 void menuScrollBar();
+String getTestMenu(unsigned short n_lines);
 // Rows
 unsigned short rowCount(String menu);
 String rowGet(String menu, unsigned short row_number);

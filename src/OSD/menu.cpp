@@ -266,3 +266,13 @@ void menuScrollBar() {
         }
     }
 }
+
+// Return a test menu
+String getTestMenu(unsigned short n_lines) {
+    String test_menu = "Test Menu\n";
+    for (unsigned short line = 1; line <= n_lines; line += 2) {
+        test_menu += "Option Line " + (String)line + "\n";
+        test_menu += "1........10........20........30........40........50........60\n";
+    }
+    return test_menu;
+}
