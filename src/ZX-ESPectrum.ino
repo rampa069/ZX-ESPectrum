@@ -168,8 +168,8 @@ void videoTask(void *unused) {
     unsigned char color_attrib, pixel_map, flash, bright;
     unsigned int zx_vidcalc, calc_y;
 
-    word zx_fore_color, zx_back_color, tmp_color;
-    byte active_latch;
+    byte zx_fore_color, zx_back_color, tmp_color;
+    //byte active_latch;
 
     videoTaskIsRunning = true;
     uint16_t *param;
@@ -208,11 +208,10 @@ void videoTask(void *unused) {
                         flash = (color_attrib & 0B10000000) >> 7;
                         zx_fore_color = zxcolor((color_attrib & 0B00000111), bright);
                         zx_back_color = zxcolor(((color_attrib & 0B00111000) >> 3), bright);
-                        if (flash && (flashing > 16)) {
-                            tmp_color = zx_fore_color;
-                            zx_fore_color = zx_back_color;
-                            zx_back_color = tmp_color;
-                        }
+
+                        if (flash && flashing)
+                            swap_flash(&zx_fore_color,&zx_back_color);
+
 
                         if ((pixel_map & bitpos) != 0)
                             vga.dotFast(zx_vidcalc + 52, calc_y + 3, zx_fore_color);
@@ -232,6 +231,14 @@ void videoTask(void *unused) {
     while (1) {
     }
 }
+
+void swap_flash(byte* a, byte* b)
+{
+    int temp = *a;
+    *a = *b;
+    *b = temp;
+}
+
 
 // SPECTRUM SCREEN DISPLAY
 //
