@@ -10,4 +10,4 @@ extern byte lastcode;
 void IRAM_ATTR kb_interruptHandler(void);
 void kb_begin();
 boolean isKeymapChanged();
-boolean checkAndCleanKey(byte scancode);
+boolean checkAndCleanKey(uint8_t scancode);
