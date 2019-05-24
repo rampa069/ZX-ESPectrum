@@ -153,28 +153,24 @@ extern "C" void writebyte(uint16_t addr, uint8_t data) {
             ram0[addr - 0xc000] = data;
             break;
         case 1:
-            delayMicroseconds(1);
             ram1[addr - 0xc000] = data;
             break;
         case 2:
             ram2[addr - 0xc000] = data;
             break;
         case 3:
-            delayMicroseconds(1);
             ram3[addr - 0xc000] = data;
             break;
         case 4:
             ram4[addr - 0xc000] = data;
             break;
         case 5:
-            delayMicroseconds(1);
             ram5[addr - 0xc000] = data;
             break;
         case 6:
             ram6[addr - 0xc000] = data;
             break;
         case 7:
-            delayMicroseconds(1);
             ram7[addr - 0xc000] = data;
             break;
         }
@@ -245,6 +241,8 @@ extern "C" uint8_t input(uint8_t portLow, uint8_t portHigh) {
         return z80ports_in[31];
     }
     // Sound (AY-3-8912)
+
+    #ifdef AY_SOUND
     if (portLow == 0xFD) {
         switch (portHigh) {
         case 0xFF:
@@ -252,6 +250,7 @@ extern "C" uint8_t input(uint8_t portLow, uint8_t portHigh) {
             return _ay3_8912.getRegisterData();
         }
     }
+    #endif
 
     uint8_t data = zx_data;
     data |= (0xe0); /* Set bits 5-7 - as reset above */
@@ -282,6 +281,8 @@ extern "C" void output(uint8_t portLow, uint8_t portHigh, uint8_t data) {
     case 0xFD: {
         // Sound (AY-3-8912)
         switch (portHigh) {
+
+   #ifdef AY_SOUND
         case 0xFF:
             // Serial.printf("Select AY register %x %x %x\n",portHigh,portLow,data);
             _ay3_8912.selectRegister(data);
@@ -290,6 +291,8 @@ extern "C" void output(uint8_t portLow, uint8_t portHigh, uint8_t data) {
             // Serial.printf("Select AY register Data %x %x %x\n",portHigh,portLow,data);
             _ay3_8912.setRegisterData(data);
             break;
+   #endif
+
         case 0x7F:
             if (!paging_lock) {
                 paging_lock = bitRead(tmp_data, 5);

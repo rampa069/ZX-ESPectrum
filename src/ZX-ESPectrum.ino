@@ -168,7 +168,7 @@ void videoTask(void *unused) {
     unsigned char color_attrib, pixel_map, flash, bright;
     unsigned int zx_vidcalc, calc_y;
 
-    byte zx_fore_color, zx_back_color, tmp_color;
+    word zx_fore_color, zx_back_color, tmp_color;
     //byte active_latch;
 
     videoTaskIsRunning = true;
@@ -213,8 +213,9 @@ void videoTask(void *unused) {
                             swap_flash(&zx_fore_color,&zx_back_color);
 
 
-                        if ((pixel_map & bitpos) != 0)
+                        if ((pixel_map & bitpos) != 0 )
                             vga.dotFast(zx_vidcalc + 52, calc_y + 3, zx_fore_color);
+
                         else
                             vga.dotFast(zx_vidcalc + 52, calc_y + 3, zx_back_color);
                     }
@@ -232,9 +233,9 @@ void videoTask(void *unused) {
     }
 }
 
-void swap_flash(byte* a, byte* b)
+void swap_flash(word* a, word* b)
 {
-    int temp = *a;
+    word temp = *a;
     *a = *b;
     *b = temp;
 }
