@@ -75,7 +75,7 @@ void kb_begin() {
 boolean isKeymapChanged() { return (keymap != oldKeymap); }
 
 // Check if key is pressed and clean it
-boolean checkAndCleanKey(byte scancode) {
+boolean checkAndCleanKey(uint8_t scancode) {
     if (keymap[scancode] == 0) {
         keymap[scancode] = 1;
         return true;
