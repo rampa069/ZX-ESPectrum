@@ -13,4 +13,7 @@ upload_protocol = esptool
 
 monitor_speed = 115200
 board_build.partitions = noota_3g.csv
-build_flags = -w -O3
+build_flags =
+    -w -O3
+    -DBOARD_HAS_PSRAM
+    -mfix-esp32-psram-cache-issue
