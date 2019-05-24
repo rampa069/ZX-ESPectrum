@@ -26,6 +26,7 @@ int _next_total = 0;
 static uint8_t zx_data = 0;
 static uint32_t frames = 0;
 static uint32_t _ticks = 0;
+int cycles_per_step = CalcTStates();
 
 extern "C" {
 uint8_t readbyte(uint16_t addr);
@@ -57,6 +58,7 @@ void zx_reset() {
     sp3_mode = 0;
     sp3_rom = 0;
     rom_in_use = 0;
+    cycles_per_step = CalcTStates();
 
     Z80Reset(&_zxCpu);
 }
@@ -64,7 +66,6 @@ void zx_reset() {
 int32_t zx_loop() {
     int32_t result = -1;
     byte tmp_color = 0;
-    static int cycles_per_step = CalcTStates();
 
     _total = Z80Emulate(&_zxCpu, cycles_per_step, &_zxContext);
     Z80Interrupt(&_zxCpu, 0xff, &_zxContext);
