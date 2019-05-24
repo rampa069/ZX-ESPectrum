@@ -5,10 +5,10 @@
 
 #include "Emulator/Keyboard/PS2Kbd.h"
 #include "Emulator/Memory.h"
+#include "Emulator/clock.h"
 #include "Emulator/z80Input.h"
 #include "Emulator/z80main.h"
 
-#define CYCLES_PER_STEP 69888 // 71600
 #define RAM_AVAILABLE 0xC000
 #define CONTENTION_TIME 200
 
@@ -64,11 +64,9 @@ void zx_reset() {
 int32_t zx_loop() {
     int32_t result = -1;
     byte tmp_color = 0;
-    uint32_t ts1, ts2;
+    static int cycles_per_step = CalcTStates();
 
-    ts1 = millis();
-    //_total += Z80Emulate(&_zxCpu, _next_total - _total, &_zxContext);
-    _total = Z80Emulate(&_zxCpu, CYCLES_PER_STEP, &_zxContext);
+    _total = Z80Emulate(&_zxCpu, cycles_per_step, &_zxContext);
     Z80Interrupt(&_zxCpu, 0xff, &_zxContext);
     // Serial.println(_total);
 
@@ -242,7 +240,7 @@ extern "C" uint8_t input(uint8_t portLow, uint8_t portHigh) {
     }
     // Sound (AY-3-8912)
 
-    #ifdef AY_SOUND
+#ifdef AY_SOUND
     if (portLow == 0xFD) {
         switch (portHigh) {
         case 0xFF:
@@ -250,7 +248,7 @@ extern "C" uint8_t input(uint8_t portLow, uint8_t portHigh) {
             return _ay3_8912.getRegisterData();
         }
     }
-    #endif
+#endif
 
     uint8_t data = zx_data;
     data |= (0xe0); /* Set bits 5-7 - as reset above */
@@ -282,7 +280,7 @@ extern "C" void output(uint8_t portLow, uint8_t portHigh, uint8_t data) {
         // Sound (AY-3-8912)
         switch (portHigh) {
 
-   #ifdef AY_SOUND
+#ifdef AY_SOUND
         case 0xFF:
             // Serial.printf("Select AY register %x %x %x\n",portHigh,portLow,data);
             _ay3_8912.selectRegister(data);
@@ -291,7 +289,7 @@ extern "C" void output(uint8_t portLow, uint8_t portHigh, uint8_t data) {
             // Serial.printf("Select AY register Data %x %x %x\n",portHigh,portLow,data);
             _ay3_8912.setRegisterData(data);
             break;
-   #endif
+#endif
 
         case 0x7F:
             if (!paging_lock) {

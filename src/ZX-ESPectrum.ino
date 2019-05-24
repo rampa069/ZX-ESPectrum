@@ -8,6 +8,7 @@
 
 #include "Emulator/Keyboard/PS2Kbd.h"
 #include "Emulator/Memory.h"
+#include "Emulator/clock.h"
 #include "Emulator/z80emu/z80emu.h"
 #include "Emulator/z80main.h"
 #include "Emulator/z80user.h"
@@ -135,8 +136,7 @@ void setup() {
     kb_begin();
 
     Serial.printf("%s bank %u: %ub\n", MSG_FREE_HEAP_AFTER, 0, ESP.getFreeHeap());
-
-    setup_cpuspeed();
+    Serial.printf("CALC TSTATES/PERIOD %u\n", CalcTStates());
 
     // START Z80
     Serial.println(MSG_Z80_RESET);
@@ -169,7 +169,7 @@ void videoTask(void *unused) {
     unsigned int zx_vidcalc, calc_y;
 
     word zx_fore_color, zx_back_color, tmp_color;
-    //byte active_latch;
+    // byte active_latch;
 
     videoTaskIsRunning = true;
     uint16_t *param;
@@ -197,7 +197,7 @@ void videoTask(void *unused) {
                     calc_y = calcY(byte_offset);
 
                     color_attrib = readbyte(0x5800 + (calc_y / 8) * 32 + ff); // get 1 of 768 attrib values
-                    pixel_map = readbyte(byte_offset+0x4000);
+                    pixel_map = readbyte(byte_offset + 0x4000);
 
                     for (i = 0; i < 8; i++) // foreach pixel within a byte
                     {
@@ -210,10 +210,9 @@ void videoTask(void *unused) {
                         zx_back_color = zxcolor(((color_attrib & 0B00111000) >> 3), bright);
 
                         if (flash && flashing)
-                            swap_flash(&zx_fore_color,&zx_back_color);
+                            swap_flash(&zx_fore_color, &zx_back_color);
 
-
-                        if ((pixel_map & bitpos) != 0 )
+                        if ((pixel_map & bitpos) != 0)
                             vga.dotFast(zx_vidcalc + 52, calc_y + 3, zx_fore_color);
 
                         else
@@ -233,13 +232,11 @@ void videoTask(void *unused) {
     }
 }
 
-void swap_flash(word* a, word* b)
-{
+void swap_flash(word *a, word *b) {
     word temp = *a;
     *a = *b;
     *b = temp;
 }
-
 
 // SPECTRUM SCREEN DISPLAY
 //
