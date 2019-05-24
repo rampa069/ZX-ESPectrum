@@ -104,7 +104,7 @@ void setup() {
     ram4 = (byte *)ps_malloc(16384);
     ram5 = (byte *)malloc(16384);
     ram6 = (byte *)ps_malloc(16384);
-    ram7 = (byte *)ps_malloc(16384);
+    ram7 = (byte *)malloc(16384);
 #else
     rom0 = (byte *)malloc(16384);
 
