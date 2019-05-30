@@ -1,10 +1,8 @@
 #ifndef __ZXMAIN_INCLUDED__
 #define __ZXMAIN_INCLUDED__
 
-#include "Sound/ay3-8912-state.h"
 #include "z80user.h"
 
-extern Sound_AY::Ay3_8912_state _ay3_8912;
 extern Z80_STATE _zxCpu;
 
 void zx_setup();

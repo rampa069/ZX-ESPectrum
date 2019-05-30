@@ -10,9 +10,7 @@
 #include "Emulator/z80main.h"
 
 #define RAM_AVAILABLE 0xC000
-#define CONTENTION_TIME 200
 
-Sound_AY::Ay3_8912_state _ay3_8912;
 Z80_STATE _zxCpu;
 
 extern byte borderTemp;
@@ -69,7 +67,7 @@ int32_t zx_loop() {
 
     _total = Z80Emulate(&_zxCpu, cycles_per_step, &_zxContext);
     Z80Interrupt(&_zxCpu, 0xff, &_zxContext);
-    // Serial.println(_total);
+  //  Serial.println(_total);
 
     return result;
 }

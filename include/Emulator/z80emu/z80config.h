@@ -40,7 +40,7 @@
  * before the undefined opcode.
  */
 
-//#define Z80_CATCH_ED_UNDEFINED
+#define Z80_CATCH_ED_UNDEFINED
 
 /* The emulator cannot be stopped between prefixed opcodes. This can be a
  * problem if there is a long sequence of 0xdd and/or 0xfd prefixes. But if
@@ -60,7 +60,7 @@
  * account for memory wait states on code read.
  */
 
-#define Z80_FALSE_CONDITION_FETCH */
+//#define Z80_FALSE_CONDITION_FETCH
 
 /* It may be possible to overwrite the opcode of the currently executing LDIR,
  * LDDR, INIR, or OTDR instruction. Define this macro if you need to handle

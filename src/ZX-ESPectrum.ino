@@ -75,6 +75,7 @@ VGA3Bit vga;
 VGA14Bit vga;
 #endif
 
+
 void setup() {
     // Turn off peripherals to gain memory (?do they release properly)
     esp_bt_controller_deinit();
@@ -113,6 +114,7 @@ void setup() {
     ram2 = (byte *)malloc(16384);
     ram5 = (byte *)malloc(16384);
 #endif
+
 
 #ifdef COLOUR_8
     vga.init(vga.MODE360x200, RED_PIN, GREEN_PIN, BLUE_PIN, HSYNC_PIN, VSYNC_PIN);
@@ -182,9 +184,11 @@ void videoTask(void *unused) {
         for (unsigned int vga_lin = 0; vga_lin < 200; vga_lin++) {
             // tick = 0;
             if (vga_lin < 3 || vga_lin > 194) {
+
                 for (int bor = 32; bor < 328; bor++)
                     vga.dotFast(bor, vga_lin, zxcolor(borderTemp, 0));
             } else {
+
                 for (int bor = 32; bor < 52; bor++) {
                     vga.dotFast(bor, vga_lin, zxcolor(borderTemp, 0));
                     vga.dotFast(bor + 276, vga_lin, zxcolor(borderTemp, 0));
@@ -195,9 +199,15 @@ void videoTask(void *unused) {
 
                     byte_offset = (vga_lin - 3) * 32 + ff;
                     calc_y = calcY(byte_offset);
-
-                    color_attrib = readbyte(0x5800 + (calc_y / 8) * 32 + ff); // get 1 of 768 attrib values
-                    pixel_map = readbyte(byte_offset + 0x4000);
+                    if (!video_latch)
+                    {
+                       color_attrib = readbyte(0x5800 + (calc_y / 8) * 32 + ff); // get 1 of 768 attrib values
+                       pixel_map = readbyte(byte_offset + 0x4000);
+                     } else
+                      {
+                        color_attrib = ram7[0x1800 + (calc_y / 8) * 32 + ff]; // get 1 of 768 attrib values
+                        pixel_map = ram7[byte_offset];
+                      }
 
                     for (i = 0; i < 8; i++) // foreach pixel within a byte
                     {
