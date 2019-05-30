@@ -1,4 +1,11 @@
+<<<<<<< HEAD
 #pragma GCC diagnostic ignored "-Wall"
+=======
+#include "MartianVGA.h"
+#include "ZX-ESPectrum.h"
+#include "def/hardware.h"
+#include "def/keys.h"
+>>>>>>> osddev
 #include <Arduino.h>
 #pragma GCC diagnostic warning "-Wall"
 #include "paledefs.h"
@@ -9,11 +16,12 @@ boolean keyup = false;
 boolean shift_presed = false;
 boolean symbol_pressed = false;
 byte rc = 0;
-byte keymap[256];
-byte oldKeymap[256];
 
+<<<<<<< HEAD
 extern boolean debug_keyboard;
 
+=======
+>>>>>>> osddev
 void IRAM_ATTR kb_interruptHandler(void) {
     static uint8_t bitcount = 0;
     static uint8_t incoming = 0;
@@ -44,6 +52,7 @@ void IRAM_ATTR kb_interruptHandler(void) {
                 if (keymap[incoming] == 0) {
                     keymap[incoming] = 1;
                 } else {
+                    // Serial.println("WARNING: Keyboard cleaned");
                     for (int gg = 0; gg < 256; gg++)
                         keymap[gg] = 1;
                 }
@@ -67,10 +76,22 @@ void kb_begin() {
     digitalWrite(KEYBOARD_DATA, true);
     digitalWrite(KEYBOARD_CLK, true);
     attachInterrupt(digitalPinToInterrupt(KEYBOARD_CLK), kb_interruptHandler, FALLING);
-    for (int gg = 0; gg < 256; gg++) {
-        keymap[gg] = 1;
-        oldKeymap[gg] = 1;
+
+    memset(keymap, 1, sizeof(keymap));
+    memset(oldKeymap, 1, sizeof(oldKeymap));
+    //}
+}
+
+// Check if keymatrix is changed
+boolean isKeymapChanged() { return (keymap != oldKeymap); }
+
+// Check if key is pressed and clean it
+boolean checkAndCleanKey(uint8_t scancode) {
+    if (keymap[scancode] == 0) {
+        keymap[scancode] = 1;
+        return true;
     }
+    return false;
 }
 
 // Check if keymatrix is changed

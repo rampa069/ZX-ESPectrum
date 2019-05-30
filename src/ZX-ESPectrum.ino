@@ -6,6 +6,7 @@
 //  lease, notify me, if you make any changes to this file
 // -------------------------------------------------------------------
 
+<<<<<<< HEAD
 // Headers
 #pragma GCC diagnostic ignored "-Wall"
 #include <Arduino.h>
@@ -21,50 +22,97 @@
 #include "msg.h"
 #include "osd.h"
 #include "paledefs.h"
+=======
+#include "Emulator/Keyboard/PS2Kbd.h"
+#include "Emulator/Memory.h"
+#include "Emulator/clock.h"
+#include "Emulator/z80emu/z80emu.h"
+#include "Emulator/z80main.h"
+#include "Emulator/z80user.h"
+#include <Arduino.h>
+
+#include "MartianVGA.h"
+
+#include "def/Font.h"
+#include "def/files.h"
+#include "def/hardware.h"
+#include "def/msg.h"
+#include "net.h"
+
+#include "driver/timer.h"
+#include "soc/timer_group_struct.h"
+#include <esp_bt.h>
+>>>>>>> osddev
 
 // EXTERN VARS
-extern byte bank_latch;
-extern int start_im1_irq;
-extern int Z80_IPeriod;
-extern boolean writeScreen;
-extern boolean cfg_mode_sna;
+
 extern boolean cfg_slog_on;
 extern String cfg_ram_file;
-extern String cfg_rom_file;
+extern String cfg_rom_set;
+extern String cfg_arch;
+extern CONTEXT _zxContext;
+extern Z80_STATE _zxCpu;
+extern int _total;
+extern int _next_total;
+
+void load_rom(String, String);
+void load_ram(String);
+
+volatile byte keymap[256];
+volatile byte oldKeymap[256];
 
 // EXTERN METHODS
+<<<<<<< HEAD
 extern void load_rom(String);
 extern void load_ram(String);
 void Z80_Reset(void);       /* Reset registers to the initial values */
 unsigned int Z80_Execute(); /* Execute IPeriod T-States              */
 unsigned int Z80();         /* Execute IPeriod T-States              */
+=======
+
+>>>>>>> osddev
 void setup_cpuspeed();
-byte Z80_RDMEM(uint16_t A);
-void Z80_WRMEM(uint16_t A, byte V);
 void config_read();
 void do_OSD();
+<<<<<<< HEAD
 extern void mount_spiffs();
 extern void listAllFiles();
+=======
+void errorHalt(String);
+void mount_spiffs();
+>>>>>>> osddev
 
 // GLOBALS
-byte *bank0;
-byte z80ports_in[32];
-byte borderTemp = 7;
-byte soundTemp = 0;
-byte flashing = 0;
-byte lastAudio = 0;
-boolean xULAStop = false;
-boolean xULAStopped = false;
+volatile byte z80ports_in[128];
+volatile byte borderTemp = 7;
+volatile byte flashing = 0;
+volatile boolean xULAStop = false;
+volatile boolean xULAStopped = false;
+volatile byte tick;
+const int SAMPLING_RATE = 44100;
+const int BUFFER_SIZE = 2000;
+
+int halfsec, sp_int_ctr, evenframe, updateframe;
+
+QueueHandle_t vidQueue;
+TaskHandle_t videoTaskHandle;
+volatile bool videoTaskIsRunning = false;
+uint16_t *param;
 
 // SETUP *************************************
+#ifdef COLOUR_8
 VGA3Bit vga;
+#else
+VGA14Bit vga;
+#endif
+
 
 void setup() {
     // Turn off peripherals to gain memory (?do they release properly)
     esp_bt_controller_deinit();
     esp_bt_controller_mem_release(ESP_BT_MODE_BTDM);
-    // esp_wifi_set_mode(WIFI_MODE_NULL);
 
+<<<<<<< HEAD
     mount_spiffs();
     config_read();
 
@@ -72,14 +120,65 @@ void setup() {
     Serial.println(MSG_VGA_INIT);
     vga.setFrameBufferCount(2);
     vga.init(vga.MODE360x200, redPin, greenPin, bluePin, hsyncPin, vsyncPin);
+=======
+    Serial.begin(115200);
+    if (cfg_slog_on) {
+        Serial.println(MSG_VGA_INIT);
+    }
+>>>>>>> osddev
 
-    pinMode(SOUND_PIN, OUTPUT);
-    digitalWrite(SOUND_PIN, LOW);
+    Serial.printf("HEAP BEGIN %d\n", ESP.getFreeHeap());
 
-    start_im1_irq = 1;
+    mount_spiffs();
+    config_read();
+    // wifiConn();
+    Serial.printf("HEAP AFTER WIFI %d\n", ESP.getFreeHeap());
+
+#ifdef BOARD_HAS_PSRAM
+    rom0 = (byte *)ps_malloc(16384);
+    rom1 = (byte *)ps_malloc(16384);
+    rom2 = (byte *)ps_malloc(16384);
+    rom3 = (byte *)ps_malloc(16384);
+
+    ram0 = (byte *)ps_malloc(16384);
+    ram1 = (byte *)ps_malloc(16384);
+    ram2 = (byte *)ps_malloc(16384);
+    ram3 = (byte *)ps_malloc(16384);
+    ram4 = (byte *)ps_malloc(16384);
+    ram5 = (byte *)malloc(16384);
+    ram6 = (byte *)ps_malloc(16384);
+    ram7 = (byte *)malloc(16384);
+#else
+    rom0 = (byte *)malloc(16384);
+
+    ram0 = (byte *)malloc(16384);
+    ram2 = (byte *)malloc(16384);
+    ram5 = (byte *)malloc(16384);
+#endif
+
+
+#ifdef COLOUR_8
+    vga.init(vga.MODE360x200, RED_PIN, GREEN_PIN, BLUE_PIN, HSYNC_PIN, VSYNC_PIN);
+#else
+    const int redPins[] = {RED_PINS};
+    const int greenPins[] = {GREEN_PINS};
+    const int bluePins[] = {BLUE_PINS};
+    vga.init(vga.MODE360x200, redPins, greenPins, bluePins, HSYNC_PIN, VSYNC_PIN);
+#endif
+
+    Serial.printf("HEAP after vga  %d \n", ESP.getFreeHeap());
+
+    vga.clear(0);
+
+    pinMode(SPEAKER_PIN, OUTPUT);
+    pinMode(EAR_PIN, INPUT);
+    pinMode(MIC_PIN, OUTPUT);
+    digitalWrite(SPEAKER_PIN, LOW);
+    digitalWrite(MIC_PIN, LOW);
 
     kb_begin();
 
+<<<<<<< HEAD
     // ALLOCATE MEMORY
     //
     bank0 = (byte *)malloc(49152);
@@ -94,89 +193,124 @@ void setup() {
     // START Z80
     Serial.println(MSG_Z80_RESET);
     Z80_Reset();
+=======
+    Serial.printf("%s bank %u: %ub\n", MSG_FREE_HEAP_AFTER, 0, ESP.getFreeHeap());
+    Serial.printf("CALC TSTATES/PERIOD %u\n", CalcTStates());
+
+    // START Z80
+    Serial.println(MSG_Z80_RESET);
+    zx_setup();
+>>>>>>> osddev
 
     // make sure keyboard ports are FF
     for (int t = 0; t < 32; t++) {
-        z80ports_in[t] = 0xff;
+        z80ports_in[t] = 0x1f;
     }
 
+<<<<<<< HEAD
     Serial.println(MSG_EXEC_ON_CORE + xPortGetCoreID());
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
     Serial.println(MSG_FREE_HEAP_AFTER + "Z80 reset: " + system_get_free_heap_size());
 #pragma GCC diagnostic warning "-Wall"
+=======
+    Serial.printf("%s %u\n", MSG_EXEC_ON_CORE, xPortGetCoreID());
+    Serial.printf("%s Z80 RESET: %ub\n", MSG_FREE_HEAP_AFTER, ESP.getFreeHeap());
 
-    xTaskCreatePinnedToCore(videoTask,   /* Function to implement the task */
-                            "videoTask", /* Name of the task */
-                            2048,        /* Stack size in words */
-                            NULL,        /* Task input parameter */
-                            20,          /* Priority of the task */
-                            NULL,        /* Task handle. */
-                            0);          /* Core where the task should run */
+    vidQueue = xQueueCreate(1, sizeof(uint16_t *));
+    xTaskCreatePinnedToCore(&videoTask, "videoTask", 1024 * 4, NULL, 5, &videoTaskHandle, 0);
+>>>>>>> osddev
 
-    load_rom(cfg_rom_file);
-    if (cfg_mode_sna)
-        load_ram(cfg_ram_file);
+    load_rom(cfg_arch, cfg_rom_set);
+    if ((String)cfg_ram_file != (String)NO_RAM_FILE) {
+        load_ram("/sna/" + cfg_ram_file);
+    }
+
+    Serial.println("End of setup");
 }
 
 // VIDEO core 0 *************************************
 
-void videoTask(void *parameter) {
+void videoTask(void *unused) {
     unsigned int ff, i, byte_offset;
-    unsigned char color_attrib, pixel_map, zx_fore_color, zx_back_color, flash, bright;
-    unsigned int zx_vidcalc;
-    unsigned int tmpColour;
+    unsigned char color_attrib, pixel_map, flash, bright;
+    unsigned int zx_vidcalc, calc_y;
+
+    word zx_fore_color, zx_back_color, tmp_color;
+    // byte active_latch;
+
+    videoTaskIsRunning = true;
+    uint16_t *param;
 
     while (1) {
-        while (xULAStop) {
-            xULAStopped = true;
-            delay(5);
-        }
-        xULAStopped = false;
-        if (flashing++ > 32)
-            flashing = 0;
+        xQueuePeek(vidQueue, &param, portMAX_DELAY);
+        if ((int)param == 1)
+            break;
 
-        vga.clear(zxcolor(borderTemp, 0));
-        for (unsigned int lin = 0; lin < 192; lin++) {
-            for (ff = 0; ff < 32; ff++) // foreach byte in line
-            {
-                byte_offset = lin * 32 + ff; //*2+1;
-                // spectrum attributes
-                // bit 7 6   5 4 3   2 1 0
-                //    F B   P A P   I N K
-                color_attrib = bank0[0x1800 + (calcY(byte_offset) / 8) * 32 + ff]; // get 1 of 768 attrib values
-                pixel_map = bank0[byte_offset];
-                zx_fore_color = color_attrib & 0x07;
-                zx_back_color = (color_attrib & 0x38) >> 3;
+        for (unsigned int vga_lin = 0; vga_lin < 200; vga_lin++) {
+            // tick = 0;
+            if (vga_lin < 3 || vga_lin > 194) {
 
-                flash = bitRead(color_attrib, 7);
-                bright = bitRead(color_attrib, 6);
+                for (int bor = 32; bor < 328; bor++)
+                    vga.dotFast(bor, vga_lin, zxcolor(borderTemp, 0));
+            } else {
 
-                if (flash && (flashing > 16)) {
-                    tmpColour = zx_fore_color;
-                    zx_fore_color = zx_back_color;
-                    zx_back_color = tmpColour;
+                for (int bor = 32; bor < 52; bor++) {
+                    vga.dotFast(bor, vga_lin, zxcolor(borderTemp, 0));
+                    vga.dotFast(bor + 276, vga_lin, zxcolor(borderTemp, 0));
                 }
 
-                for (i = 0; i < 8; i++) // foreach pixel within a byte
+                for (ff = 0; ff < 32; ff++) // foreach byte in line
                 {
-                    zx_vidcalc = ff * 8 + i;
-                    byte bitpos = (0x80 >> i);
 
-                    if ((pixel_map & bitpos) != 0)
-                        vga.dotFast(zx_vidcalc + 52, calcY(byte_offset) + 5, zxcolor(zx_fore_color, bright));
-                    else
-                        vga.dotFast(zx_vidcalc + 52, calcY(byte_offset) + 5, zxcolor(zx_back_color, bright));
+                    byte_offset = (vga_lin - 3) * 32 + ff;
+                    calc_y = calcY(byte_offset);
+                    if (!video_latch)
+                    {
+                       color_attrib = readbyte(0x5800 + (calc_y / 8) * 32 + ff); // get 1 of 768 attrib values
+                       pixel_map = readbyte(byte_offset + 0x4000);
+                     } else
+                      {
+                        color_attrib = ram7[0x1800 + (calc_y / 8) * 32 + ff]; // get 1 of 768 attrib values
+                        pixel_map = ram7[byte_offset];
+                      }
+
+                    for (i = 0; i < 8; i++) // foreach pixel within a byte
+                    {
+
+                        zx_vidcalc = ff * 8 + i;
+                        byte bitpos = (0x80 >> i);
+                        bright = (color_attrib & 0B01000000) >> 6;
+                        flash = (color_attrib & 0B10000000) >> 7;
+                        zx_fore_color = zxcolor((color_attrib & 0B00000111), bright);
+                        zx_back_color = zxcolor(((color_attrib & 0B00111000) >> 3), bright);
+
+                        if (flash && flashing)
+                            swap_flash(&zx_fore_color, &zx_back_color);
+
+                        if ((pixel_map & bitpos) != 0)
+                            vga.dotFast(zx_vidcalc + 52, calc_y + 3, zx_fore_color);
+
+                        else
+                            vga.dotFast(zx_vidcalc + 52, calc_y + 3, zx_back_color);
+                    }
                 }
             }
         }
 
-        vga.show();
-
-        TIMERG0.wdt_wprotect = TIMG_WDT_WKEY_VALUE;
-        TIMERG0.wdt_feed = 1;
-        TIMERG0.wdt_wprotect = 0;
-        // vTaskDelay(0);
+        xQueueReceive(vidQueue, &param, portMAX_DELAY);
+        videoTaskIsRunning = false;
     }
+    videoTaskIsRunning = false;
+    vTaskDelete(NULL);
+
+    while (1) {
+    }
+}
+
+void swap_flash(word *a, word *b) {
+    word temp = *a;
+    *a = *b;
+    *b = temp;
 }
 
 // SPECTRUM SCREEN DISPLAY
@@ -191,99 +325,140 @@ int calcY(int offset) {
 /* Calculate X coordinate (0-255) from Spectrum screen memory location */
 int calcX(int offset) { return (offset % 32) << 3; }
 
-unsigned int zxcolor(byte c, byte f) {
-    int rgbLevel = 192;
-    if (f)
-        rgbLevel = 255;
-    else
-        rgbLevel = 192;
+unsigned int zxcolor(int c, int bright) {
+    word vga_color;
 
-    if (c == 0)
-        return vga.RGB(0, 0, 0);
-    else if (c == 1)
-        return vga.RGB(0, 0, rgbLevel);
-    else if (c == 2)
-        return vga.RGB(rgbLevel, 0, 0);
-    else if (c == 3)
-        return vga.RGB(rgbLevel, 0, rgbLevel);
-    else if (c == 4)
-        return vga.RGB(0, rgbLevel, 0);
-    else if (c == 5)
-        return vga.RGB(0, rgbLevel, rgbLevel);
-    else if (c == 6)
-        return vga.RGB(rgbLevel, rgbLevel, 0);
-    else if (c == 7)
-        return vga.RGB(rgbLevel, rgbLevel, rgbLevel);
-    return 0;
+    switch (c) {
+
+    case 0:
+        vga_color = BLACK;
+        break;
+    case 1:
+        vga_color = BLUE;
+        break;
+    case 2:
+        vga_color = RED;
+        break;
+    case 3:
+        vga_color = MAGENTA;
+        break;
+    case 4:
+        vga_color = GREEN;
+        break;
+    case 5:
+        vga_color = CYAN;
+        break;
+    case 6:
+        vga_color = YELLOW;
+        break;
+    case 7:
+        vga_color = WHITE;
+        break;
+    }
+
+#ifdef COLOUR_16
+    if (bright && c != 0)
+        vga_color |= 0xCE7;
+#endif
+
+    return vga_color;
 }
 
 /* Load zx keyboard lines from PS/2 */
 void do_keyboard() {
-    if (keymap != oldKeymap) {
-        bitWrite(z80ports_in[0], 0, keymap[0x12]);
-        bitWrite(z80ports_in[0], 1, keymap[0x1a]);
-        bitWrite(z80ports_in[0], 2, keymap[0x22]);
-        bitWrite(z80ports_in[0], 3, keymap[0x21]);
-        bitWrite(z80ports_in[0], 4, keymap[0x2a]);
+    byte kempston = 0;
 
-        bitWrite(z80ports_in[1], 0, keymap[0x1c]);
-        bitWrite(z80ports_in[1], 1, keymap[0x1b]);
-        bitWrite(z80ports_in[1], 2, keymap[0x23]);
-        bitWrite(z80ports_in[1], 3, keymap[0x2b]);
-        bitWrite(z80ports_in[1], 4, keymap[0x34]);
+    bitWrite(z80ports_in[0], 0, keymap[0x12]);
+    bitWrite(z80ports_in[0], 1, keymap[0x1a]);
+    bitWrite(z80ports_in[0], 2, keymap[0x22]);
+    bitWrite(z80ports_in[0], 3, keymap[0x21]);
+    bitWrite(z80ports_in[0], 4, keymap[0x2a]);
 
-        bitWrite(z80ports_in[2], 0, keymap[0x15]);
-        bitWrite(z80ports_in[2], 1, keymap[0x1d]);
-        bitWrite(z80ports_in[2], 2, keymap[0x24]);
-        bitWrite(z80ports_in[2], 3, keymap[0x2d]);
-        bitWrite(z80ports_in[2], 4, keymap[0x2c]);
+    bitWrite(z80ports_in[1], 0, keymap[0x1c]);
+    bitWrite(z80ports_in[1], 1, keymap[0x1b]);
+    bitWrite(z80ports_in[1], 2, keymap[0x23]);
+    bitWrite(z80ports_in[1], 3, keymap[0x2b]);
+    bitWrite(z80ports_in[1], 4, keymap[0x34]);
 
-        bitWrite(z80ports_in[3], 0, keymap[0x16]);
-        bitWrite(z80ports_in[3], 1, keymap[0x1e]);
-        bitWrite(z80ports_in[3], 2, keymap[0x26]);
-        bitWrite(z80ports_in[3], 3, keymap[0x25]);
-        bitWrite(z80ports_in[3], 4, keymap[0x2e]);
+    bitWrite(z80ports_in[2], 0, keymap[0x15]);
+    bitWrite(z80ports_in[2], 1, keymap[0x1d]);
+    bitWrite(z80ports_in[2], 2, keymap[0x24]);
+    bitWrite(z80ports_in[2], 3, keymap[0x2d]);
+    bitWrite(z80ports_in[2], 4, keymap[0x2c]);
 
-        bitWrite(z80ports_in[4], 0, keymap[0x45]);
-        bitWrite(z80ports_in[4], 1, keymap[0x46]);
-        bitWrite(z80ports_in[4], 2, keymap[0x3e]);
-        bitWrite(z80ports_in[4], 3, keymap[0x3d]);
-        bitWrite(z80ports_in[4], 4, keymap[0x36]);
+    bitWrite(z80ports_in[3], 0, keymap[0x16]);
+    bitWrite(z80ports_in[3], 1, keymap[0x1e]);
+    bitWrite(z80ports_in[3], 2, keymap[0x26]);
+    bitWrite(z80ports_in[3], 3, keymap[0x25]);
+    bitWrite(z80ports_in[3], 4, keymap[0x2e]);
 
-        bitWrite(z80ports_in[5], 0, keymap[0x4d]);
-        bitWrite(z80ports_in[5], 1, keymap[0x44]);
-        bitWrite(z80ports_in[5], 2, keymap[0x43]);
-        bitWrite(z80ports_in[5], 3, keymap[0x3c]);
-        bitWrite(z80ports_in[5], 4, keymap[0x35]);
+    bitWrite(z80ports_in[4], 0, keymap[0x45]);
+    bitWrite(z80ports_in[4], 1, keymap[0x46]);
+    bitWrite(z80ports_in[4], 2, keymap[0x3e]);
+    bitWrite(z80ports_in[4], 3, keymap[0x3d]);
+    bitWrite(z80ports_in[4], 4, keymap[0x36]);
 
-        bitWrite(z80ports_in[6], 0, keymap[0x5a]);
-        bitWrite(z80ports_in[6], 1, keymap[0x4b]);
-        bitWrite(z80ports_in[6], 2, keymap[0x42]);
-        bitWrite(z80ports_in[6], 3, keymap[0x3b]);
-        bitWrite(z80ports_in[6], 4, keymap[0x33]);
+    bitWrite(z80ports_in[5], 0, keymap[0x4d]);
+    bitWrite(z80ports_in[5], 1, keymap[0x44]);
+    bitWrite(z80ports_in[5], 2, keymap[0x43]);
+    bitWrite(z80ports_in[5], 3, keymap[0x3c]);
+    bitWrite(z80ports_in[5], 4, keymap[0x35]);
 
-        bitWrite(z80ports_in[7], 0, keymap[0x29]);
-        bitWrite(z80ports_in[7], 1, keymap[0x14]);
-        bitWrite(z80ports_in[7], 2, keymap[0x3a]);
-        bitWrite(z80ports_in[7], 3, keymap[0x31]);
-        bitWrite(z80ports_in[7], 4, keymap[0x32]);
-    }
-    strcpy(oldKeymap, keymap);
+    bitWrite(z80ports_in[6], 0, keymap[0x5a]);
+    bitWrite(z80ports_in[6], 1, keymap[0x4b]);
+    bitWrite(z80ports_in[6], 2, keymap[0x42]);
+    bitWrite(z80ports_in[6], 3, keymap[0x3b]);
+    bitWrite(z80ports_in[6], 4, keymap[0x33]);
+
+    bitWrite(z80ports_in[7], 0, keymap[0x29]);
+    bitWrite(z80ports_in[7], 1, keymap[0x14]);
+    bitWrite(z80ports_in[7], 2, keymap[0x3a]);
+    bitWrite(z80ports_in[7], 3, keymap[0x31]);
+    bitWrite(z80ports_in[7], 4, keymap[0x32]);
+
+    // Kempston joystick
+    z80ports_in[0x1f] = 0;
+    bitWrite(z80ports_in[0x1f], 0, !keymap[KEY_CURSOR_RIGHT]);
+    bitWrite(z80ports_in[0x1f], 1, !keymap[KEY_CURSOR_LEFT]);
+    bitWrite(z80ports_in[0x1f], 2, !keymap[KEY_CURSOR_DOWN]);
+    bitWrite(z80ports_in[0x1f], 3, !keymap[KEY_CURSOR_UP]);
+    bitWrite(z80ports_in[0x1f], 4, !keymap[KEY_ALT_GR]);
 }
 
 /* +-------------+
    | LOOP core 1 |
    +-------------+
-*/
+ */
 void loop() {
-    while (1) {
-        start_im1_irq = 1;
-        do_keyboard();
-        do_OSD();
-        Z80_Execute();
-        TIMERG0.wdt_wprotect = TIMG_WDT_WKEY_VALUE;
-        TIMERG0.wdt_feed = 1;
-        TIMERG0.wdt_wprotect = 0;
-        vTaskDelay(0); // important to avoid task watchdog timeouts - change this to slow down emu
+    // static byte last_ts = 0;
+    unsigned long ts1, ts2;
+
+    if (halfsec) {
+        flashing = ~flashing;
     }
+    sp_int_ctr++;
+    halfsec = !(sp_int_ctr % 25);
+
+    do_keyboard();
+    do_OSD();
+
+    // ts1 = millis();
+    zx_loop();
+    // ts2 = millis();
+
+    xQueueSend(vidQueue, &param, portMAX_DELAY);
+
+    while (videoTaskIsRunning) {
+    }
+
+    /*
+    if ((ts2 - ts1) != last_ts) {
+        Serial.printf("PC:  %d time: %d\n", _zxCpu.pc, ts2 - ts1);
+        last_ts = ts2 - ts1;
+    }*/
+
+    TIMERG0.wdt_wprotect = TIMG_WDT_WKEY_VALUE;
+    TIMERG0.wdt_feed = 1;
+    TIMERG0.wdt_wprotect = 0;
+    vTaskDelay(0); // important to avoid task watchdog timeouts - change this to slow down emu
 }
