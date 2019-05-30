@@ -6,23 +6,6 @@
 //  lease, notify me, if you make any changes to this file
 // -------------------------------------------------------------------
 
-<<<<<<< HEAD
-// Headers
-#pragma GCC diagnostic ignored "-Wall"
-#include <Arduino.h>
-#include <ESP32Lib.h>
-#include <FS.h>
-#include <Ressources/Font6x8.h>
-#include <SPIFFS.h>
-#include <esp_bt.h>
-#include <esp_task_wdt.h>
-#pragma GCC diagnostic warning "-Wall"
-
-#include "PS2Kbd.h"
-#include "msg.h"
-#include "osd.h"
-#include "paledefs.h"
-=======
 #include "Emulator/Keyboard/PS2Kbd.h"
 #include "Emulator/Memory.h"
 #include "Emulator/clock.h"
@@ -42,7 +25,6 @@
 #include "driver/timer.h"
 #include "soc/timer_group_struct.h"
 #include <esp_bt.h>
->>>>>>> osddev
 
 // EXTERN VARS
 
@@ -62,25 +44,12 @@ volatile byte keymap[256];
 volatile byte oldKeymap[256];
 
 // EXTERN METHODS
-<<<<<<< HEAD
-extern void load_rom(String);
-extern void load_ram(String);
-void Z80_Reset(void);       /* Reset registers to the initial values */
-unsigned int Z80_Execute(); /* Execute IPeriod T-States              */
-unsigned int Z80();         /* Execute IPeriod T-States              */
-=======
 
->>>>>>> osddev
 void setup_cpuspeed();
 void config_read();
 void do_OSD();
-<<<<<<< HEAD
-extern void mount_spiffs();
-extern void listAllFiles();
-=======
 void errorHalt(String);
 void mount_spiffs();
->>>>>>> osddev
 
 // GLOBALS
 volatile byte z80ports_in[128];
@@ -112,20 +81,10 @@ void setup() {
     esp_bt_controller_deinit();
     esp_bt_controller_mem_release(ESP_BT_MODE_BTDM);
 
-<<<<<<< HEAD
-    mount_spiffs();
-    config_read();
-
-    Serial.println(MSG_CHIP_SETUP);
-    Serial.println(MSG_VGA_INIT);
-    vga.setFrameBufferCount(2);
-    vga.init(vga.MODE360x200, redPin, greenPin, bluePin, hsyncPin, vsyncPin);
-=======
     Serial.begin(115200);
     if (cfg_slog_on) {
         Serial.println(MSG_VGA_INIT);
     }
->>>>>>> osddev
 
     Serial.printf("HEAP BEGIN %d\n", ESP.getFreeHeap());
 
@@ -178,47 +137,23 @@ void setup() {
 
     kb_begin();
 
-<<<<<<< HEAD
-    // ALLOCATE MEMORY
-    //
-    bank0 = (byte *)malloc(49152);
-    if (bank0 == NULL)
-        Serial.println(MSG_BANK_FAIL + "0");
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-    Serial.println(MSG_FREE_HEAP_AFTER + "bank 0: " + system_get_free_heap_size() + "b");
-#pragma GCC diagnostic warning "-Wall"
-
-    setup_cpuspeed();
-
-    // START Z80
-    Serial.println(MSG_Z80_RESET);
-    Z80_Reset();
-=======
     Serial.printf("%s bank %u: %ub\n", MSG_FREE_HEAP_AFTER, 0, ESP.getFreeHeap());
     Serial.printf("CALC TSTATES/PERIOD %u\n", CalcTStates());
 
     // START Z80
     Serial.println(MSG_Z80_RESET);
     zx_setup();
->>>>>>> osddev
 
     // make sure keyboard ports are FF
     for (int t = 0; t < 32; t++) {
         z80ports_in[t] = 0x1f;
     }
 
-<<<<<<< HEAD
-    Serial.println(MSG_EXEC_ON_CORE + xPortGetCoreID());
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-    Serial.println(MSG_FREE_HEAP_AFTER + "Z80 reset: " + system_get_free_heap_size());
-#pragma GCC diagnostic warning "-Wall"
-=======
     Serial.printf("%s %u\n", MSG_EXEC_ON_CORE, xPortGetCoreID());
     Serial.printf("%s Z80 RESET: %ub\n", MSG_FREE_HEAP_AFTER, ESP.getFreeHeap());
 
     vidQueue = xQueueCreate(1, sizeof(uint16_t *));
     xTaskCreatePinnedToCore(&videoTask, "videoTask", 1024 * 4, NULL, 5, &videoTaskHandle, 0);
->>>>>>> osddev
 
     load_rom(cfg_arch, cfg_rom_set);
     if ((String)cfg_ram_file != (String)NO_RAM_FILE) {

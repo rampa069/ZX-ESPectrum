@@ -1,14 +1,8 @@
-<<<<<<< HEAD
-#pragma GCC diagnostic ignored "-Wall"
-=======
 #include "MartianVGA.h"
 #include "ZX-ESPectrum.h"
 #include "def/hardware.h"
 #include "def/keys.h"
->>>>>>> osddev
 #include <Arduino.h>
-#pragma GCC diagnostic warning "-Wall"
-#include "paledefs.h"
 
 unsigned int shift = 0;
 byte lastcode = 0;
@@ -17,11 +11,6 @@ boolean shift_presed = false;
 boolean symbol_pressed = false;
 byte rc = 0;
 
-<<<<<<< HEAD
-extern boolean debug_keyboard;
-
-=======
->>>>>>> osddev
 void IRAM_ATTR kb_interruptHandler(void) {
     static uint8_t bitcount = 0;
     static uint8_t incoming = 0;
@@ -87,18 +76,6 @@ boolean isKeymapChanged() { return (keymap != oldKeymap); }
 
 // Check if key is pressed and clean it
 boolean checkAndCleanKey(uint8_t scancode) {
-    if (keymap[scancode] == 0) {
-        keymap[scancode] = 1;
-        return true;
-    }
-    return false;
-}
-
-// Check if keymatrix is changed
-boolean isKeymapChanged() { return (keymap != oldKeymap); }
-
-// Check if key is pressed and clean it
-boolean checkAndCleanKey(byte scancode) {
     if (keymap[scancode] == 0) {
         keymap[scancode] = 1;
         return true;
