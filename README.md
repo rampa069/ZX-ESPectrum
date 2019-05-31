@@ -49,12 +49,6 @@ ln -s platformio.ini.osx platformio.ini
 cp data/boot.cfg.orig boot.cfg
 ```
 
-#### Format the card's internal flash
-
-`Tools > Partition Scheme > HUGE APP`
-
-This way you have 3Mb free to roms and snapshots.
-
 #### Upload the data filesystem
 
 `Run Other Task > PIO Upload Filesystem Image`
