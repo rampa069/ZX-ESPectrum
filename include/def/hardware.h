@@ -5,7 +5,7 @@
 #define KEYBOARD_DATA 25
 #define KEYBOARD_CLK 26
 
-// #define COLOUR_8
+//#define COLOUR_8
 #define COLOUR_16
 
 // 8bit pins
@@ -32,12 +32,12 @@
 #define YELLOW 0x0b
 #define WHITE 0x0f
 #else
-#define BLACK 0xc000
-#define BLUE 0xf000
-#define RED 0xc018
-#define MAGENTA 0xf018
-#define GREEN 0xc300
-#define CYAN 0xf300
-#define YELLOW 0xc318
-#define WHITE 0xf318
+#define BLACK 0xc0
+#define BLUE 0x20
+#define RED 0x02
+#define MAGENTA 0x22
+#define GREEN 0x08
+#define CYAN 0x28
+#define YELLOW 0x0a
+#define WHITE 0x2a
 #endif

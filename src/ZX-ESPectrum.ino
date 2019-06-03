@@ -72,7 +72,8 @@ uint16_t *param;
 #ifdef COLOUR_8
 VGA3Bit vga;
 #else
-VGA14Bit vga;
+VGA6Bit vga;
+const PinConfig pinConfig(-1, -1, -1, 2, 14,  -1, -1, -1, 15, 19,  -1, -1, 21, 27,  32, 33,  -1);
 #endif
 
 
@@ -119,14 +120,12 @@ void setup() {
 #ifdef COLOUR_8
     vga.init(vga.MODE360x200, RED_PIN, GREEN_PIN, BLUE_PIN, HSYNC_PIN, VSYNC_PIN);
 #else
-    const int redPins[] = {RED_PINS};
-    const int greenPins[] = {GREEN_PINS};
-    const int bluePins[] = {BLUE_PINS};
-    vga.init(vga.MODE360x200, redPins, greenPins, bluePins, HSYNC_PIN, VSYNC_PIN);
+
+    vga.init(vga.MODE360x200, pinConfig);
 #endif
 
     Serial.printf("HEAP after vga  %d \n", ESP.getFreeHeap());
-
+    Serial.printf("VGA color  %d \n", vga.RGB(7,0,0));
     vga.clear(0);
 
     pinMode(SPEAKER_PIN, OUTPUT);
@@ -293,7 +292,7 @@ unsigned int zxcolor(int c, int bright) {
 
 #ifdef COLOUR_16
     if (bright && c != 0)
-        vga_color |= 0xCE7;
+        vga_color |= 0b00010101;
 #endif
 
     return vga_color;

@@ -127,13 +127,7 @@ extern "C" uint16_t readword(uint16_t addr) { return ((readbyte(addr + 1) << 8) 
 
 extern "C" void writebyte(uint16_t addr, uint8_t data) {
 
-    //  if (addr >= (uint16_t)0x4000 && addr <= (uint16_t)0x7FFF)
-    //  {
-    //      while (writeScreen) {
-    //          delayMicroseconds(1);
-    //      }
-    // if (addr >= 0x8000)
-    //   Serial.printf("Address: %x  Bank: %x\n",addr,bank_latch);
+
 
     switch (addr) {
     case 0x0000 ... 0x3fff:
@@ -171,7 +165,6 @@ extern "C" void writebyte(uint16_t addr, uint8_t data) {
             ram7[addr - 0xc000] = data;
             break;
         }
-        // Serial.println("plin");
         break;
     }
     return;
@@ -184,8 +177,7 @@ extern "C" void writeword(uint16_t addr, uint16_t data) {
 
 extern "C" uint8_t input(uint8_t portLow, uint8_t portHigh) {
     int16_t kbdarrno = 0;
-    // delay(2);
-    // Serial.print ("IN ");
+
     if (portLow == 0xFE) {
         // Keyboard
 
@@ -261,7 +253,6 @@ extern "C" void output(uint8_t portLow, uint8_t portHigh, uint8_t data) {
     switch (portLow) {
     case 0xFE: {
 
-        // delayMicroseconds(CONTENTION_TIME);
 
         // border color (no bright colors)
         bitWrite(borderTemp, 0, bitRead(data, 0));
