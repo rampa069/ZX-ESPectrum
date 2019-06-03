@@ -1,26 +1,26 @@
-#define SPEAKER_PIN 5
-#define EAR_PIN 34
-#define MIC_PIN 0
 
-#define KEYBOARD_DATA 25
-#define KEYBOARD_CLK 26
+#define FABGL 1
+
+#ifndef FABGL
+ #define PINCONFIG pinConfig(-1, -1, -1, 2, 14,  -1, -1, -1, 15, 19,  -1, -1, 21, 27,  32, 33,  -1);
+ #define KEYBOARD_DATA 25
+ #define KEYBOARD_CLK 26
+ #define SPEAKER_PIN 5
+ #define EAR_PIN 34
+ #define MIC_PIN 0
+
+#else
+ #define PINCONFIG pinConfig(-1, -1, -1, 21, 22,  -1, -1, -1, 18, 19,  -1, -1, 4, 5,  23, 15,  -1);
+ #define KEYBOARD_DATA 32
+ #define KEYBOARD_CLK 33
+ #define SPEAKER_PIN 27
+ #define EAR_PIN 35
+ #define MIC_PIN 26
+#endif
 
 //#define COLOUR_8
 #define COLOUR_16
 
-// 8bit pins
-#define RED_PIN 14
-#define GREEN_PIN 19
-#define BLUE_PIN 27
-
-// 16b pins
-#define RED_PINS 2, 2, 14, 14, 14
-#define GREEN_PINS 15, 15, 19, 19, 19
-#define BLUE_PINS 21, 21, 27, 27
-
-// VGA sync pins
-#define HSYNC_PIN 32
-#define VSYNC_PIN 33
 
 #ifdef COLOUR_8
 #define BLACK 0x08

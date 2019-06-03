@@ -73,8 +73,10 @@ uint16_t *param;
 VGA3Bit vga;
 #else
 VGA6Bit vga;
-const PinConfig pinConfig(-1, -1, -1, 2, 14,  -1, -1, -1, 15, 19,  -1, -1, 21, 27,  32, 33,  -1);
 #endif
+
+
+const PinConfig PINCONFIG
 
 
 void setup() {
@@ -117,15 +119,11 @@ void setup() {
 #endif
 
 
-#ifdef COLOUR_8
-    vga.init(vga.MODE360x200, RED_PIN, GREEN_PIN, BLUE_PIN, HSYNC_PIN, VSYNC_PIN);
-#else
 
-    vga.init(vga.MODE360x200, pinConfig);
-#endif
+vga.init(vga.MODE360x200, pinConfig);
 
     Serial.printf("HEAP after vga  %d \n", ESP.getFreeHeap());
-    Serial.printf("VGA color  %d \n", vga.RGB(7,0,0));
+
     vga.clear(0);
 
     pinMode(SPEAKER_PIN, OUTPUT);
