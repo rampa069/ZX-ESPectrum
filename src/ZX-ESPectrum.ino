@@ -150,8 +150,7 @@ vga.init(vga.MODE360x200, pinConfig);
     Serial.printf("%s Z80 RESET: %ub\n", MSG_FREE_HEAP_AFTER, ESP.getFreeHeap());
 
     vidQueue = xQueueCreate(1, sizeof(uint16_t *));
-    xTaskCreatePinnedToCore(&videoTask, "videoTask", 1024 * 4, NULL, 5, &videoTaskHandle, 0);
-
+    xTaskCreatePinnedToCore(&videoTask, "videoTask", 1024 * 4, NULL, ( 2 | portPRIVILEGE_BIT ), &videoTaskHandle, 0);
     load_rom(cfg_arch, cfg_rom_set);
     if ((String)cfg_ram_file != (String)NO_RAM_FILE) {
         load_ram("/sna/" + cfg_ram_file);
