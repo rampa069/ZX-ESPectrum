@@ -79,11 +79,11 @@ void menuPrintRow(byte virtual_row_num, byte line_type) {
         margin = 2;
         break;
     case IS_FOCUSED:
-        vga.setTextColor(zxcolor(0, 1), zxcolor(5, 1));
+        vga.setTextColor(zxcolor(0, 0), zxcolor(5, 1));
         margin = (real_rows > virtual_rows ? 3 : 2);
         break;
     default:
-        vga.setTextColor(zxcolor(0, 1), zxcolor(7, 1));
+        vga.setTextColor(zxcolor(0, 0), zxcolor(7, 1));
         margin = (real_rows > virtual_rows ? 3 : 2);
     }
 
@@ -109,6 +109,7 @@ void menuDraw() {
     // Title
     menuPrintRow(0, IS_TITLE);
     // Rainbow
+
     unsigned short rb_y = y + 8;
     unsigned short rb_paint_x = x + w - 30;
     byte rb_colors[] = {2, 6, 4, 5};
@@ -118,6 +119,7 @@ void menuDraw() {
         }
         rb_paint_x += 5;
     }
+
     // Focused first line
     menuPrintRow(1, IS_FOCUSED);
     for (byte r = 2; r < virtual_rows; r++) {
