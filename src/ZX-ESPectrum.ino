@@ -112,11 +112,19 @@ void setup() {
     ram7 = (byte *)malloc(16384);
 #else
     rom0 = (byte *)malloc(16384);
+    rom1 = (byte *)malloc(16384);
+    //rom2 = (byte *)malloc(16384);
 
     ram0 = (byte *)malloc(16384);
+    ram1 = (byte *)malloc(16384);
     ram2 = (byte *)malloc(16384);
+    ram3 = (byte *)malloc(16384);
+    ram4 = (byte *)malloc(16384);
     ram5 = (byte *)malloc(16384);
-#endif
+    ram6 = (byte *)malloc(16384);
+    ram7 = (byte *)malloc(16384);
+
+    #endif
 
 
 
@@ -176,6 +184,8 @@ void videoTask(void *unused) {
         xQueuePeek(vidQueue, &param, portMAX_DELAY);
         if ((int)param == 1)
             break;
+
+
 
         for (unsigned int vga_lin = 0; vga_lin < 200; vga_lin++) {
             // tick = 0;
