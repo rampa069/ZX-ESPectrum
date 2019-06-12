@@ -115,9 +115,8 @@ void menuDraw() {
     byte rb_colors[] = {2, 6, 4, 5};
     for (byte c = 0; c < 4; c++) {
         for (byte i = 0; i < 5; i++) {
-
-
-            //vga.line(rb_paint_x + i, rb_y, rb_paint_x + 8 + i, rb_y - 8, zxcolor(rb_colors[c], 1));
+            
+            vga.line(rb_paint_x + i, rb_y, rb_paint_x + 8 + i, rb_y - 8, zxcolor(rb_colors[c], 1));
         }
         rb_paint_x += 5;
     }

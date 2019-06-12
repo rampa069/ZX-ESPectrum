@@ -6,7 +6,7 @@
 #ifdef COLOUR_8
 extern VGA3Bit vga;
 #else
-extern VGA14Bit vga;
+extern VGA6Bit vga;
 #endif
 extern byte borderTemp;
 extern byte keymap[256];

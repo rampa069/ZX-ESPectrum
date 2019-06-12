@@ -113,7 +113,6 @@ void setup() {
 #else
     rom0 = (byte *)malloc(16384);
     rom1 = (byte *)malloc(16384);
-    //rom2 = (byte *)malloc(16384);
 
     ram0 = (byte *)malloc(16384);
     ram1 = (byte *)malloc(16384);
