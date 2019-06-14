@@ -174,37 +174,43 @@ void videoTask(void *unused) {
     unsigned int zx_vidcalc, calc_y;
 
     word zx_fore_color, zx_back_color, tmp_color;
-    // byte active_latch;
 
     videoTaskIsRunning = true;
     uint16_t *param;
-
+    uint8_t use_latch=0;
     while (1) {
         xQueuePeek(vidQueue, &param, portMAX_DELAY);
         if ((int)param == 1)
             break;
 
 
+        use_latch=video_latch;
 
         for (unsigned int vga_lin = 0; vga_lin < 200; vga_lin++) {
             // tick = 0;
             if (vga_lin < 3 || vga_lin > 194) {
-
+                ula_bus=0xff;
                 for (int bor = 32; bor < 328; bor++)
                     vga.dotFast(bor, vga_lin, zxcolor(borderTemp, 0));
             } else {
 
-                for (int bor = 32; bor < 52; bor++) {
-                    vga.dotFast(bor, vga_lin, zxcolor(borderTemp, 0));
-                    vga.dotFast(bor + 276, vga_lin, zxcolor(borderTemp, 0));
-                }
+                //for (int bor = 32; bor < 52; bor++) {
+                //    ula_bus=0xff;
+                //    vga.dotFast(bor, vga_lin, zxcolor(borderTemp, 0));
+                //    vga.dotFast(bor + 276, vga_lin, zxcolor(borderTemp, 0));
+                //}
+
+                vga.xLine(32,52,vga_lin,zxcolor(borderTemp, 0));
+
+
 
                 for (ff = 0; ff < 32; ff++) // foreach byte in line
                 {
-
+                    use_latch=video_latch;
                     byte_offset = (vga_lin - 3) * 32 + ff;
                     calc_y = calcY(byte_offset);
-                    if (!video_latch)
+
+                    if (!use_latch)
                     {
                        color_attrib = readbyte(0x5800 + (calc_y / 8) * 32 + ff); // get 1 of 768 attrib values
                        pixel_map = readbyte(byte_offset + 0x4000);
@@ -213,7 +219,7 @@ void videoTask(void *unused) {
                         color_attrib = ram7[0x1800 + (calc_y / 8) * 32 + ff]; // get 1 of 768 attrib values
                         pixel_map = ram7[byte_offset];
                       }
-
+                    ula_bus=pixel_map;
                     for (i = 0; i < 8; i++) // foreach pixel within a byte
                     {
 
@@ -234,6 +240,7 @@ void videoTask(void *unused) {
                             vga.dotFast(zx_vidcalc + 52, calc_y + 3, zx_back_color);
                     }
                 }
+                vga.xLine(276+32,276+32+20,vga_lin,zxcolor(borderTemp, 0));
             }
         }
 
@@ -387,7 +394,7 @@ void loop() {
     // ts2 = millis();
 
     xQueueSend(vidQueue, &param, portMAX_DELAY);
-
+    Z80Interrupt(&_zxCpu, ula_bus, &_zxContext);
     while (videoTaskIsRunning) {
     }
 

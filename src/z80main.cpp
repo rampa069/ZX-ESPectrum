@@ -66,7 +66,7 @@ int32_t zx_loop() {
     byte tmp_color = 0;
 
     _total = Z80Emulate(&_zxCpu, cycles_per_step, &_zxContext);
-    Z80Interrupt(&_zxCpu, 0xff, &_zxContext);
+    //Z80Interrupt(&_zxCpu, ula_bus, &_zxContext);
   //  Serial.println(_total);
 
     return result;
@@ -244,8 +244,9 @@ extern "C" uint8_t input(uint8_t portLow, uint8_t portHigh) {
     uint8_t data = zx_data;
     data |= (0xe0); /* Set bits 5-7 - as reset above */
     data &= ~0x40;
-    // Serial.printf("Port %x%x  Data %x\n", portHigh,portLow,data);
-    return data;
+    Serial.printf("Floating bus Port %x%x  Data %x\n", portHigh,portLow,data);
+    //return data;
+    return ula_bus;
 }
 
 extern "C" void output(uint8_t portLow, uint8_t portHigh, uint8_t data) {
@@ -309,4 +310,5 @@ extern "C" void output(uint8_t portLow, uint8_t portHigh, uint8_t data) {
         //    zx_data = data;
         break;
     }
+
 }

@@ -152,8 +152,7 @@ int Z80Interrupt(Z80_STATE *state, int data_on_bus, void *context) {
             SP -= 2;
             Z80_WRITE_WORD_INTERRUPT(SP, state->pc);
             state->pc = 0x0038;
-            // return elapsed_cycles + 13;
-            return elapsed_cycles + 7;
+            return elapsed_cycles + 13;
         }
 
         case Z80_INTERRUPT_MODE_2:
@@ -1120,6 +1119,7 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
             state->status = Z80_STATUS_FLAG_DI;
             goto stop_emulation;
 
+
 #else
 
             /* No interrupt can be accepted right after
@@ -1146,6 +1146,7 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
 #ifdef Z80_CATCH_EI
 
             state->status = Z80_STATUS_FLAG_EI;
+
             goto stop_emulation;
 
 #else
@@ -2020,20 +2021,21 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
             state->status = opcode == OPCODE_RETI ? Z80_STATUS_FLAG_RETI : Z80_STATUS_FLAG_RETN;
             elapsed_cycles += 4;
 
-            break;
-            // goto stop_emulation;
+
+             goto stop_emulation;
 
 #elif defined(Z80_CATCH_RETI)
 
             state->status = Z80_STATUS_FLAG_RETI;
-            // goto stop_emulation;
-            break;
+            //Serial.println(elapsed_cycles);
+            goto stop_emulation;
+
 
 #elif defined(Z80_CATCH_RETN)
 
             state->status = Z80_STATUS_FLAG_RETN;
-            // goto stop_emulation;
-            break;
+            goto stop_emulation;
+
 
 #else
 
