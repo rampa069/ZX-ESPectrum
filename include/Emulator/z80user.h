@@ -100,13 +100,15 @@ typedef struct CONTEXT {
 #define Z80_READ_BYTE(address, x)                          \
 {                                                          \
         (x) = ((CONTEXT*)context)->readbyte(address);      \
-				elapsed_cycles += delay_contention(address,elapsed_cycles); \
+				if (bank_latch == 5 ) elapsed_cycles += delay_contention(address,elapsed_cycles); \
+				if (bank_latch == 7 ) elapsed_cycles += delay_contention(address,elapsed_cycles); \
 }
 
 #define Z80_WRITE_BYTE(address, x)                         \
 {                                                          \
         ((CONTEXT*)context)->writebyte(address, x);        \
-				elapsed_cycles += delay_contention(address,elapsed_cycles); \
+				if (bank_latch == 5 ) elapsed_cycles += delay_contention(address,elapsed_cycles); \
+				if (bank_latch == 7 ) elapsed_cycles += delay_contention(address,elapsed_cycles); \
 }
 
 #define Z80_READ_WORD(address, x)                          \
