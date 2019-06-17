@@ -194,12 +194,8 @@ void videoTask(void *unused) {
                     vga.dotFast(bor, vga_lin, zxcolor(borderTemp, 0));
             } else {
 
-                //for (int bor = 32; bor < 52; bor++) {
-                //    ula_bus=0xff;
-                //    vga.dotFast(bor, vga_lin, zxcolor(borderTemp, 0));
-                //    vga.dotFast(bor + 276, vga_lin, zxcolor(borderTemp, 0));
-                //}
 
+                ula_bus=0xff;
                 vga.xLine(32,52,vga_lin,zxcolor(borderTemp, 0));
 
 
@@ -240,6 +236,7 @@ void videoTask(void *unused) {
                             vga.dotFast(zx_vidcalc + 52, calc_y + 3, zx_back_color);
                     }
                 }
+                ula_bus=0xff;
                 vga.xLine(276+32,276+32+20,vga_lin,zxcolor(borderTemp, 0));
             }
         }
