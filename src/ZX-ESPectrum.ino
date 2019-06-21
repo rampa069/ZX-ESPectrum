@@ -202,7 +202,7 @@ void videoTask(void *unused) {
 
                 for (ff = 0; ff < 32; ff++) // foreach byte in line
                 {
-                    use_latch=video_latch;
+                    //use_latch=video_latch;
                     byte_offset = (vga_lin - 3) * 32 + ff;
                     calc_y = calcY(byte_offset);
 
@@ -390,8 +390,12 @@ void loop() {
     zx_loop();
     // ts2 = millis();
 
+
     xQueueSend(vidQueue, &param, portMAX_DELAY);
+
+
     Z80Interrupt(&_zxCpu, ula_bus, &_zxContext);
+
     while (videoTaskIsRunning) {
     }
 

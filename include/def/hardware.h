@@ -1,4 +1,3 @@
-
 /* Define the FABGL macro to use FABGL boards pinout. Keep it undefined
    to use bitluni VGA board v01
    Speaker and mic are in the PS2 mouse connections. ear on GPIO 35
@@ -6,8 +5,16 @@
 
 //#define FABGL 1
 
+/*
+   Define ZX2PS2 to anything to use the ZX2PS2 zx matrix to ps2 converter.
+   it only changes the cursor keys to the zx spectrum 5678 and 0 keys.
+   for F1 press SS+CS 1
+*/
+
+//#define ZX2PS2 1
+
 #ifndef FABGL
- #define PINCONFIG pinConfig(-1, -1, -1, 14, 2,  -1, -1, -1, 19, 15,  -1, -1, 27, 21,  32, 33,  -1);
+ #define PINCONFIG pinConfig(-1, -1, -1, 2, 14,  -1, -1, -1, 15, 19,  -1, -1, 21, 27,  32, 33,  -1);
  #define KEYBOARD_DATA 25
  #define KEYBOARD_CLK 26
  #define SPEAKER_PIN 5

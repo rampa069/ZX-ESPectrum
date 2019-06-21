@@ -172,6 +172,7 @@ int Z80Interrupt(Z80_STATE *state, int data_on_bus, void *context) {
 #endif
 
             Z80_READ_WORD_INTERRUPT(vector, state->pc);
+            //delayMicroseconds((elapsed_cycles+19)*500);
             return elapsed_cycles + 19;
         }
         }
