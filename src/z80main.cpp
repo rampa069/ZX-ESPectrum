@@ -219,10 +219,9 @@ extern "C" uint8_t input(uint8_t portLow, uint8_t portHigh) {
             result &= z80ports_in[0];
             return result;
         }
-        }
-        if (portHigh == 0xfe) {
-            bitWrite(z80ports_in[kbdarrno], 6, digitalRead(EAR_PIN));
-        }
+
+      }
+        bitWrite(z80ports_in[kbdarrno], 6, digitalRead(EAR_PIN));
         return (z80ports_in[kbdarrno]);
     }
     // Kempston
