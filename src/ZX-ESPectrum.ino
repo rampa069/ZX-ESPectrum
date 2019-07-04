@@ -210,7 +210,7 @@ void videoTask(void *unused) {
 
                 for (ff = 0; ff < 32; ff++) // foreach byte in line
                 {
-                    //use_latch=video_latch;
+                    use_latch=video_latch;
                     byte_offset = (vga_lin - 3) * 32 + ff;
                     calc_y = calcY(byte_offset);
 
@@ -405,14 +405,7 @@ void loop() {
     Z80Interrupt(&_zxCpu, ula_bus, &_zxContext);
     while (videoTaskIsRunning) {
     }
-    //buf2[0]=0xff;
-    //if (memcmp(buf1,buf2,29))
-    //{
-      //Serial2.write(buf2,29);
-      //memcpy(buf1,buf2,29);
-      //memset(buf2,0,29);
-      //delay(1000);
-   //}
+
     /*
     if ((ts2 - ts1) != last_ts) {
         Serial.printf("PC:  %d time: %d\n", _zxCpu.pc, ts2 - ts1);

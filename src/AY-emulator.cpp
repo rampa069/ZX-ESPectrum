@@ -12,7 +12,7 @@ void ay_reset()
   uint8_t ay_reset_table[29];
 
   memset(ay_reset_table,0,29);
-  memset(ay_register_table,0,14);
+  //memset(ay_register_table,0,14);
   ay_reset_table[0] = 255;
   for(byte i = 0; i < 14; i++)
   {
@@ -33,4 +33,12 @@ ay_command[0]=0xff;
 uint8_t ay_read_register(uint8_t ay_register)
 {
   return ay_register_table[ay_register];
+}
+
+void ay_restore()
+{
+  for (uint8_t ay_register=0;ay_register < 14; ay_register++)
+  {
+    ay_write_register(ay_register,ay_register_table[ay_register]);
+  }
 }

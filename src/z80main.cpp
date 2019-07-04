@@ -240,7 +240,7 @@ extern "C" uint8_t input(uint8_t portLow, uint8_t portHigh) {
         case 0xFF:
             // Serial.println("Read AY register");
             #ifdef AY_SOUND
-             return ay_read_register(ula_bus);
+             return ay_read_register(last_register);
 
             #else
               return (ula_bus);
