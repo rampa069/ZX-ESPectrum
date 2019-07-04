@@ -3,7 +3,7 @@
    Speaker and mic are in the PS2 mouse connections. ear on GPIO 35
 */
 
-//#define FABGL 1
+  #define FABGL 1
 
 /*
    Define ZX2PS2 to anything to use the ZX2PS2 zx matrix to ps2 converter.
@@ -27,6 +27,8 @@
  #define SPEAKER_PIN 27
  #define EAR_PIN 35
  #define MIC_PIN 26
+ #define AY_PIN 26
+ #define AY_SOUND 1
 #endif
 
 //#define COLOUR_8

@@ -12,6 +12,7 @@
 #include "Emulator/z80emu/z80emu.h"
 #include "Emulator/z80main.h"
 #include "Emulator/z80user.h"
+#include "Emulator/Sound/AY-emulator.h"
 #include <Arduino.h>
 
 #include "MartianVGA.h"
@@ -79,10 +80,17 @@ VGA6Bit vga;
 const PinConfig PINCONFIG
 
 
+
+
 void setup() {
     // Turn off peripherals to gain memory (?do they release properly)
     esp_bt_controller_deinit();
     esp_bt_controller_mem_release(ESP_BT_MODE_BTDM);
+
+
+    // AY serial emulator initialization
+    Serial2.begin(57600,SERIAL_8N1,AY_PIN,AY_PIN);
+    ay_reset();
 
     Serial.begin(115200);
     if (cfg_slog_on) {
@@ -135,9 +143,9 @@ vga.init(vga.MODE360x200, pinConfig);
 
     pinMode(SPEAKER_PIN, OUTPUT);
     pinMode(EAR_PIN, INPUT);
-    pinMode(MIC_PIN, OUTPUT);
+    //pinMode(MIC_PIN, OUTPUT);
     digitalWrite(SPEAKER_PIN, LOW);
-    digitalWrite(MIC_PIN, LOW);
+    //digitalWrite(MIC_PIN, LOW);
 
     kb_begin();
 
@@ -183,7 +191,7 @@ void videoTask(void *unused) {
         if ((int)param == 1)
             break;
 
-
+        //Z80NonMaskableInterrupt(&_zxCpu,&_zxContext );
         use_latch=video_latch;
 
         for (unsigned int vga_lin = 0; vga_lin < 200; vga_lin++) {
@@ -395,10 +403,16 @@ void loop() {
 
 
     Z80Interrupt(&_zxCpu, ula_bus, &_zxContext);
-
     while (videoTaskIsRunning) {
     }
-
+    //buf2[0]=0xff;
+    //if (memcmp(buf1,buf2,29))
+    //{
+      //Serial2.write(buf2,29);
+      //memcpy(buf1,buf2,29);
+      //memset(buf2,0,29);
+      //delay(1000);
+   //}
     /*
     if ((ts2 - ts1) != last_ts) {
         Serial.printf("PC:  %d time: %d\n", _zxCpu.pc, ts2 - ts1);

@@ -2,12 +2,14 @@
 #include "startup.h"
 #include <stdio.h>
 #include <string.h>
+#include "ZX-ESPectrum.h"
 
 #include "Emulator/Keyboard/PS2Kbd.h"
 #include "Emulator/Memory.h"
 #include "Emulator/clock.h"
 #include "Emulator/z80Input.h"
 #include "Emulator/z80main.h"
+#include "Emulator/Sound/AY-emulator.h"
 
 #define RAM_AVAILABLE 0xC000
 
@@ -34,6 +36,8 @@ void writeword(uint16_t addr, uint16_t data);
 uint8_t input(uint8_t portLow, uint8_t portHigh);
 void output(uint8_t portLow, uint8_t portHigh, uint8_t data);
 }
+
+uint8_t last_register =0;
 
 void zx_setup() {
     _zxContext.readbyte = readbyte;
@@ -236,7 +240,8 @@ extern "C" uint8_t input(uint8_t portLow, uint8_t portHigh) {
         case 0xFF:
             // Serial.println("Read AY register");
             #ifdef AY_SOUND
-             return _ay3_8912.getRegisterData();
+             return ay_read_register(ula_bus);
+
             #else
               return (ula_bus);
             #endif
@@ -247,7 +252,7 @@ extern "C" uint8_t input(uint8_t portLow, uint8_t portHigh) {
     uint8_t data = zx_data;
     data |= (0xe0); /* Set bits 5-7 - as reset above */
     data &= ~0x40;
-    Serial.printf("Floating bus Port %x%x  Data %x\n", portHigh,portLow,data);
+    //Serial.printf("Floating bus Port %x%x  Data %x\n", portHigh,portLow,data);
     //return data;
     return ula_bus;
 }
@@ -276,12 +281,12 @@ extern "C" void output(uint8_t portLow, uint8_t portHigh, uint8_t data) {
 
 #ifdef AY_SOUND
         case 0xFF:
-            // Serial.printf("Select AY register %x %x %x\n",portHigh,portLow,data);
-            _ay3_8912.selectRegister(data);
+
+            last_register = data;
             break;
         case 0xBF:
-            // Serial.printf("Select AY register Data %x %x %x\n",portHigh,portLow,data);
-            _ay3_8912.setRegisterData(data);
+            //Serial.printf("Select AY register Data %x %x\n",last_register,data);
+            ay_write_register(last_register,data);
             break;
 #endif
 

@@ -17,6 +17,8 @@ extern QueueHandle_t vidQueue;
 extern TaskHandle_t videoTaskHandle;
 extern volatile bool videoTaskIsRunning;
 
+
+
 // Declared methods
 unsigned int zxcolor(int c, int bright);
 void do_keyboard();
