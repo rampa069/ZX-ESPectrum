@@ -90,7 +90,7 @@ void setup() {
 
     // AY serial emulator initialization
     Serial2.begin(57600,SERIAL_8N1,AY_PIN,AY_PIN);
-    ay_reset();
+    ay_reset(true);
 
     Serial.begin(115200);
     if (cfg_slog_on) {

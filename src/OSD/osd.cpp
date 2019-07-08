@@ -2,6 +2,7 @@
 #include "Disk.h"
 #include "Emulator/Keyboard/PS2Kbd.h"
 #include "Emulator/z80main.h"
+#include "Emulator/Sound/AY-emulator.h"
 #include "ZX-ESPectrum.h"
 #include "def/Font.h"
 #include "def/files.h"
@@ -35,13 +36,14 @@ void drawOSD() {
     osdAt(17, 0);
     vga.print(OSD_BOTTOM);
     osdHome();
-}
+    }
 
 // OSD Main Loop
 void do_OSD() {
     static byte last_sna_row = 0;
     static unsigned int last_demo_ts = millis() / 1000;
     boolean cycle_sna = false;
+
     if (checkAndCleanKey(KEY_F12)) {
         cycle_sna = true;
     } else if (checkAndCleanKey(KEY_F2)) {
@@ -53,7 +55,9 @@ void do_OSD() {
         }
     } else if (checkAndCleanKey(KEY_F1)) {
         // Main menu
+
         byte opt = menuRun(MENU_MAIN);
+
         if (opt == 1) {
             // Change ROM
             String arch_menu = getArchMenu();
@@ -134,7 +138,9 @@ void do_OSD() {
                 vTaskDelay(5);
             }
         }
+
         // Exit
+        ay_restore();
     }
 
     if (cycle_sna || (cfg_demo_mode_on && ((millis() / 1000) - last_demo_ts) > cfg_demo_every)) {

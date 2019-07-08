@@ -63,6 +63,7 @@ void zx_reset() {
     cycles_per_step = CalcTStates();
 
     Z80Reset(&_zxCpu);
+    ay_reset(true);
 }
 
 int32_t zx_loop() {
