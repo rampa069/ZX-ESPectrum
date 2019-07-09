@@ -180,7 +180,7 @@ void load_ram(String sna_file) {
         _zxCpu.registers.word[Z80_SP]++;
         _zxCpu.registers.word[Z80_SP]++;
     } else {
-        uint16_t buf_p;
+        int buf_p;
         for (buf_p = 0x4000; buf_p < 0x8000; buf_p++) {
             writebyte(buf_p, lhandle.read());
         }
@@ -188,19 +188,19 @@ void load_ram(String sna_file) {
             writebyte(buf_p, lhandle.read());
         }
         bank_latch=0;
-        for (buf_p = 0xc000; buf_p < 0xffff; buf_p++) {
+        for (buf_p = 0xc000; buf_p < 0x10000; buf_p++) {
             writebyte(buf_p, lhandle.read());
         }
 
-        byte machine_b = lhandle.read();
-        Serial.printf("Machine: %x\n", machine_b);
+        //byte machine_b = lhandle.read();
+        //Serial.printf("Machine: %x\n", machine_b);
         byte retaddr_l = lhandle.read();
         byte retaddr_h = lhandle.read();
         retaddr = retaddr_l + retaddr_h * 0x100;
         byte tmp_port = lhandle.read();
 
         byte tmp_byte;
-        for (int a = 0xc000; a < 0xffff; a++) {
+        for (int a = 0xc000; a < 0x10000; a++) {
             bank_latch = 0;
             tmp_byte = readbyte(a);
             bank_latch = tmp_port & 0x07;
@@ -213,7 +213,7 @@ void load_ram(String sna_file) {
             if (page != tmp_latch && page != 2 && page != 5) {
                 bank_latch = page;
                 Serial.printf("Page %d actual_latch: %d\n", page, bank_latch);
-                for (buf_p = 0xc000; buf_p < 0xFFFF; buf_p++) {
+                for (buf_p = 0xc000; buf_p < 0x10000; buf_p++) {
                     writebyte(buf_p, lhandle.read());
                 }
             }
@@ -224,14 +224,17 @@ void load_ram(String sna_file) {
         paging_lock = bitRead(tmp_port, 5);
         bank_latch = tmp_latch;
         rom_in_use = rom_latch;
+        output (0x7d,0x7f,tmp_port);
+
     }
-    lhandle.close();
+
 
     _zxCpu.pc = retaddr;
     Serial.printf("%s SNA: %u\n", MSG_FREE_HEAP_AFTER, ESP.getFreeHeap());
-    Serial.printf("Ret address: %x Stack: %x AF: %x Border: %x sna_size: %d rom: %d bank: %x\n", retaddr,
+    Serial.printf("Ret address: %x Stack: %x AF: %x Border: %x sna_size: %d rom: %d bank: %x avail: %d\n", retaddr,
                   _zxCpu.registers.word[Z80_SP], _zxCpu.registers.word[Z80_AF], borderTemp, sna_size, rom_in_use,
-                  bank_latch);
+                  bank_latch,lhandle.available());
+    lhandle.close();
     KB_INT_START;
 }
 
