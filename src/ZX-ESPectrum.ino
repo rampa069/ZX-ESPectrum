@@ -191,7 +191,6 @@ void videoTask(void *unused) {
         if ((int)param == 1)
             break;
 
-        //Z80NonMaskableInterrupt(&_zxCpu,&_zxContext );
         use_latch=video_latch;
 
         for (unsigned int vga_lin = 0; vga_lin < 200; vga_lin++) {
@@ -206,11 +205,11 @@ void videoTask(void *unused) {
                 ula_bus=0xff;
                 vga.xLine(32,52,vga_lin,zxcolor(borderTemp, 0));
 
-
+                use_latch=video_latch;
 
                 for (ff = 0; ff < 32; ff++) // foreach byte in line
                 {
-                    use_latch=video_latch;
+                    //use_latch=video_latch;
                     byte_offset = (vga_lin - 3) * 32 + ff;
                     calc_y = calcY(byte_offset);
 

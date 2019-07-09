@@ -99,6 +99,10 @@ void load_ram(String sna_file) {
     lhandle = open_read_file(sna_file);
     sna_size = lhandle.size();
 
+    rom_in_use=0;
+    rom_latch=0;
+    paging_lock=0;
+
     if (cfg_arch == "48K") {
         rom_latch = 0;
         rom_in_use = 0;

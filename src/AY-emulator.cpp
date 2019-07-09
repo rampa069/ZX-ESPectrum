@@ -21,10 +21,9 @@ void ay_reset(boolean clear_regs)
     ay_command[0]=0xff;
     ay_command[1]=i;
     ay_command[2]=0x00;
-    Serial2.write(ay_command,3);    
+    Serial2.write(ay_command,3);
   }
-  //Serial2.write(ay_register_table,29);
-  Serial.printf("AY Reset. clear: %i\n", int(clear_regs) );
+
 }
 
 void ay_write_register(uint8_t ay_register, uint8_t value)

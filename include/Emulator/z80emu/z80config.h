@@ -27,7 +27,7 @@
  */
 
 
-#define Z80_CATCH_HALT
+//#define Z80_CATCH_HALT
 //#define Z80_CATCH_DI
 //#define Z80_CATCH_EI
 //#define Z80_CATCH_RETI
