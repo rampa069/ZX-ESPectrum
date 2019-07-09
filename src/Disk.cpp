@@ -187,7 +187,7 @@ void load_ram(String sna_file) {
         for (buf_p = 0x8000; buf_p < 0xc000; buf_p++) {
             writebyte(buf_p, lhandle.read());
         }
-
+        bank_latch=0;
         for (buf_p = 0xc000; buf_p < 0xffff; buf_p++) {
             writebyte(buf_p, lhandle.read());
         }
