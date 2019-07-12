@@ -31,6 +31,7 @@
  #define MIC_PIN 26
  #define AY_PIN 26
  #define AY_SOUND 1
+ #undef BOARD_HAS_PSRAM
 #endif
 
 //#define COLOUR_8
