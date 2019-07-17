@@ -8,7 +8,12 @@
 #include "def/types.h"
 #include "osd.h"
 #include <FS.h>
-#include <SPIFFS.h>
+#ifdef MARTIANOIDS
+ #include "SD.h"
+ #include "SPI.h"
+#else
+ #include <SPIFFS.h>
+#endif
 
 void errorHalt(String errormsg);
 void IRAM_ATTR kb_interruptHandler(void);
@@ -26,16 +31,27 @@ boolean cfg_wconn = false;
 String cfg_wssid = "none";
 String cfg_wpass = "none";
 
-void IRAM_ATTR mount_spiffs() {
-    if (!SPIFFS.begin())
-        errorHalt(ERR_MOUNT_FAIL);
 
+void mount_spiffs() {
+  #ifdef MARTIANOIDS
+    if (!SD.begin())
+        errorHalt(ERR_MOUNT_FAIL);
+  #else
+  if (!SPIFFS.begin())
+      errorHalt(ERR_MOUNT_FAIL);
+
+  #endif
     vTaskDelay(2);
 }
 
 String getAllFilesFrom(const String path) {
     KB_INT_STOP;
+    #ifdef MARTIANOIDS
+    File root = SD.open("/");
+    #else
     File root = SPIFFS.open("/");
+    #endif
+
     File file = root.openNextFile();
     String listing;
 
@@ -54,7 +70,11 @@ String getAllFilesFrom(const String path) {
 
 void listAllFiles() {
     KB_INT_STOP;
+    #ifdef MARTIANOIDS
+    File root = SD.open("/");
+    #else
     File root = SPIFFS.open("/");
+    #endif
     Serial.println("fs opened");
     File file = root.openNextFile();
     Serial.println("fs openednextfile");
@@ -74,12 +94,23 @@ File open_read_file(String filename) {
     filename.trim();
     if (cfg_slog_on)
         Serial.printf("%s '%s'\n", MSG_LOADING, filename.c_str());
-    if (!SPIFFS.exists(filename.c_str())) {
-        KB_INT_START;
-        errorHalt((String)ERR_READ_FILE + "\n" + filename);
-    }
-    f = SPIFFS.open(filename.c_str(), FILE_READ);
-    vTaskDelay(2);
+        #ifdef MARTIANOIDS
+        if (!SD.exists(filename.c_str())) {
+            KB_INT_START;
+            errorHalt((String)ERR_READ_FILE + "\n" + filename);
+        }
+        f = SD.open(filename.c_str(), FILE_READ);
+
+        #else
+        if (!SPIFFS.exists(filename.c_str())) {
+            KB_INT_START;
+            errorHalt((String)ERR_READ_FILE + "\n" + filename);
+        }
+        f = SPIFFS.open(filename.c_str(), FILE_READ);
+
+        #endif
+
+        vTaskDelay(2);
 
     return f;
 }
@@ -242,7 +273,11 @@ String getFileEntriesFromDir(String path) {
     KB_INT_STOP;
     Serial.printf("Getting entries from: '%s'\n", path.c_str());
     String filelist;
-    File root = SPIFFS.open(path.c_str());
+    #ifdef MARTIANOIDS
+     File root = SD.open(path.c_str());
+    #else
+     File root = SPIFFS.open(path.c_str());
+    #endif
     if (!root || !root.isDirectory()) {
         errorHalt((String)ERR_DIR_OPEN + "\n" + root);
     }
@@ -386,7 +421,11 @@ void config_read() {
 void config_save() {
     KB_INT_STOP;
     Serial.printf("Saving config file '%s':\n", DISK_BOOT_FILENAME);
-    File f = SPIFFS.open(DISK_BOOT_FILENAME, FILE_WRITE);
+    #ifdef MARTIANOIDS
+      File f = SD.open(DISK_BOOT_FILENAME, FILE_WRITE);
+    #else
+      File f = SPIFFS.open(DISK_BOOT_FILENAME, FILE_WRITE);
+    #endif
     // Architecture
     Serial.printf("  + arch:%s\n", cfg_arch.c_str());
     f.printf("arch:%s\n", cfg_arch.c_str());

@@ -4,9 +4,9 @@
    Define the MARTIANOIDS macro to use the martianoids V1.0 board
 */
 
-#define FABGL 1
+//#define FABGL 1
 //#define BITLUNI 1
-//#define MARTIANOIDS 1
+#define MARTIANOIDS 1
 
 
 /*
@@ -15,7 +15,7 @@
    for F1 press SS+CS 1
 */
 
-#define ZX2PS2 1
+//#define ZX2PS2 1
 
 #ifdef BITLUNI
  #define PINCONFIG pinConfig(-1, -1, -1, 2, 14,  -1, -1, -1, 15, 19,  -1, -1, 21, 27,  32, 33,  -1);
@@ -47,7 +47,7 @@
  #define MIC_PIN -1
  #define AY_PIN 26
  #define AY_SOUND 1
- #define BOARD_HAS_PSRAM 1
+ //#define BOARD_HAS_PSRAM 1
  #define HAS_JOYSTICK 1
  #define JOY_UP   8
  #define JOY_DOWN 7

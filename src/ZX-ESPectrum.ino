@@ -27,6 +27,7 @@
 #include "soc/timer_group_struct.h"
 #include <esp_bt.h>
 
+
 // EXTERN VARS
 
 extern boolean cfg_slog_on;
@@ -88,6 +89,8 @@ void setup() {
     esp_bt_controller_mem_release(ESP_BT_MODE_BTDM);
 
 
+
+extern boolean cfg_slog_on;
     // AY serial emulator initialization
     Serial2.begin(57600,SERIAL_8N1,AY_PIN,AY_PIN);
     ay_reset(true);
@@ -96,6 +99,7 @@ void setup() {
     if (cfg_slog_on) {
         Serial.println(MSG_VGA_INIT);
     }
+
 
     Serial.printf("HEAP BEGIN %d\n", ESP.getFreeHeap());
 
