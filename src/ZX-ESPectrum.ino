@@ -192,6 +192,13 @@ void videoTask(void *unused) {
             break;
 
         use_latch=video_latch;
+        ula_bus=0xff;
+
+        //for (unsigned int border_sync = 0; border_sync < 45; border_sync++)
+        //for (int bor = 32; bor < 328; bor++)
+        //    vga.dotFast(bor, 1, zxcolor(borderTemp, 0));
+
+        //delayMicroseconds(7000);
 
         for (unsigned int vga_lin = 0; vga_lin < 200; vga_lin++) {
             // tick = 0;
@@ -374,6 +381,34 @@ void do_keyboard() {
     bitWrite(z80ports_in[0x1f], 2, !keymap[KEY_CURSOR_DOWN]);
     bitWrite(z80ports_in[0x1f], 3, !keymap[KEY_CURSOR_UP]);
     bitWrite(z80ports_in[0x1f], 4, !keymap[KEY_ALT_GR]);
+
+  #ifdef HAS_JOYSTICK
+    // Kempston joystick on port 0
+    digitalWrite(JOY_0,1);
+    bitWrite(z80ports_in[0x1f], 0, !digitalRead(JOY_RIGHT));
+    bitWrite(z80ports_in[0x1f], 1, !digitalRead(JOY_LEFT));
+    bitWrite(z80ports_in[0x1f], 2, !digitalRead(JOY_DOWN));
+    bitWrite(z80ports_in[0x1f], 3, !digitalRead(JOY_UP));
+    bitWrite(z80ports_in[0x1f], 4, !digitalRead(JOY_FIRE));
+
+    // Sinclair joystick on port 0
+    bitWrite(z80ports_in[4], 1, !digitalRead(JOY_RIGHT));
+    bitWrite(z80ports_in[4], 0, !digitalRead(JOY_LEFT));
+    bitWrite(z80ports_in[4], 2, !digitalRead(JOY_DOWN));
+    bitWrite(z80ports_in[4], 3, !digitalRead(JOY_UP));
+    bitWrite(z80ports_in[4], 4, !digitalRead(JOY_FIRE));
+    digitalWrite (JOY_0,0);
+
+    // Sinclair joystick on port 1
+    digitalWrite(JOY_1,1);
+    bitWrite(z80ports_in[3], 1, !digitalRead(JOY_RIGHT));
+    bitWrite(z80ports_in[3], 0, !digitalRead(JOY_LEFT));
+    bitWrite(z80ports_in[3], 2, !digitalRead(JOY_DOWN));
+    bitWrite(z80ports_in[3], 3, !digitalRead(JOY_UP));
+    bitWrite(z80ports_in[3], 4, !digitalRead(JOY_FIRE));
+    digitalWrite(JOY_1,0);
+
+  #endif
 }
 
 /* +-------------+
