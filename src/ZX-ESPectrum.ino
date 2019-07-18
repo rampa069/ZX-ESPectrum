@@ -60,8 +60,6 @@ volatile byte flashing = 0;
 volatile boolean xULAStop = false;
 volatile boolean xULAStopped = false;
 volatile byte tick;
-const int SAMPLING_RATE = 44100;
-const int BUFFER_SIZE = 2000;
 
 int halfsec, sp_int_ctr, evenframe, updateframe;
 
@@ -92,13 +90,13 @@ void setup() {
 
 extern boolean cfg_slog_on;
     // AY serial emulator initialization
-    Serial2.begin(57600,SERIAL_8N1,AY_PIN,AY_PIN);
-    ay_reset(true);
+    #ifdef AY_SOUND
+     Serial2.begin(57600,SERIAL_8N1,AY_PIN,AY_PIN);
+     ay_reset(true);
+    #endif
 
     Serial.begin(115200);
-    if (cfg_slog_on) {
-        Serial.println(MSG_VGA_INIT);
-    }
+
 
 
     Serial.printf("HEAP BEGIN %d\n", ESP.getFreeHeap());
@@ -114,7 +112,7 @@ extern boolean cfg_slog_on;
     rom2 = (byte *)ps_malloc(16384);
     rom3 = (byte *)ps_malloc(16384);
 
-    ram0 = (byte *)ps_malloc(16384);
+    ram0 = (byte *)malloc(16384);
     ram1 = (byte *)ps_malloc(16384);
     ram2 = (byte *)ps_malloc(16384);
     ram3 = (byte *)ps_malloc(16384);
@@ -138,8 +136,10 @@ extern boolean cfg_slog_on;
     #endif
 
 
-
-vga.init(vga.MODE360x200, pinConfig);
+    if (cfg_slog_on) {
+        Serial.println(MSG_VGA_INIT);
+    }
+    vga.init(vga.MODE360x200, pinConfig);
 
     Serial.printf("HEAP after vga  %d \n", ESP.getFreeHeap());
 

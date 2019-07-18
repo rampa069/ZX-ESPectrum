@@ -1,7 +1,7 @@
 
 [env:lolin32]
 platform = espressif32
-board = lolin32
+board =  esp-wrover-kit
 framework = arduino
 ; change microcontroller
 board_build.mcu = esp32
@@ -20,8 +20,10 @@ lib_deps =
     https://github.com/bitluni/ESP32Lib.git
 
 monitor_speed = 115200
-board_build.partitions = noota_3g.csv
+;board_build.partitions = noota_3g.csv
+board_build.partitions = default.csv
 build_flags =
     -w
     -DBOARD_HAS_PSRAM
     -mfix-esp32-psram-cache-issue
+    -Os

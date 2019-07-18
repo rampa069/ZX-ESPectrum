@@ -5,8 +5,8 @@
 */
 
 //#define FABGL 1
-//#define BITLUNI 1
-#define MARTIANOIDS 1
+#define BITLUNI 1
+//#define MARTIANOIDS 1
 
 
 /*
@@ -18,14 +18,25 @@
 //#define ZX2PS2 1
 
 #ifdef BITLUNI
- #define PINCONFIG pinConfig(-1, -1, -1, 2, 14,  -1, -1, -1, 15, 19,  -1, -1, 21, 27,  32, 33,  -1);
+//#define PINCONFIG pinConfig(-1, -1, -1, 2, 14,  -1, -1, -1, 15, 19,  -1, -1, 21, 27,  32, 33,  -1);
+ #define PINCONFIG pinConfig(-1, -1, -1, 2, 14,  -1, -1, -1, -1, 15,  -1, -1, 21, 27,  32, 33,  -1);
  #define KEYBOARD_DATA 25
  #define KEYBOARD_CLK 26
- #define SPEAKER_PIN 5
- #define EAR_PIN 34
- #define MIC_PIN 0
- #define AY_PIN -1
- #define AY_SOUND 0
+ #define SPEAKER_PIN 27//5
+ #define EAR_PIN 34 //34
+ #define MIC_PIN -1
+ #define AY_PIN 26
+ //#define AY_SOUND 1
+ //#define BOARD_HAS_PSRAM 1
+ //#define HAS_JOYSTICK 1
+ #define HAS_SD 1
+ #define JOY_UP   8
+ #define JOY_DOWN 7
+ #define JOY_LEFT 6
+ #define JOY_RIGHT 11
+ #define JOY_FIRE 10
+ #define JOY_0 14
+ #define JOY_1 12
 #endif
 #ifdef FABGL
  #define PINCONFIG pinConfig(-1, -1, -1, 21, 22,  -1, -1, -1, 18, 19,  -1, -1, 4, 5,  23, 15,  -1);
@@ -39,7 +50,7 @@
  #undef BOARD_HAS_PSRAM
 #endif
 #ifdef MARTIANOIDS
- #define PINCONFIG pinConfig(-1, -1, -1, 16, 17,  -1, -1, -1, 4, 2,  -1, -1, 15, 13,  22, 21,  -1);
+ #define PINCONFIG pinConfig(-1, -1, -1, 6, 11,  -1, -1, -1, 4, 2,  -1, -1, 15, 13,  22, 21,  -1);
  #define KEYBOARD_DATA 32
  #define KEYBOARD_CLK 33
  #define SPEAKER_PIN 27
@@ -47,12 +58,13 @@
  #define MIC_PIN -1
  #define AY_PIN 26
  #define AY_SOUND 1
- //#define BOARD_HAS_PSRAM 1
+ #define BOARD_HAS_PSRAM 1
  #define HAS_JOYSTICK 1
+ #define HAS_SD 1
  #define JOY_UP   8
  #define JOY_DOWN 7
- #define JOY_LEFT 6
- #define JOY_RIGHT 11
+ #define JOY_LEFT 34
+ #define JOY_RIGHT 35
  #define JOY_FIRE 10
  #define JOY_0 14
  #define JOY_1 12

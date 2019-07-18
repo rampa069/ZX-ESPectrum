@@ -86,7 +86,7 @@ char *divide_image_path=NULL;
 int divide_image_changed=0;
 
 // DEMFIR operating system for divide (http://demfir.sourceforge.net)
-extern unsigned char demfir_imag[];
+extern const unsigned char demfir_imag[];
 
 // mapped original ROM or divide memory?
 int divide_memstate=0;

@@ -21,14 +21,14 @@ extern String cfg_wssid;
 extern String cfg_wpass;
 
 // Declared methods
-void IRAM_ATTR mount_spiffs();
+void mount_spiffs();
 String getAllFilesFrom(const String path);
 void listAllFiles();
-File IRAM_ATTR open_read_file(String filename);
-void IRAM_ATTR load_ram(String sna_file);
+File open_read_file(String filename);
+void load_ram(String sna_file);
 String getFileEntriesFromDir(String path);
 unsigned short countFileEntriesFromDir(String path);
 void load_rom(String arch, String romset);
 String getSnaFileList();
 void config_read();
-void IRAM_ATTR config_save();
+void config_save();

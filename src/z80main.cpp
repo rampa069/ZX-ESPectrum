@@ -235,7 +235,7 @@ extern "C" uint8_t input(uint8_t portLow, uint8_t portHigh) {
     }
     // Sound (AY-3-8912)
 
-
+    #ifdef AY_SOUND
     if (portLow == 0xFD) {
         switch (portHigh) {
         case 0xFF:
@@ -248,7 +248,7 @@ extern "C" uint8_t input(uint8_t portLow, uint8_t portHigh) {
             #endif
         }
     }
-
+    #endif
 
     uint8_t data = zx_data;
     data |= (0xe0); /* Set bits 5-7 - as reset above */

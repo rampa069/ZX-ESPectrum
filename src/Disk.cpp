@@ -9,9 +9,9 @@
 #include "osd.h"
 #include <FS.h>
 #include <Update.h>
-#ifdef MARTIANOIDS
+#ifdef HAS_SD
  #include "SD.h"
- #include "SPI.h"
+ //#include "SPI.h"
 #else
  #include <SPIFFS.h>
 #endif
@@ -32,7 +32,7 @@ boolean cfg_wconn = false;
 String cfg_wssid = "none";
 String cfg_wpass = "none";
 
-#ifdef MARTIANOIDS
+#ifdef HAS_SD
 void performUpdate(Stream &updateSource, size_t updateSize) {
    if (Update.begin(updateSize)) {
       size_t written = Update.writeStream(updateSource);
@@ -89,11 +89,11 @@ void updateFromFS(fs::FS &fs) {
       Serial.println("Could not load update.bin from sd root");
    }
 }
-#endif 
+#endif
 
 void mount_spiffs() {
-  #ifdef MARTIANOIDS
-    if (!SD.begin())
+  #ifdef HAS_SD
+    if (!SD.begin(5))
         errorHalt(ERR_MOUNT_FAIL);
     else
       updateFromFS(SD);
@@ -108,7 +108,7 @@ void mount_spiffs() {
 String getAllFilesFrom(const String path) {
     KB_INT_STOP;
 
-    #ifdef MARTIANOIDS
+    #ifdef HAS_SD
     File root = SD.open("/");
     #else
     File root = SPIFFS.open("/");
@@ -133,7 +133,7 @@ String getAllFilesFrom(const String path) {
 void listAllFiles() {
     KB_INT_STOP;
 
-    #ifdef MARTIANOIDS
+    #ifdef HAS_SD
     File root = SD.open("/");
     #else
     File root = SPIFFS.open("/");
@@ -158,7 +158,7 @@ File open_read_file(String filename) {
     filename.trim();
     if (cfg_slog_on)
         Serial.printf("%s '%s'\n", MSG_LOADING, filename.c_str());
-        #ifdef MARTIANOIDS
+        #ifdef HAS_SD
         if (!SD.exists(filename.c_str())) {
             KB_INT_START;
             errorHalt((String)ERR_READ_FILE + "\n" + filename);
@@ -338,7 +338,7 @@ String getFileEntriesFromDir(String path) {
     Serial.printf("Getting entries from: '%s'\n", path.c_str());
     String filelist;
 
-    #ifdef MARTIANOIDS
+    #ifdef HAS_SD
      File root = SD.open(path.c_str());
     #else
      File root = SPIFFS.open(path.c_str());
@@ -487,7 +487,7 @@ void config_read() {
 void config_save() {
     KB_INT_STOP;
     Serial.printf("Saving config file '%s':\n", DISK_BOOT_FILENAME);
-    #ifdef MARTIANOIDS
+    #ifdef HAS_SD
       File f = SD.open(DISK_BOOT_FILENAME, FILE_WRITE);
     #else
       File f = SPIFFS.open(DISK_BOOT_FILENAME, FILE_WRITE);
