@@ -8,6 +8,7 @@
 #include "def/types.h"
 #include "osd.h"
 #include <FS.h>
+#include <Update.h>
 #ifdef MARTIANOIDS
  #include "SD.h"
  #include "SPI.h"
@@ -31,11 +32,71 @@ boolean cfg_wconn = false;
 String cfg_wssid = "none";
 String cfg_wpass = "none";
 
+#ifdef MARTIANOIDS
+void performUpdate(Stream &updateSource, size_t updateSize) {
+   if (Update.begin(updateSize)) {
+      size_t written = Update.writeStream(updateSource);
+      if (written == updateSize) {
+         Serial.println("Written : " + String(written) + " successfully");
+      }
+      else {
+         Serial.println("Written only : " + String(written) + "/" + String(updateSize) + ". Retry?");
+      }
+      if (Update.end()) {
+         Serial.println("OTA done!");
+         if (Update.isFinished()) {
+            Serial.println("Update successfully completed. Rebooting.");
+         }
+         else {
+            Serial.println("Update not finished? Something went wrong!");
+         }
+      }
+      else {
+         Serial.println("Error Occurred. Error #: " + String(Update.getError()));
+      }
+
+   }
+   else
+   {
+      Serial.println("Not enough space to begin OTA");
+   }
+}
+void updateFromFS(fs::FS &fs) {
+   File updateBin = fs.open("/update.bin");
+   if (updateBin) {
+      if(updateBin.isDirectory()){
+         Serial.println("Error, update.bin is not a file");
+         updateBin.close();
+         return;
+      }
+
+      size_t updateSize = updateBin.size();
+
+      if (updateSize > 0) {
+         Serial.println("Try to start update");
+         performUpdate(updateBin, updateSize);
+      }
+      else {
+         Serial.println("Error, file is empty");
+      }
+
+      updateBin.close();
+
+      // whe finished remove the binary from sd card to indicate end of the process
+      fs.remove("/update.bin");
+   }
+   else {
+      Serial.println("Could not load update.bin from sd root");
+   }
+}
+#endif 
 
 void mount_spiffs() {
   #ifdef MARTIANOIDS
     if (!SD.begin())
         errorHalt(ERR_MOUNT_FAIL);
+    else
+      updateFromFS(SD);
   #else
   if (!SPIFFS.begin())
       errorHalt(ERR_MOUNT_FAIL);
@@ -46,6 +107,7 @@ void mount_spiffs() {
 
 String getAllFilesFrom(const String path) {
     KB_INT_STOP;
+
     #ifdef MARTIANOIDS
     File root = SD.open("/");
     #else
@@ -70,11 +132,13 @@ String getAllFilesFrom(const String path) {
 
 void listAllFiles() {
     KB_INT_STOP;
+
     #ifdef MARTIANOIDS
     File root = SD.open("/");
     #else
     File root = SPIFFS.open("/");
     #endif
+
     Serial.println("fs opened");
     File file = root.openNextFile();
     Serial.println("fs openednextfile");
@@ -273,11 +337,13 @@ String getFileEntriesFromDir(String path) {
     KB_INT_STOP;
     Serial.printf("Getting entries from: '%s'\n", path.c_str());
     String filelist;
+
     #ifdef MARTIANOIDS
      File root = SD.open(path.c_str());
     #else
      File root = SPIFFS.open(path.c_str());
     #endif
+
     if (!root || !root.isDirectory()) {
         errorHalt((String)ERR_DIR_OPEN + "\n" + root);
     }
