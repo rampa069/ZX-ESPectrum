@@ -262,38 +262,23 @@ void load_ram(String sna_file) {
 
     if (sna_size < 50000) {
         uint16_t thestack = _zxCpu.registers.word[Z80_SP];
-        uint16_t buf_p = 0x4000;
-        while (lhandle.available()) {
-            writebyte(buf_p, lhandle.read());
-            buf_p++;
-        }
+        lhandle.readBytes((char*)ram5,0x4000);
+        lhandle.readBytes((char*)ram2,0x4000);
+        lhandle.readBytes((char*)ram0,0x4000);
 
-        // uint16_t offset = thestack - 0x4000;
-        // retaddr = ram5[offset] + 0x100 * ram5[offset + 1];
         retaddr = readword(thestack);
         Serial.printf("%x\n", retaddr);
         _zxCpu.registers.word[Z80_SP]++;
         _zxCpu.registers.word[Z80_SP]++;
     } else {
-        int buf_p;
-        for (buf_p = 0x4000; buf_p < 0x8000; buf_p++) {
-            writebyte(buf_p, lhandle.read());
-        }
-        for (buf_p = 0x8000; buf_p < 0xc000; buf_p++) {
-            writebyte(buf_p, lhandle.read());
-        }
-        bank_latch=0;
-        for (buf_p = 0xc000; buf_p < 0x10000; buf_p++) {
-            writebyte(buf_p, lhandle.read());
-        }
+        lhandle.readBytes((char*)ram5,0x4000);
+        lhandle.readBytes((char*)ram2,0x4000);
+        lhandle.readBytes((char*)ram0,0x4000);
 
-        //byte machine_b = lhandle.read();
-        //Serial.printf("Machine: %x\n", machine_b);
         byte retaddr_l = lhandle.read();
         byte retaddr_h = lhandle.read();
         retaddr = retaddr_l + retaddr_h * 0x100;
         byte tmp_port = lhandle.read();
-
         byte tmp_byte;
         for (int a = 0xc000; a < 0x10000; a++) {
             bank_latch = 0;
@@ -308,7 +293,7 @@ void load_ram(String sna_file) {
             if (page != tmp_latch && page != 2 && page != 5) {
                 bank_latch = page;
                 Serial.printf("Page %d actual_latch: %d\n", page, bank_latch);
-                for (buf_p = 0xc000; buf_p < 0x10000; buf_p++) {
+                for (int buf_p = 0xc000; buf_p < 0x10000; buf_p++) {
                     writebyte(buf_p, lhandle.read());
                 }
             }
@@ -398,25 +383,29 @@ void load_rom(String arch, String romset) {
     for (byte f = 0; f < n_roms; f++) {
         File rom_f = open_read_file(path + "/" + (String)f + ".rom");
         Serial.printf("Loading ROM '%s'\n", rom_f.name());
-        for (int i = 0; i < rom_f.size(); i++) {
+        //for (int i = 0; i < rom_f.size(); i++) {
             switch (f) {
             case 0:
-                rom0[i] = rom_f.read();
+                //rom0[i] = rom_f.read();
+                rom_f.readBytes((char*)rom0,rom_f.size());
                 break;
             case 1:
-                rom1[i] = rom_f.read();
+                //rom1[i] = rom_f.read();
+                rom_f.readBytes((char*)rom1,rom_f.size());
                 break;
 
 #ifdef BOARD_HAS_PSRAM
 
             case 2:
-                rom2[i] = rom_f.read();
+                //rom2[i] = rom_f.read();
+                rom_f.readBytes((char*)rom2,rom_f.size());
                 break;
             case 3:
-                rom3[i] = rom_f.read();
+                //rom3[i] = rom_f.read();
+                rom_f.readBytes((char*)rom3,rom_f.size());
                 break;
 #endif
-            }
+            //}
         }
         rom_f.close();
     }
