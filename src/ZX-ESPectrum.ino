@@ -68,6 +68,7 @@ TaskHandle_t videoTaskHandle;
 volatile bool videoTaskIsRunning = false;
 uint16_t *param;
 
+
 // SETUP *************************************
 #ifdef COLOUR_8
 VGA3Bit vga;
@@ -190,7 +191,15 @@ void videoTask(void *unused) {
     videoTaskIsRunning = true;
     uint16_t *param;
     uint8_t use_latch=0;
+
+
     while (1) {
+
+       TIMERG0.wdt_wprotect = TIMG_WDT_WKEY_VALUE;
+       TIMERG0.wdt_feed = 1;
+       TIMERG0.wdt_wprotect = 0;
+       //vTaskDelay(0);
+
         xQueuePeek(vidQueue, &param, portMAX_DELAY);
         if ((int)param == 1)
             break;
@@ -202,7 +211,7 @@ void videoTask(void *unused) {
         //for (int bor = 32; bor < 328; bor++)
         //    vga.dotFast(bor, 1, zxcolor(borderTemp, 0));
 
-        //delayMicroseconds(7000);
+        delayMicroseconds(7000);
 
         for (unsigned int vga_lin = 0; vga_lin < 200; vga_lin++) {
             // tick = 0;
@@ -421,7 +430,7 @@ void do_keyboard() {
  */
 void loop() {
     // static byte last_ts = 0;
-    unsigned long ts1, ts2;
+    unsigned long ts1, ts2, last_ts;
 
     if (halfsec) {
         flashing = ~flashing;
@@ -432,23 +441,28 @@ void loop() {
     do_keyboard();
     do_OSD();
 
-    // ts1 = millis();
+
+    ts1 = millis();
     zx_loop();
-    // ts2 = millis();
+    ts2 = millis();
+
+    //if ((ts2 - ts1) < 20) {
+    //  delay(20-(ts2-ts1));
+    //}
 
 
     xQueueSend(vidQueue, &param, portMAX_DELAY);
-
-
-    Z80Interrupt(&_zxCpu, ula_bus, &_zxContext);
     while (videoTaskIsRunning) {
     }
+    Z80Interrupt(&_zxCpu, ula_bus, &_zxContext);
 
-    /*
-    if ((ts2 - ts1) != last_ts) {
-        Serial.printf("PC:  %d time: %d\n", _zxCpu.pc, ts2 - ts1);
-        last_ts = ts2 - ts1;
-    }*/
+    if (_zxCpu.status == Z80_STATUS_FLAG_HALT)
+      delay(20-(ts2-ts1));
+
+    //if ((ts2 - ts1) != last_ts) {
+    //    Serial.printf("PC:  %d time: %d\n", _zxCpu.pc, ts2 - ts1);
+    //    last_ts = ts2 - ts1;
+    //}
 
     TIMERG0.wdt_wprotect = TIMG_WDT_WKEY_VALUE;
     TIMERG0.wdt_feed = 1;

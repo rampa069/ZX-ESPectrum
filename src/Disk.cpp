@@ -383,29 +383,24 @@ void load_rom(String arch, String romset) {
     for (byte f = 0; f < n_roms; f++) {
         File rom_f = open_read_file(path + "/" + (String)f + ".rom");
         Serial.printf("Loading ROM '%s'\n", rom_f.name());
-        //for (int i = 0; i < rom_f.size(); i++) {
-            switch (f) {
-            case 0:
-                //rom0[i] = rom_f.read();
-                rom_f.readBytes((char*)rom0,rom_f.size());
-                break;
-            case 1:
-                //rom1[i] = rom_f.read();
-                rom_f.readBytes((char*)rom1,rom_f.size());
-                break;
+
+        switch (f) {
+          case 0:
+              rom_f.readBytes((char*)rom0,rom_f.size());
+              break;
+          case 1:
+              rom_f.readBytes((char*)rom1,rom_f.size());
+              break;
 
 #ifdef BOARD_HAS_PSRAM
 
-            case 2:
-                //rom2[i] = rom_f.read();
-                rom_f.readBytes((char*)rom2,rom_f.size());
-                break;
-            case 3:
-                //rom3[i] = rom_f.read();
-                rom_f.readBytes((char*)rom3,rom_f.size());
-                break;
+          case 2:
+              rom_f.readBytes((char*)rom2,rom_f.size());
+              break;
+          case 3:
+              rom_f.readBytes((char*)rom3,rom_f.size());
+              break;
 #endif
-            //}
         }
         rom_f.close();
     }
