@@ -4,8 +4,8 @@
    Define the MARTIANOIDS macro to use the martianoids V1.0 board
 */
 
-//#define FABGL 1
-#define BITLUNI 1
+#define FABGL 1
+//#define BITLUNI 1
 //#define MARTIANOIDS 1
 
 
