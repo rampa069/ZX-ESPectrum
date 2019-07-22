@@ -71,8 +71,8 @@ int32_t zx_loop() {
     byte tmp_color = 0;
 
     _total = Z80Emulate(&_zxCpu, cycles_per_step, &_zxContext);
-    //Z80Interrupt(&_zxCpu, ula_bus, &_zxContext);
-  //  Serial.println(_total);
+     //Z80Interrupt(&_zxCpu, ula_bus, &_zxContext);
+   //Serial.println(_total);
 
     return result;
 }
@@ -269,9 +269,26 @@ extern "C" void output(uint8_t portLow, uint8_t portHigh, uint8_t data) {
         bitWrite(borderTemp, 1, bitRead(data, 1));
         bitWrite(borderTemp, 2, bitRead(data, 2));
 
-        digitalWrite(SPEAKER_PIN, bitRead(data, 4)); // speaker
 
-        digitalWrite(MIC_PIN, bitRead(data, 3)); // tape_out
+        byte sound = (data & 0x10);
+
+        /*
+        if ((z80ports_in[0x20] & 0x10) != sound)
+        {
+          if (sound)
+			       {
+				        digitalWrite(SPEAKER_PIN,1);
+			       }
+			    else
+			       {
+				        digitalWrite(SPEAKER_PIN,0);
+
+			       }
+             //delayMicroseconds(100);
+        }
+        */
+        digitalWrite(SPEAKER_PIN, bitRead(data, 4)); // speaker
+        digitalWrite(MIC_PIN, bitRead(data, 3)); // tape
 
         z80ports_in[0x20] = data;
     } break;

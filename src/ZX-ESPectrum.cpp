@@ -69,6 +69,11 @@ volatile bool videoTaskIsRunning = false;
 uint16_t *param;
 
 
+void videoTask(void *unused);
+unsigned int zxcolor(int c, int bright);
+int calcY(int offset);
+void swap_flash(word *a, word *b);
+
 // SETUP *************************************
 #ifdef COLOUR_8
 VGA3Bit vga;
@@ -113,7 +118,7 @@ extern boolean cfg_slog_on;
     rom2 = (byte *)ps_malloc(16384);
     rom3 = (byte *)ps_malloc(16384);
 
-    ram0 = (byte *)malloc(16384);
+    ram0 = (byte *)ps_malloc(16384);
     ram1 = (byte *)ps_malloc(16384);
     ram2 = (byte *)ps_malloc(16384);
     ram3 = (byte *)ps_malloc(16384);
