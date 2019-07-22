@@ -27,7 +27,6 @@
 #include "soc/timer_group_struct.h"
 #include <esp_bt.h>
 
-
 // EXTERN VARS
 
 extern boolean cfg_slog_on;
@@ -74,6 +73,7 @@ unsigned int zxcolor(int c, int bright);
 int calcY(int offset);
 void swap_flash(word *a, word *b);
 
+
 // SETUP *************************************
 #ifdef COLOUR_8
 VGA3Bit vga;
@@ -102,7 +102,6 @@ extern boolean cfg_slog_on;
     #endif
 
     Serial.begin(115200);
-
 
 
     Serial.printf("HEAP BEGIN %d\n", ESP.getFreeHeap());
@@ -200,10 +199,7 @@ void videoTask(void *unused) {
 
     while (1) {
 
-       TIMERG0.wdt_wprotect = TIMG_WDT_WKEY_VALUE;
-       TIMERG0.wdt_feed = 1;
-       TIMERG0.wdt_wprotect = 0;
-       //vTaskDelay(0);
+
 
         xQueuePeek(vidQueue, &param, portMAX_DELAY);
         if ((int)param == 1)
@@ -217,7 +213,7 @@ void videoTask(void *unused) {
         //    vga.dotFast(bor, 1, zxcolor(borderTemp, 0));
 
         delayMicroseconds(7000);
-
+        videoTaskIsRunning = true;
         for (unsigned int vga_lin = 0; vga_lin < 200; vga_lin++) {
             // tick = 0;
             if (vga_lin < 3 || vga_lin > 194) {
@@ -447,23 +443,31 @@ void loop() {
     do_OSD();
 
 
-    ts1 = millis();
-    zx_loop();
-    ts2 = millis();
+    //ts1 = millis();
+    //zx_loop();
+    //ts2 = millis();
 
     //if ((ts2 - ts1) < 20) {
     //  delay(20-(ts2-ts1));
     //}
 
+    //if (_zxCpu.status == Z80_STATUS_FLAG_HALT)
+    //  delay(20-(ts2-ts1));
+
+
+
+    ts1 = millis();
+    zx_loop();
+    ts2 = millis();
+
+
 
     xQueueSend(vidQueue, &param, portMAX_DELAY);
+
     while (videoTaskIsRunning) {
+      Serial.println("Video running....");
     }
     Z80Interrupt(&_zxCpu, ula_bus, &_zxContext);
-
-    if (_zxCpu.status == Z80_STATUS_FLAG_HALT)
-      delay(20-(ts2-ts1));
-
     //if ((ts2 - ts1) != last_ts) {
     //    Serial.printf("PC:  %d time: %d\n", _zxCpu.pc, ts2 - ts1);
     //    last_ts = ts2 - ts1;
