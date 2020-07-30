@@ -27,13 +27,13 @@ An emulation of the ZX-Spectrum computer on an ESP32 chip with VGA output based 
 
 ## Compiling and installing
 
-At this point we only support GNU/Linux and MacOS/X. It may work at Windoze too but we don't know.
+GNU/Linux, MacOS/X and Windows supported.
 
 #### Install platformIO:
 
 - They have an extension for Atom and VSCode, and this is [the webpage](https://platformio.org/).
 - Select you board.
-- Install Bitluni's ESP32Lib.
+- Install Bitluni's ESP32Lib (use version 0.2.1, newer versions such as 0.3.3 will lead to compile errors)
 
 #### Softlink and customize platformio.ini
 
@@ -51,15 +51,15 @@ cp data/boot.cfg.orig boot.cfg
 
 #### Upload the data filesystem
 
-`Run Other Task > PIO Upload Filesystem Image`
+`PlatformIO > Project Tasks > Upload File System Image`
 
 #### Compile and flash it
 
-Right arrow at the bottom icon bar or `Tasks > Run Build Task > PlatformIO: Build` and `Tasks > PlatformIO: Upload`.
+Right arrow at the bottom icon bar or `PlatformIO > Project Tasks > Build` and `PlatformIO > Project Tasks > Upload`.
 
 ## Hardware configuration and pinout
 
-Comming soon...
+See pin assignment in include/def/hardware.h or change it to your own preference.
 
 ## Thanks to
 
