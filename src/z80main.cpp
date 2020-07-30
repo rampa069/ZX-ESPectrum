@@ -187,51 +187,23 @@ extern "C" uint8_t input(uint8_t portLow, uint8_t portHigh) {
     // delay(2);
     // Serial.print ("IN ");
     if (portLow == 0xFE) {
+
+        // EAR_PIN
+        if (portHigh == 0xFE) {
+            bitWrite(z80ports_in[0], 6, digitalRead(EAR_PIN));
+        }
+
         // Keyboard
-
-        switch (portHigh) {
-
-        case 0xfe:
-            kbdarrno = 0;
-            break;
-        case 0xfd:
-            kbdarrno = 1;
-            break;
-        case 0xfb:
-            kbdarrno = 2;
-            break;
-        case 0xf7:
-            kbdarrno = 3;
-            break;
-        case 0xef:
-            kbdarrno = 4;
-            break;
-        case 0xdf:
-            kbdarrno = 5;
-            break;
-        case 0xbf:
-            kbdarrno = 6;
-            break;
-        case 0x7f:
-            kbdarrno = 7;
-            break;
-
-        case 0x00: {
-            uint8_t result = z80ports_in[7];
-            result &= z80ports_in[6];
-            result &= z80ports_in[5];
-            result &= z80ports_in[4];
-            result &= z80ports_in[3];
-            result &= z80ports_in[2];
-            result &= z80ports_in[1];
-            result &= z80ports_in[0];
-            return result;
-        }
-        }
-        if (portHigh == 0xfe) {
-            bitWrite(z80ports_in[kbdarrno], 6, digitalRead(EAR_PIN));
-        }
-        return (z80ports_in[kbdarrno]);
+        uint8_t result = 0xFF;
+        if (~(portHigh | 0xFE)&0xFF) result &= z80ports_in[0];
+        if (~(portHigh | 0xFD)&0xFF) result &= z80ports_in[1];
+        if (~(portHigh | 0xFB)&0xFF) result &= z80ports_in[2];
+        if (~(portHigh | 0xF7)&0xFF) result &= z80ports_in[3];
+        if (~(portHigh | 0xEF)&0xFF) result &= z80ports_in[4];
+        if (~(portHigh | 0xDF)&0xFF) result &= z80ports_in[5];
+        if (~(portHigh | 0xBF)&0xFF) result &= z80ports_in[6];
+        if (~(portHigh | 0x7F)&0xFF) result &= z80ports_in[7];
+        return result;
     }
     // Kempston
     if (portLow == 0x1F) {
