@@ -15,6 +15,7 @@ Z80_STATE _zxCpu;
 
 extern byte borderTemp;
 extern byte z80ports_in[128];
+extern byte z80ports_wiin[128];
 extern byte tick;
 
 CONTEXT _zxContext;
@@ -190,19 +191,20 @@ extern "C" uint8_t input(uint8_t portLow, uint8_t portHigh) {
 
         // EAR_PIN
         if (portHigh == 0xFE) {
-            bitWrite(z80ports_in[0], 6, digitalRead(EAR_PIN));
+            bitWrite(z80ports_in  [0], 6, digitalRead(EAR_PIN));
+            bitWrite(z80ports_wiin[0], 6, digitalRead(EAR_PIN));
         }
 
         // Keyboard
         uint8_t result = 0xFF;
-        if (~(portHigh | 0xFE)&0xFF) result &= z80ports_in[0];
-        if (~(portHigh | 0xFD)&0xFF) result &= z80ports_in[1];
-        if (~(portHigh | 0xFB)&0xFF) result &= z80ports_in[2];
-        if (~(portHigh | 0xF7)&0xFF) result &= z80ports_in[3];
-        if (~(portHigh | 0xEF)&0xFF) result &= z80ports_in[4];
-        if (~(portHigh | 0xDF)&0xFF) result &= z80ports_in[5];
-        if (~(portHigh | 0xBF)&0xFF) result &= z80ports_in[6];
-        if (~(portHigh | 0x7F)&0xFF) result &= z80ports_in[7];
+        if (~(portHigh | 0xFE)&0xFF) result &= (z80ports_in[0] & z80ports_wiin[0]);
+        if (~(portHigh | 0xFD)&0xFF) result &= (z80ports_in[1] & z80ports_wiin[1]);
+        if (~(portHigh | 0xFB)&0xFF) result &= (z80ports_in[2] & z80ports_wiin[2]);
+        if (~(portHigh | 0xF7)&0xFF) result &= (z80ports_in[3] & z80ports_wiin[3]);
+        if (~(portHigh | 0xEF)&0xFF) result &= (z80ports_in[4] & z80ports_wiin[4]);
+        if (~(portHigh | 0xDF)&0xFF) result &= (z80ports_in[5] & z80ports_wiin[5]);
+        if (~(portHigh | 0xBF)&0xFF) result &= (z80ports_in[6] & z80ports_wiin[6]);
+        if (~(portHigh | 0x7F)&0xFF) result &= (z80ports_in[7] & z80ports_wiin[7]);
         return result;
     }
     // Kempston

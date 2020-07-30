@@ -11,3 +11,6 @@ void IRAM_ATTR kb_interruptHandler(void);
 void kb_begin();
 boolean isKeymapChanged();
 boolean checkAndCleanKey(uint8_t scancode);
+
+// inject key from wiimote, for not modifying OSD code
+void emulateKeyChange(uint8_t scancode, uint8_t isdown);

@@ -11,5 +11,8 @@ platformio.ini
 data/boot.cfg
 data/sna/**
 !data/sna/sppong.sna
+!data/sna/sppong.txt
 !data/sna/diag.sna
 !data/sna/fantasy.sna
+!data/sna/fantasy.txt
+!data/sna/ManicMiner.txt
