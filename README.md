@@ -87,7 +87,7 @@ QWERTYUIOP
 ASDFGHJKLe
 hZXCVBNMys
 ````
-With `e` for ENTER, `h` for CAPS SHIFT, `y` for SYMBOL SHIFT and `s` for SPACE. Any other character (ex: '``') means not used.
+With `e` for ENTER, `h` for CAPS SHIFT, `y` for SYMBOL SHIFT and `s` for SPACE. Any other character (ex: '`-`') means not used.
 
 For the Manic Miner example, the correspondences would be:
 
