@@ -1,0 +1,2 @@
+This projects uses library 'bitluni ESP32Lib' version 0.2.1, newer versions WON'T work.
+This library must be added to platform.io in section 'libraries'

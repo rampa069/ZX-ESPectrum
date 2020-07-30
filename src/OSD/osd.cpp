@@ -7,6 +7,7 @@
 #include "def/files.h"
 #include "def/keys.h"
 #include "def/msg.h"
+#include "Wiimote2Keys.h"
 
 // Cursor to OSD first row,col
 void osdHome() { vga.setCursor(osdInsideX(), osdInsideY()); }
@@ -54,7 +55,7 @@ void do_OSD() {
     } else if (checkAndCleanKey(KEY_F1)) {
         // Main menu
         byte opt = menuRun(MENU_MAIN);
-        if (opt == 1) {
+        if (opt == 2) {
             // Change ROM
             String arch_menu = getArchMenu();
             byte arch_num = menuRun(arch_menu);
@@ -72,7 +73,7 @@ void do_OSD() {
                     zx_reset();
                 }
             }
-        } else if (opt == 2) {
+        } else if (opt == 1) {
             // Change RAM
             unsigned short snanum = menuRun(cfg_sna_file_list);
             if (snanum > 0) {
@@ -96,35 +97,6 @@ void do_OSD() {
                 zx_reset();
             }
         } else if (opt == 4) {
-            // Demo mode
-            byte opt2 = menuRun(MENU_DEMO);
-            if (opt2 == 1) {
-                setDemoMode(OFF, 0);
-            } else {
-                last_demo_ts = millis() / 1000;
-                switch (opt2) {
-                case 2:
-                    setDemoMode(ON, 60);
-                    break;
-                case 3:
-                    setDemoMode(ON, 180);
-                    break;
-                case 4:
-                    setDemoMode(ON, 300);
-                    break;
-                case 5:
-                    setDemoMode(ON, 900);
-                    break;
-                case 6:
-                    setDemoMode(ON, 1800);
-                    break;
-                case 7:
-                    setDemoMode(ON, 3600);
-                    break;
-                }
-            }
-            vTaskDelay(500);
-        } else if (opt == 5) {
             // Help
             drawOSD();
             osdAt(2, 0);
@@ -132,6 +104,7 @@ void do_OSD() {
             vga.print(OSD_HELP);
             while (!checkAndCleanKey(KEY_F1) && !checkAndCleanKey(KEY_ESC) && !checkAndCleanKey(KEY_ENTER)) {
                 vTaskDelay(5);
+                updateWiimote2KeysOSD();
             }
         }
         // Exit

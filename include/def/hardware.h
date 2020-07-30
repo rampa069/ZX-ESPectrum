@@ -1,17 +1,17 @@
-#define SPEAKER_PIN 5
+#define SPEAKER_PIN 27
 #define EAR_PIN 34
 #define MIC_PIN 0
 
 #define KEYBOARD_DATA 25
 #define KEYBOARD_CLK 26
 
-// #define COLOUR_8
-#define COLOUR_16
+#define COLOUR_8
+//#define COLOUR_16
 
 // 8bit pins
-#define RED_PIN 14
-#define GREEN_PIN 19
-#define BLUE_PIN 27
+#define RED_PIN 13
+#define GREEN_PIN 12
+#define BLUE_PIN 14
 
 // 16b pins
 #define RED_PINS 2, 2, 14, 14, 14

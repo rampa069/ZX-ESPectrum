@@ -9,6 +9,7 @@
 #include "osd.h"
 #include <FS.h>
 #include <SPIFFS.h>
+#include "Wiimote2Keys.h"
 
 void errorHalt(String errormsg);
 void IRAM_ATTR kb_interruptHandler(void);
@@ -95,6 +96,8 @@ void load_ram(String sna_file) {
     Serial.printf("%s SNA: %ub\n", MSG_FREE_HEAP_BEFORE, ESP.getFreeHeap());
 
     KB_INT_STOP;
+
+    loadKeytableForGame(sna_file.c_str());
 
     lhandle = open_read_file(sna_file);
     sna_size = lhandle.size();
@@ -251,6 +254,8 @@ String getFileEntriesFromDir(String path) {
         Serial.printf("%s...", filename.c_str());
         if (filename.startsWith(".")) {
             Serial.println("HIDDEN");
+        } else if (filename.endsWith(".txt")) {
+            Serial.println("IGNORING TXT");
         } else if (cfg_arch == "48K" & file.size() > SIZE48K) {
             Serial.println("128K SKIP");
         } else {

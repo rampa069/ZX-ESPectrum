@@ -11,3 +11,4 @@ void IRAM_ATTR kb_interruptHandler(void);
 void kb_begin();
 boolean isKeymapChanged();
 boolean checkAndCleanKey(uint8_t scancode);
+void emulateKeyChange(uint8_t scancode, uint8_t isdown);
