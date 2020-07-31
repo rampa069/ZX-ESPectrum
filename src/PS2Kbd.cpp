@@ -82,3 +82,8 @@ boolean checkAndCleanKey(uint8_t scancode) {
     }
     return false;
 }
+
+void emulateKeyChange(uint8_t scancode, uint8_t isdown)
+{
+    keymap[scancode] = isdown ? 0 : 1;
+}

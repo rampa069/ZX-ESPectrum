@@ -5,6 +5,7 @@
 #include "def/files.h"
 #include "def/msg.h"
 #include "osd.h"
+#include "Wiimote2Keys.h"
 #include <math.h>
 
 byte cols;                     // Maximun columns
@@ -141,6 +142,7 @@ String getRomsetMenu(String arch) {
 unsigned short menuRun(String new_menu) {
     newMenu(new_menu);
     while (1) {
+        updateWiimote2KeysOSD();
         if (checkAndCleanKey(KEY_CURSOR_UP)) {
             if (focus == 1 and begin_row > 1) {
                 menuScroll(DOWN);

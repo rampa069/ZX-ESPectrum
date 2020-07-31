@@ -26,8 +26,9 @@
 #include "soc/timer_group_struct.h"
 #include <esp_bt.h>
 
-// EXTERN VARS
+#include "Wiimote2Keys.h"
 
+// EXTERN VARS
 extern boolean cfg_slog_on;
 extern String cfg_ram_file;
 extern String cfg_rom_set;
@@ -52,7 +53,13 @@ void errorHalt(String);
 void mount_spiffs();
 
 // GLOBALS
+
+// keyboard ports read from PS2 keyboard
 volatile byte z80ports_in[128];
+
+// keyboard ports read from Wiimote
+volatile byte z80ports_wiin[128];
+
 volatile byte borderTemp = 7;
 volatile byte flashing = 0;
 volatile boolean xULAStop = false;
@@ -77,16 +84,19 @@ VGA14Bit vga;
 
 
 void setup() {
-    // Turn off peripherals to gain memory (?do they release properly)
-    esp_bt_controller_deinit();
-    esp_bt_controller_mem_release(ESP_BT_MODE_BTDM);
-
     Serial.begin(115200);
+
+    Serial.println("ZX-ESPectrum + Wiimote initializing...");
+
     if (cfg_slog_on) {
         Serial.println(MSG_VGA_INIT);
     }
 
     Serial.printf("HEAP BEGIN %d\n", ESP.getFreeHeap());
+
+    initWiimote2Keys();
+
+    Serial.printf("HEAP AFTER WIIMOTE %d\n", ESP.getFreeHeap());
 
     mount_spiffs();
     config_read();
@@ -147,6 +157,7 @@ void setup() {
     // make sure keyboard ports are FF
     for (int t = 0; t < 32; t++) {
         z80ports_in[t] = 0x1f;
+        z80ports_wiin[t] = 0x1f;
     }
 
     Serial.printf("%s %u\n", MSG_EXEC_ON_CORE, xPortGetCoreID());
@@ -375,6 +386,7 @@ void loop() {
     halfsec = !(sp_int_ctr % 25);
 
     do_keyboard();
+    updateWiimote2Keys();
     do_OSD();
 
     // ts1 = millis();
