@@ -134,6 +134,7 @@ I have NOT included Manic Miner `.sna` snapshot, but you can download it from [w
 - Idea from the work of Charles Peter Debenham Todd: [PaseVGA](https://github.com/retrogubbins/paseVGA).
 - VGA Driver from [ESP32Lib by BitLuni](https://github.com/bitluni/ESP32Lib).
 - PS/2 keyboard support based on [ps2kbdlib](https://github.com/michalhol/ps2kbdlib).
+- PS/2 boot for some keyboards from [PS2KeyAdvanced](https://github.com/techpaul/PS2KeyAdvanced).
 - Wiimote library from [ESP32Wiimote by bigw00d](https://github.com/bigw00d/Arduino-ESP32Wiimote).
 - Z80 Emulation derived from [z80emu](https://github.com/anotherlin/z80emu) authored by Lin Ke-Fong.
 - DivIDE ideas (work in progress) taken from the work of Dusan Gallo.

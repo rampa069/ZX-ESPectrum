@@ -59,7 +59,24 @@ void IRAM_ATTR kb_interruptHandler(void) {
     }
 }
 
-void kb_begin() {
+#define FIX_PERIBOARD_NOT_INITING
+#ifdef  FIX_PERIBOARD_NOT_INITING
+#include "PS2Boot/PS2KeyAdvanced.h"
+PS2KeyAdvanced ps2boot;
+#endif
+
+void kb_begin()
+{
+#ifdef  FIX_PERIBOARD_NOT_INITING
+    // Configure the keyboard library
+    ps2boot.begin( KEYBOARD_DATA, KEYBOARD_CLK );
+    ps2boot.echo( );              // ping keyboard to see if there
+    delay( 6 );
+    ps2boot.read( );
+    delay( 6 );
+    ps2boot.terminate();
+#endif
+
     pinMode(KEYBOARD_DATA, INPUT_PULLUP);
     pinMode(KEYBOARD_CLK, INPUT_PULLUP);
     digitalWrite(KEYBOARD_DATA, true);
@@ -68,7 +85,6 @@ void kb_begin() {
 
     memset(keymap, 1, sizeof(keymap));
     memset(oldKeymap, 1, sizeof(oldKeymap));
-    //}
 }
 
 // Check if keymatrix is changed
