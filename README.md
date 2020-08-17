@@ -34,9 +34,8 @@ Windows, GNU/Linux and MacOS/X. This version has been developed using
 
 #### Install platformIO:
 
-- They have an extension for Atom and VSCode, and this is [the webpage](https://platformio.org/).
-- Select your board, I have used a Espressif ESP32-WROVER
-- Install Bitluni's ESP32Lib (use version 0.2.1, newer versions such as 0.3.3 will lead to compile errors)
+- There is an extension for Atom and VSCode, please check [this webpage](https://platformio.org/).
+- Select your board, I have used a Espressif ESP32-WROVER.
 
 #### Customize platformio.ini
 

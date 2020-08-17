@@ -1,6 +1,6 @@
 #pragma once
 
-#include "VGA/VGA14Bit.h"
-#include "VGA/VGA14BitI.h"
-#include "VGA/VGA3Bit.h"
-#include "VGA/VGA3BitI.h"
+#include "ESP32Lib/VGA/VGA14Bit.h"
+#include "ESP32Lib/VGA/VGA14BitI.h"
+#include "ESP32Lib/VGA/VGA3Bit.h"
+#include "ESP32Lib/VGA/VGA3BitI.h"
