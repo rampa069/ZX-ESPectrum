@@ -38,27 +38,12 @@ Windows, GNU/Linux and MacOS/X. This version has been developed using
 - Select your board, I have used a Espressif ESP32-WROVER
 - Install Bitluni's ESP32Lib (use version 0.2.1, newer versions such as 0.3.3 will lead to compile errors)
 
-#### Softlink
-```bash
-ln -s platformio.ini.linux platformio.ini
-# or in osx
-ln -s platformio.ini.osx platformio.ini
-# or in windows
-mklink platformio.ini platformio.ini.windows
-```
-
 #### Customize platformio.ini
 
 Change upload_port to whatever you're using.
 - Linux: `uploadport = /dev/ttyUSB0` or similar.
 - Windows: `upload_port = COM1` or similar.
 - MacOSX: `upload_port = /dev/cu.SLAB_USBtoUART` or similar.
-
-#### Copy boot.cfg
-
-```bash
-cp data/boot.cfg.orig boot.cfg
-```
 
 #### Upload the data filesystem
 

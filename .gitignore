@@ -8,7 +8,6 @@
 /work
 .piolibdeps/
 .vscode
-data/boot.cfg
 data/sna/**
 !data/sna/sppong.sna
 !data/sna/sppong.txt
