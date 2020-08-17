@@ -2416,35 +2416,35 @@ stop_emulation:
     return elapsed_cycles;
 }
 
-unsigned char delay_contention(word address, unsigned int tstates) {
-    int modulo;
+// sequence of wait states
+static unsigned char wait_states[8] = { 6, 5, 4, 3, 2, 1, 0, 0 };
 
-    if (tstates < 14335 || tstates > 14463 || address < 0x4000 || address > 0x7fff)
+// delay contention: emulates wait states introduced by the ULA (graphic chip)
+// whenever there is a memory access to contended memory (shared between ULA and CPU).
+// detailed info: https://worldofspectrum.org/faq/reference/48kreference.htm#ZXSpectrum
+// from paragraph which starts with "The 50 Hz interrupt is synchronized with..."
+// if you only read from https://worldofspectrum.org/faq/reference/48kreference.htm#Contention
+// without reading the previous paragraphs about line timings, it may be confusing.
+unsigned char delay_contention(word address, unsigned int tstates)
+{
+    // delay for contended memory is only effective in the graphic memory range
+    if (address < 0x4000 || address > 0x7fff)
         return 0;
 
-    modulo = tstates % 8;
+    // delay states one t-state BEFORE the first pixel to be drawn
+    tstates += 1;
 
-    switch (modulo) {
-    case 0:
-        return 6;
-        break;
-    case 1:
-        return 5;
-        break;
-    case 2:
-        return 4;
-        break;
-    case 3:
-        return 3;
-        break;
-    case 4:
-        return 2;
-        break;
-    case 5:
-        return 1;
-        break;
-    default:
-        return 0;
-        break;
-    }
+    // each line spans 224 t-states
+    int line = tstates / 224;
+
+    // only the 192 lines between 64 and 255 have graphic data, the rest is border
+    if (line < 64 || line >= 256) return 0;
+
+    // only the first 128 t-states of each line correspond to a graphic data transfer
+    // the remaining 96 t-states correspond to border
+    int halfpix = tstates % 224;
+    if (halfpix >= 128) return 0;
+
+    int modulo = tstates % 8;
+    return 3*wait_states[modulo];
 }
