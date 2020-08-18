@@ -11,6 +11,8 @@ boolean shift_presed = false;
 boolean symbol_pressed = false;
 byte rc = 0;
 
+// #define DEBUG_LOG_KEYSTROKES 1
+
 void IRAM_ATTR kb_interruptHandler(void) {
     static uint8_t bitcount = 0;
     static uint8_t incoming = 0;
@@ -48,6 +50,11 @@ void IRAM_ATTR kb_interruptHandler(void) {
                 keyup = false;
             } else
                 keymap[incoming] = 0;
+
+#ifdef DEBUG_LOG_KEYSTROKES
+                Serial.printf("PS2Kbd[%s]: %02X\n",
+                    keyup ? " up " : "down", incoming);
+#endif
 
             if (incoming == 240)
                 keyup = true;

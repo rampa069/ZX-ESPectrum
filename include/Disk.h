@@ -26,6 +26,7 @@ String getAllFilesFrom(const String path);
 void listAllFiles();
 File IRAM_ATTR open_read_file(String filename);
 void IRAM_ATTR load_ram(String sna_file);
+void IRAM_ATTR save_ram(String sna_file);
 String getFileEntriesFromDir(String path);
 unsigned short countFileEntriesFromDir(String path);
 void load_rom(String arch, String romset);

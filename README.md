@@ -13,9 +13,10 @@ There are per-game customizable (through simple text files) correspondences from
 - Spectrum 128/+2/+3 architecture emulation with PSRAM.
 - PS/2 Keyboard.
 - Wiimote support with per-game key assignments.
-- VGA OSD menu: Configuration, and architecture selection, ROM and SNA.
+- VGA OSD menu: Configuration, architecture, ROM and SNA selection.
 - Tape save and loading.
 - SNA snapshot loading.
+- Quick snapshot saving and loading.
 - Internal SPIFFS support.
 
 ## Work in progress

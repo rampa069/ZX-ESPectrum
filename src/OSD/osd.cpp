@@ -38,6 +38,22 @@ void drawOSD() {
     osdHome();
 }
 
+static void quickSave()
+{
+    osdCenteredMsg(OSD_QSNA_SAVING, LEVEL_INFO);
+    save_ram(DISK_QSNA_FILE);
+    osdCenteredMsg(OSD_QSNA_SAVED, LEVEL_INFO);
+    delay(400);
+}
+
+static void quickLoad()
+{
+    osdCenteredMsg(OSD_QSNA_LOADING, LEVEL_INFO);
+    load_ram(DISK_QSNA_FILE);
+    osdCenteredMsg(OSD_QSNA_LOADED, LEVEL_INFO);
+    delay(400);
+}
+
 // OSD Main Loop
 void do_OSD() {
     static byte last_sna_row = 0;
@@ -45,12 +61,20 @@ void do_OSD() {
     boolean cycle_sna = false;
     if (checkAndCleanKey(KEY_F12)) {
         cycle_sna = true;
-    } else if (checkAndCleanKey(KEY_PAUSE)) {
+    }
+    else if (checkAndCleanKey(KEY_PAUSE)) {
         osdCenteredMsg(OSD_PAUSE, LEVEL_INFO);
         while (!checkAndCleanKey(KEY_PAUSE)) {
             delay(5);
         }
-    } else if (checkAndCleanKey(KEY_F1)) {
+    }
+    else if (checkAndCleanKey(KEY_F2)) {
+        quickSave();
+    }
+    else if (checkAndCleanKey(KEY_F3)) {
+        quickLoad();
+    }
+    else if (checkAndCleanKey(KEY_F1)) {
         // Main menu
         byte opt = menuRun(MENU_MAIN);
         if (opt == 2) {
@@ -81,6 +105,10 @@ void do_OSD() {
                 changeSna(rowGet(cfg_sna_file_list, snanum));
             }
         } else if (opt == 3) {
+            quickSave();
+        } else if (opt == 4) {
+            quickLoad();
+        } else if (opt == 5) {
             // Reset
             byte opt2 = menuRun(MENU_RESET);
             if (opt2 == 1) {
@@ -94,7 +122,7 @@ void do_OSD() {
                 config_save();
                 zx_reset();
             }
-        } else if (opt == 4) {
+        } else if (opt == 6) {
             // Help
             drawOSD();
             osdAt(2, 0);
