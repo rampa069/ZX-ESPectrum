@@ -234,101 +234,6 @@ void load_ram(String sna_file) {
     KB_INT_START;
 }
 
-void save_ram(String sna_file) {
-    KB_INT_STOP;
-
-    if (cfg_arch != "48K") {
-        Serial.println("save_ram: only 48K supported at the moment");
-        return;
-    }
-
-    // open file
-    File f = SPIFFS.open(sna_file, FILE_WRITE);
-    if (!f) {
-        Serial.printf("save_ram: failed to open %s for writing\n", sna_file.c_str());
-        return;
-    }
-
-    // write registers: begin with I
-    f.write(_zxCpu.i);
-
-    // store registers
-    unsigned short HL = _zxCpu.registers.word[Z80_HL];
-    unsigned short DE = _zxCpu.registers.word[Z80_DE];
-    unsigned short BC = _zxCpu.registers.word[Z80_BC];
-    unsigned short AF = _zxCpu.registers.word[Z80_AF];
-
-    // put alternates in registers
-    _zxCpu.registers.word[Z80_HL] = _zxCpu.alternates[Z80_HL];
-    _zxCpu.registers.word[Z80_DE] = _zxCpu.alternates[Z80_DE];
-    _zxCpu.registers.word[Z80_BC] = _zxCpu.alternates[Z80_BC];
-    _zxCpu.registers.word[Z80_AF] = _zxCpu.alternates[Z80_AF];
-
-    // write alternates
-    f.write(_zxCpu.registers.byte[Z80_L]);
-    f.write(_zxCpu.registers.byte[Z80_H]);
-    f.write(_zxCpu.registers.byte[Z80_E]);
-    f.write(_zxCpu.registers.byte[Z80_D]);
-    f.write(_zxCpu.registers.byte[Z80_C]);
-    f.write(_zxCpu.registers.byte[Z80_B]);
-    f.write(_zxCpu.registers.byte[Z80_F]);
-    f.write(_zxCpu.registers.byte[Z80_A]);
-
-    // restore registers
-    _zxCpu.registers.word[Z80_HL] = HL;
-    _zxCpu.registers.word[Z80_DE] = DE;
-    _zxCpu.registers.word[Z80_BC] = BC;
-    _zxCpu.registers.word[Z80_AF] = AF;
-
-    // write registers
-    f.write(_zxCpu.registers.byte[Z80_L]);
-    f.write(_zxCpu.registers.byte[Z80_H]);
-    f.write(_zxCpu.registers.byte[Z80_E]);
-    f.write(_zxCpu.registers.byte[Z80_D]);
-    f.write(_zxCpu.registers.byte[Z80_C]);
-    f.write(_zxCpu.registers.byte[Z80_B]);
-    f.write(_zxCpu.registers.byte[Z80_IYL]);
-    f.write(_zxCpu.registers.byte[Z80_IYH]);
-    f.write(_zxCpu.registers.byte[Z80_IXL]);
-    f.write(_zxCpu.registers.byte[Z80_IXH]);
-
-    byte inter = _zxCpu.iff2 ? 0x04 : 0;
-    f.write(inter);
-    f.write(_zxCpu.r);
-
-    f.write(_zxCpu.registers.byte[Z80_F]);
-    f.write(_zxCpu.registers.byte[Z80_A]);
-
-    // read stack pointer and decrement it for pushing PC
-    unsigned short SP = _zxCpu.registers.word[Z80_SP];
-    SP -= 2;
-    byte sp_l = SP & 0xFF;
-    byte sp_h = SP >> 8;
-    f.write(sp_l);
-    f.write(sp_h);
-
-    f.write(_zxCpu.im);
-    byte bordercol = 0; // TBD!!!
-    f.write(bordercol);
-
-    // push PC to stack
-    unsigned short PC = _zxCpu.pc;
-    byte pc_l = PC & 0xFF;
-    byte pc_h = PC >> 8;
-    writebyte(SP+0, pc_l);
-    writebyte(SP+1, pc_h);
-
-    // dump memory to file
-    for (int addr = 0x4000; addr <= 0xFFFF; addr++) {
-        byte b = readbyte(addr);
-        f.write(b);
-    }
-
-    f.close();
-
-    KB_INT_START;
-}
-
 String getFileEntriesFromDir(String path) {
     KB_INT_STOP;
     Serial.printf("Getting entries from: '%s'\n", path.c_str());
@@ -351,8 +256,6 @@ String getFileEntriesFromDir(String path) {
             Serial.println("HIDDEN");
         } else if (filename.endsWith(".txt")) {
             Serial.println("IGNORING TXT");
-        } else if (filename.endsWith("quick.sna")) {
-            Serial.println("IGNORING QUICKSAVE");
         } else if (cfg_arch == "48K" & file.size() > SIZE48K) {
             Serial.println("128K SKIP");
         } else {

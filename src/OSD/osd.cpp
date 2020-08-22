@@ -41,16 +41,58 @@ void drawOSD() {
 static void quickSave()
 {
     osdCenteredMsg(OSD_QSNA_SAVING, LEVEL_INFO);
-    save_ram(DISK_QSNA_FILE);
+    if (!save_ram_quick()) {
+        osdCenteredMsg(OSD_QSNA_SAVE_ERR, LEVEL_WARN);
+        delay(1000);
+        return;
+    }
     osdCenteredMsg(OSD_QSNA_SAVED, LEVEL_INFO);
-    delay(400);
+    delay(200);
 }
 
 static void quickLoad()
 {
+    if (!is_quick_sna_available()) {
+        osdCenteredMsg(OSD_QSNA_NOT_AVAIL, LEVEL_INFO);
+        delay(1000);
+        return;
+    }
     osdCenteredMsg(OSD_QSNA_LOADING, LEVEL_INFO);
-    load_ram(DISK_QSNA_FILE);
+    if (!load_ram_quick()) {
+        osdCenteredMsg(OSD_QSNA_LOAD_ERR, LEVEL_WARN);
+        delay(1000);
+        return;
+    }
     osdCenteredMsg(OSD_QSNA_LOADED, LEVEL_INFO);
+    delay(200);
+}
+
+static void persistSave()
+{
+    osdCenteredMsg(OSD_PSNA_SAVING, LEVEL_INFO);
+    if (!save_ram(DISK_PSNA_FILE)) {
+        osdCenteredMsg(OSD_PSNA_SAVE_ERR, LEVEL_WARN);
+        delay(1000);
+        return;
+    }
+    osdCenteredMsg(OSD_PSNA_SAVED, LEVEL_INFO);
+    delay(400);
+}
+
+static void persistLoad()
+{
+    if (!is_persist_sna_available()) {
+        osdCenteredMsg(OSD_PSNA_NOT_AVAIL, LEVEL_INFO);
+        delay(1000);
+        return;
+    }
+    osdCenteredMsg(OSD_PSNA_LOADING, LEVEL_INFO);
+    load_ram(DISK_PSNA_FILE);
+    // if (!load_ram(DISK_PSNA_FILE)) {
+    //     osdCenteredMsg(OSD_PSNA_LOAD_ERR, LEVEL_WARN);
+    //     delay(1000);
+    // }
+    osdCenteredMsg(OSD_PSNA_LOADED, LEVEL_INFO);
     delay(400);
 }
 
@@ -74,10 +116,26 @@ void do_OSD() {
     else if (checkAndCleanKey(KEY_F3)) {
         quickLoad();
     }
+    else if (checkAndCleanKey(KEY_F4)) {
+        persistSave();
+    }
+    else if (checkAndCleanKey(KEY_F5)) {
+        persistLoad();
+    }
     else if (checkAndCleanKey(KEY_F1)) {
         // Main menu
         byte opt = menuRun(MENU_MAIN);
-        if (opt == 2) {
+        if (opt == 1) {
+            // Change RAM
+            unsigned short snanum = menuRun(cfg_sna_file_list);
+            if (snanum > 0) {
+                if (cfg_demo_mode_on) {
+                    setDemoMode(OFF, 0);
+                }
+                changeSna(rowGet(cfg_sna_file_list, snanum));
+            }
+        }
+        else if (opt == 2) {
             // Change ROM
             String arch_menu = getArchMenu();
             byte arch_num = menuRun(arch_menu);
@@ -95,20 +153,20 @@ void do_OSD() {
                     zx_reset();
                 }
             }
-        } else if (opt == 1) {
-            // Change RAM
-            unsigned short snanum = menuRun(cfg_sna_file_list);
-            if (snanum > 0) {
-                if (cfg_demo_mode_on) {
-                    setDemoMode(OFF, 0);
-                }
-                changeSna(rowGet(cfg_sna_file_list, snanum));
-            }
-        } else if (opt == 3) {
+        }
+        else if (opt == 3) {
             quickSave();
-        } else if (opt == 4) {
+        }
+        else if (opt == 4) {
             quickLoad();
-        } else if (opt == 5) {
+        }
+        else if (opt == 5) {
+            persistSave();
+        }
+        else if (opt == 6) {
+            persistLoad();
+        }
+        else if (opt == 7) {
             // Reset
             byte opt2 = menuRun(MENU_RESET);
             if (opt2 == 1) {
@@ -122,7 +180,8 @@ void do_OSD() {
                 config_save();
                 zx_reset();
             }
-        } else if (opt == 6) {
+        }
+        else if (opt == 8) {
             // Help
             drawOSD();
             osdAt(2, 0);
