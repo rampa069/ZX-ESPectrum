@@ -14,7 +14,7 @@ extern String cfg_sna_file_list;
 extern String cfg_arch;
 extern String cfg_ram_file;
 extern String cfg_rom_set;
-extern String cfg_sna_file_list;
+extern String cfg_sna_name_list;
 extern boolean cfg_slog_on;
 extern boolean cfg_wconn;
 extern String cfg_wssid;

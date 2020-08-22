@@ -10,6 +10,7 @@
 #include <FS.h>
 #include <SPIFFS.h>
 #include "Wiimote2Keys.h"
+#include "sort.h"
 
 void errorHalt(String errormsg);
 void IRAM_ATTR kb_interruptHandler(void);
@@ -21,7 +22,8 @@ unsigned short cfg_demo_every;
 String cfg_arch = "128K";
 String cfg_ram_file = NO_RAM_FILE;
 String cfg_rom_set = "SINCLAIR";
-String cfg_sna_file_list;
+String cfg_sna_file_list; // list of file names
+String cfg_sna_name_list; // list of names (without ext, '_' -> ' ')
 boolean cfg_slog_on = true;
 boolean cfg_wconn = false;
 String cfg_wssid = "none";
@@ -321,8 +323,48 @@ void load_rom(String arch, String romset) {
     KB_INT_START;
 }
 
-// Get all sna files
-String getSnaFileList() { return getFileEntriesFromDir(DISK_SNA_DIR); }
+// Get all sna files sorted alphabetically
+String getSortedSnaFileList()
+{
+    // get string of unsorted filenames, separated by newlines
+    String entries = getFileEntriesFromDir(DISK_SNA_DIR);
+
+    // count filenames (they always end at newline)
+    unsigned short count = 0;
+    for (unsigned short i = 0; i < entries.length(); i++) {
+        if (entries.charAt(i) == ASCII_NL) {
+            count++;
+        }
+    }
+
+    // array of filenames
+    String* filenames = (String*)malloc(count * sizeof(String));
+    // memory must be initialized to avoid crash on assign
+    memset(filenames, 0, count * sizeof(String));
+
+    // copy filenames from string to array
+    unsigned short ich = 0;
+    unsigned short ifn = 0;
+    for (unsigned short i = 0; i < entries.length(); i++) {
+        if (entries.charAt(i) == ASCII_NL) {
+            filenames[ifn++] = entries.substring(ich, i);
+            ich = i + 1;
+        }
+    }
+
+    // sort array
+    sortArray(filenames, count);
+
+    // string of sorted filenames
+    String sortedEntries = "";
+
+    // copy filenames from array to string
+    for (unsigned short i = 0; i < count; i++) {
+        sortedEntries += filenames[i] + '\n';
+    }
+
+    return sortedEntries;
+}
 
 // Read config from FS
 void config_read() {
@@ -376,7 +418,12 @@ void config_read() {
     }
     cfg_f.close();
     Serial.println("Config file loaded OK");
-    cfg_sna_file_list = (String)MENU_SNA_TITLE + "\n" + getSnaFileList();
+    cfg_sna_file_list = (String)MENU_SNA_TITLE + "\n" + getSortedSnaFileList();
+    cfg_sna_name_list = String(cfg_sna_file_list);
+    cfg_sna_name_list.replace(".SNA", "");
+    cfg_sna_name_list.replace(".sna", "");
+    cfg_sna_name_list.replace("_", " ");
+    cfg_sna_name_list.replace("-", " ");
     KB_INT_START;
 }
 

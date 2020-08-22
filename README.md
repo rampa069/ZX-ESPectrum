@@ -128,6 +128,7 @@ I have NOT included Manic Miner `.sna` snapshot, but you can download it from [w
 - [Nine Tiles Networs Ltd](http://www.worldofspectrum.org/sinclairbasic/index.html) for Sinclair BASIC.
 - Gary Lancaster for the [+3e ROM](http://www.worldofspectrum.org/zxplus3e/).
 - [Retroleum](http://blog.retroleum.co.uk/electronics-articles/a-diagnostic-rom-image-for-the-zx-spectrum/) for the diagnostics ROM.
+- Emil Vikström for his [ArduinoSort](https://github.com/emilv/ArduinoSort) library.
 
 ## And all the involved people from the golden age
 

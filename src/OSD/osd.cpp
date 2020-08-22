@@ -127,7 +127,7 @@ void do_OSD() {
         byte opt = menuRun(MENU_MAIN);
         if (opt == 1) {
             // Change RAM
-            unsigned short snanum = menuRun(cfg_sna_file_list);
+            unsigned short snanum = menuRun(cfg_sna_name_list);
             if (snanum > 0) {
                 if (cfg_demo_mode_on) {
                     setDemoMode(OFF, 0);
