@@ -24,7 +24,7 @@
 #define ERR_DIR_OPEN "Cannot open directory!"
 
 // OSD
-#define OSD_TITLE  "* ZX-ESPectrum - ESP32 - VGA - Wiimote *"
+#define OSD_TITLE  "  ZX-ESPectrum - ESP32 - VGA - Wiimote  "
 #define OSD_BOTTOM "      SCIENCE  LEADS  TO  PROGRESS      "
 #define OSD_ON "OSD ON"
 #define OSD_OFF "OSD OFF"
@@ -70,10 +70,14 @@
 #define MENU_ROMSET "Select Rom Set\n"
 #define OSD_HELP \
     "Developed in 2019 by Rampa & Queru\n"\
-    "Modified in 2020 by DCrespo\n"\
-    "for using Wiimote as input device.\n\n" \
-    "    Home   for main menu\n"\
-    "    Cursor to move.\n"\
-    "    A/1/2  to select.\n"\
-    "    Home   to exit.\n"
-#define MENU_TEST getTestMenu(200)
+    "Modified  in 2020 by DCrespo\n"\
+    "for adding Wiimote[W] as input device,\n"\
+    "keeping PS/2 keyboard[K] support.\n\n" \
+    "    [K]F1       [W]Home   for main menu\n"\
+    "    [K]Cursors  [W]DPad   to move.\n"\
+    "    [K]Enter    [W]A/1/2  to select.\n"\
+    "    [K]ESC/F1   [W]Home   to exit.\n\n"\
+    "For syncing Wiimote, press buttons 1 & 2\n\n"\
+    "Kempston joystick is emulated using\n"\
+    "cursor keys and AltGr for fire button.\n"
+    #define MENU_TEST getTestMenu(200)
