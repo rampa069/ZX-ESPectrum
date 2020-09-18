@@ -64,6 +64,7 @@
     "Reset Menu\n"\
     "Soft reset\n"\
     "Hard reset\n"\
+    "ESP host reset\n"\
     "Cancel\n"
 #define MENU_DEMO "Demo mode\nOFF\n 1 minute\n 3 minutes\n 5 minutes\n15 minutes\n30 minutes\n 1 hour\n"
 #define MENU_ARCH "Select Arch\n"

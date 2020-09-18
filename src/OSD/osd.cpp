@@ -174,11 +174,17 @@ void do_OSD() {
                 zx_reset();
                 if (cfg_ram_file != (String)NO_RAM_FILE)
                     load_ram("/sna/" + cfg_ram_file);
-            } else if (opt2 == 2) {
+            }
+            else if (opt2 == 2) {
                 // Hard
                 cfg_ram_file = (String)NO_RAM_FILE;
                 config_save();
                 zx_reset();
+                ESP.restart();
+            }
+            else if (opt2 == 3) {
+                // ESP host reset
+                ESP.restart();
             }
         }
         else if (opt == 8) {
