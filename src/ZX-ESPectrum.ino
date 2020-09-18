@@ -274,37 +274,44 @@ int calcX(int offset) { return (offset % 32) << 3; }
 unsigned int zxcolor(int c, int bright) {
     word vga_color;
 
-    switch (c) {
-
-    case 0:
-        vga_color = BLACK;
-        break;
-    case 1:
-        vga_color = BLUE;
-        break;
-    case 2:
-        vga_color = RED;
-        break;
-    case 3:
-        vga_color = MAGENTA;
-        break;
-    case 4:
-        vga_color = GREEN;
-        break;
-    case 5:
-        vga_color = CYAN;
-        break;
-    case 6:
-        vga_color = YELLOW;
-        break;
-    case 7:
-        vga_color = WHITE;
-        break;
-    }
-
 #ifdef COLOUR_16
     if (bright && c != 0)
-        vga_color |= 0xCE7;
+    {
+        switch (c) {
+            case 0: vga_color = BRI_BLACK;   break;
+            case 1: vga_color = BRI_BLUE;    break;
+            case 2: vga_color = BRI_RED;     break;
+            case 3: vga_color = BRI_MAGENTA; break;
+            case 4: vga_color = BRI_GREEN;   break;
+            case 5: vga_color = BRI_CYAN;    break;
+            case 6: vga_color = BRI_YELLOW;  break;
+            case 7: vga_color = BRI_WHITE;   break;
+        }
+    }
+    else
+    {
+        switch (c) {
+            case 0: vga_color = BLACK;   break;
+            case 1: vga_color = BLUE;    break;
+            case 2: vga_color = RED;     break;
+            case 3: vga_color = MAGENTA; break;
+            case 4: vga_color = GREEN;   break;
+            case 5: vga_color = CYAN;    break;
+            case 6: vga_color = YELLOW;  break;
+            case 7: vga_color = WHITE;   break;
+        }
+    }
+#else
+    switch (c) {
+        case 0: vga_color = BLACK;   break;
+        case 1: vga_color = BLUE;    break;
+        case 2: vga_color = RED;     break;
+        case 3: vga_color = MAGENTA; break;
+        case 4: vga_color = GREEN;   break;
+        case 5: vga_color = CYAN;    break;
+        case 6: vga_color = YELLOW;  break;
+        case 7: vga_color = WHITE;   break;
+    }
 #endif
 
     return vga_color;
