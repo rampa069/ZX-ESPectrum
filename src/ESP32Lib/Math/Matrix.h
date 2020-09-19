@@ -14,7 +14,7 @@
 
 class Vector
 {
-  public:
+public:
 	float v[4];
 
 	Vector(float x = 0, float y = 0, float z = 0, float w = 1)
@@ -40,11 +40,67 @@ class Vector
 	{
 		return v[i];
 	}
+
+	Vector operator+(const Vector &v2) const
+	{
+		return Vector(v[0] + v2.v[0], v[1] + v2.v[1], v[2] + v2.v[2], 1);
+	}
+
+	Vector operator-(const Vector &v2) const
+	{
+		return Vector(v[0] - v2.v[0], v[1] - v2.v[1], v[2] - v2.v[2], 1);
+	}
+
+	Vector operator-() const
+	{
+		return Vector(-v[0], -v[1], -v[2], 1);
+	}
+
+	void normalize()
+	{
+		float l2 = v[0] * v[0] + v[1] * v[1] + v[2] * v[2];
+		if (!l2)
+			return;
+		//float rl = 1 / sqrt(l2);
+		*this *= rsqrt(l2);//rl;
+	}
+
+	float length() const
+	{
+		float l2 = v[0] * v[0] + v[1] * v[1] + v[2] * v[2];
+		if (!l2) return 0.f;
+		return sqrt(l2);
+	}
+
+	float dot(const Vector &v2) const
+	{
+		return v[0] * v2.v[0] + v[1] * v2.v[1] + v[2] * v2.v[2];
+	}
+
+	static float rsqrt(float x)
+	{	
+		const float x2 = x * 0.5F;
+		const float threehalfs = 1.5F;
+
+		union {
+			float f;
+			uint32_t i;
+		} conv = {x};
+		conv.i  = 0x5f3759df - ( conv.i >> 1 );
+		conv.f  *= ( threehalfs - ( x2 * conv.f * conv.f ) );
+		conv.f  *= ( threehalfs - ( x2 * conv.f * conv.f ) );
+		return conv.f;
+	}
+	
+	static float sqrt(float x)
+	{	
+		return x * rsqrt(x);
+	}
 };
 
 class Matrix
 {
-  public:
+public:
 	float m[4][4];
 
 	Matrix()

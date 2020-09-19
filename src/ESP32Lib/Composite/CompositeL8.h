@@ -10,50 +10,44 @@
 		http://bitluni.net
 */
 #pragma once
-#include "VGA.h"
-#include "../Graphics/GraphicsR1G1B1A1X2S2Swapped.h"
+#include "Composite.h"
+#include "../Graphics/GraphicsL8CompositeSwapped.h"
 
-class VGA3Bit : public VGA, public GraphicsR1G1B1A1X2S2Swapped
+class CompositeL8 : public Composite, public GraphicsL8CompositeSwapped
 {
   public:
-	VGA3Bit() //8 bit based modes only work with I2S1
-		: VGA(1)
+	CompositeL8() //8 bit based modes only work with I2S1
+		: Composite(1)
 	{
 	}
 
-	bool init(const Mode &mode, const int RPin, const int GPin, const int BPin, const int hsyncPin, const int vsyncPin, const int clockPin = -1)
+
+	bool init(const ModeComposite &mode, 
+			  const int C0Pin, const int C1Pin,
+			  const int C2Pin, const int C3Pin,
+			  const int C4Pin, const int C5Pin,
+			  const int C6Pin, const int C7Pin)
 	{
 		int pinMap[8] = {
-			RPin,
-			GPin,
-			BPin,
-			-1, -1, -1,
-			hsyncPin, vsyncPin
+			C0Pin, C1Pin,
+			C2Pin, C3Pin,
+			C4Pin, C5Pin,
+			C6Pin, C7Pin
 		};
 
-		return VGA::init(mode, pinMap, 8, clockPin);
+		return Composite::init(mode, pinMap, 8);
 	}
 
-	bool init(const Mode &mode, const PinConfig &pinConfig)
+	bool init(const ModeComposite &mode, const int *compositePins)
+	{
+		return Composite::init(mode, compositePins, 8);
+	}
+
+	bool init(const ModeComposite &mode, const PinConfigComposite &pinConfig)
 	{
 		int pins[8];
-		pinConfig.fill3Bit(pins);
-		return VGA::init(mode, pins, 8, pinConfig.clock);
-	}
-
-
-	virtual void initSyncBits()
-	{
-		hsyncBitI = mode.hSyncPolarity ? 0x40 : 0;
-		vsyncBitI = mode.vSyncPolarity ? 0x80 : 0;
-		hsyncBit = hsyncBitI ^ 0x40;
-		vsyncBit = vsyncBitI ^ 0x80;
-		SBits = hsyncBitI | vsyncBitI;
-	}
-		
-	virtual long syncBits(bool hSync, bool vSync)
-	{
-		return ((hSync ? hsyncBit : hsyncBitI) | (vSync ? vsyncBit : vsyncBitI)) * 0x1010101;
+		pinConfig.fill(pins);
+		return Composite::init(mode, pins, 8);
 	}
 
 	virtual int bytesPerSample() const
@@ -78,12 +72,12 @@ class VGA3Bit : public VGA, public GraphicsR1G1B1A1X2S2Swapped
 
 	virtual Color **allocateFrameBuffer()
 	{
-		return (Color **)DMABufferDescriptor::allocateDMABufferArray(yres, mode.hRes * bytesPerSample(), true, syncBits(false, false));
+		return (Color **)DMABufferDescriptor::allocateDMABufferArray(yres, mode.hRes * bytesPerSample(), true, 75 * 0x1010101);
 	}
 
 	virtual void allocateLineBuffers()
 	{
-		VGA::allocateLineBuffers((void **)frameBuffers[0]);
+		Composite::allocateLineBuffers((void **)frameBuffers[0]);
 	}
 
 	virtual void show(bool vSync = false)
@@ -110,5 +104,6 @@ class VGA3Bit : public VGA, public GraphicsR1G1B1A1X2S2Swapped
   protected:
 	virtual void interrupt()
 	{
+		Serial.print('.');
 	}
 };
