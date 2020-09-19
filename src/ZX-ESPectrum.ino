@@ -76,14 +76,24 @@ volatile bool videoTaskIsRunning = false;
 uint16_t *param;
 
 // SETUP *************************************
-#ifdef COLOUR_8
+#ifdef COLOR_3B
 VGA3Bit vga;
-#else
+#endif
+
+#ifdef COLOR_6B
+VGA6Bit vga;
+#endif
+
+#ifdef COLOR_14B
 VGA14Bit vga;
 #endif
 
 
 void setup() {
+    // do not turn off peripherals to recover some memory
+    // esp_bt_controller_deinit();
+    // esp_bt_controller_mem_release(ESP_BT_MODE_BTDM);
+
     Serial.begin(115200);
 
     Serial.println("ZX-ESPectrum + Wiimote initializing...");
@@ -125,14 +135,24 @@ void setup() {
     ram5 = (byte *)malloc(16384);
 #endif
 
+    Serial.printf("HEAP AFTER RAM %d\n", ESP.getFreeHeap());
 
-#ifdef COLOUR_8
-    vga.init(vga.MODE360x200, RED_PIN, GREEN_PIN, BLUE_PIN, HSYNC_PIN, VSYNC_PIN);
-#else
-    const int redPins[] = {RED_PINS};
-    const int greenPins[] = {GREEN_PINS};
-    const int bluePins[] = {BLUE_PINS};
-    vga.init(vga.MODE360x200, redPins, greenPins, bluePins, HSYNC_PIN, VSYNC_PIN);
+#ifdef COLOR_3B
+    vga.init(vga.MODE360x200, RED_PIN_3B, GRE_PIN_3B, BLU_PIN_3B, HSYNC_PIN, VSYNC_PIN);
+#endif
+
+#ifdef COLOR_6B
+    const int redPins[] = {RED_PINS_6B};
+    const int grePins[] = {GRE_PINS_6B};
+    const int bluPins[] = {BLU_PINS_6B};
+    vga.init(vga.MODE360x200, redPins, grePins, bluPins, HSYNC_PIN, VSYNC_PIN);
+#endif
+
+#ifdef COLOR_14B
+    const int redPins[] = {RED_PINS_14B};
+    const int grePins[] = {GRE_PINS_14B};
+    const int bluPins[] = {BLU_PINS_14B};
+    vga.init(vga.MODE360x200, redPins, grePins, bluPins, HSYNC_PIN, VSYNC_PIN);
 #endif
 
     Serial.printf("HEAP after vga  %d \n", ESP.getFreeHeap());
@@ -274,7 +294,18 @@ int calcX(int offset) { return (offset % 32) << 3; }
 unsigned int zxcolor(int c, int bright) {
     word vga_color;
 
-#ifdef COLOUR_16
+#ifdef COLOR_3B
+    switch (c) {
+        case 0: vga_color = BLACK;   break;
+        case 1: vga_color = BLUE;    break;
+        case 2: vga_color = RED;     break;
+        case 3: vga_color = MAGENTA; break;
+        case 4: vga_color = GREEN;   break;
+        case 5: vga_color = CYAN;    break;
+        case 6: vga_color = YELLOW;  break;
+        case 7: vga_color = WHITE;   break;
+    }
+#else
     if (bright && c != 0)
     {
         switch (c) {
@@ -300,17 +331,6 @@ unsigned int zxcolor(int c, int bright) {
             case 6: vga_color = YELLOW;  break;
             case 7: vga_color = WHITE;   break;
         }
-    }
-#else
-    switch (c) {
-        case 0: vga_color = BLACK;   break;
-        case 1: vga_color = BLUE;    break;
-        case 2: vga_color = RED;     break;
-        case 3: vga_color = MAGENTA; break;
-        case 4: vga_color = GREEN;   break;
-        case 5: vga_color = CYAN;    break;
-        case 6: vga_color = YELLOW;  break;
-        case 7: vga_color = WHITE;   break;
     }
 #endif
 
