@@ -1,12 +1,16 @@
 # ZX-ESPectrum-Wiimote
 
-An emulation of the ZX-Spectrum computer on an ESP32 chip with VGA output based on bitluni's driver, using a Wiimote as input device, based on bigw00d's driver.
+An emulation of the ZX-Spectrum computer on an ESP32 chip with VGA output based on bitluni's driver, with PS/2 keyboard support, using a Wiimote as input device, based on bigw00d's driver.
 
 There are per-game customizable (through simple text files) correspondences from Wiimote keys to Spectrum keys.
 
+Please watch the [project video on YouTube](https://youtu.be/ROthljwC5OA) (spanish audio, english subtitles).
+
+If you have a LilyGo TTGo VGA32, please check the [lilygo-ttgo-vga32 branch](https://github.com/dcrespo3d/ZX-ESPectrum-Wiimote/tree/lilygo-ttgo-vga32).
+
 ## Features
 
-- VGA output, 8 or 16 bits.
+- VGA output, 3 bit (default), 6 bit, 14 bit.
 - Beeper digital output.
 - Accurate Z80 emulation.
 - Spectrum 16/48 achitecture emulation without PSRAM.
