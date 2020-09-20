@@ -30,7 +30,7 @@ void newMenu(String new_menu) {
 
 void menuRecalc() {
     // Columns
-    cols = 20;
+    cols = 24;
     byte col_count = 0;
     for (unsigned short i = 0; i < menu.length(); i++) {
         if (menu.charAt(i) == ASCII_NL) {

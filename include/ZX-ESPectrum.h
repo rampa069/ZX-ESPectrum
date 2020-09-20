@@ -1,13 +1,21 @@
 #pragma once
 
+#include "def/hardware.h"
 #include "MartianVGA.h"
 
 // Declared vars
-#ifdef COLOUR_8
+#ifdef COLOR_3B
 extern VGA3Bit vga;
-#else
+#endif
+
+#ifdef COLOR_6B
+extern VGA6Bit vga;
+#endif
+
+#ifdef COLOR_14B
 extern VGA14Bit vga;
 #endif
+
 extern byte borderTemp;
 extern byte keymap[256];
 extern byte oldKeymap[256];

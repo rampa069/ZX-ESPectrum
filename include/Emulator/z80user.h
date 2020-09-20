@@ -97,37 +97,40 @@ typedef struct CONTEXT {
 	void(*output)(uint8_t, uint8_t, uint8_t);
 } CONTEXT;
 
-#define Z80_READ_BYTE(address, x)                          \
-{                                                          \
-        (x) = ((CONTEXT*)context)->readbyte(address);      \
-				elapsed_cycles += delay_contention(address,elapsed_cycles); \
+#define Z80_READ_BYTE(address, x)                               \
+{                                                               \
+	(x) = ((CONTEXT*)context)->readbyte(address);               \
+	elapsed_cycles += delay_contention(address,elapsed_cycles); \
 }
 
-#define Z80_WRITE_BYTE(address, x)                         \
-{                                                          \
-        ((CONTEXT*)context)->writebyte(address, x);        \
-				elapsed_cycles += delay_contention(address,elapsed_cycles); \
+#define Z80_WRITE_BYTE(address, x)                              \
+{                                                               \
+	((CONTEXT*)context)->writebyte(address, x);                 \
+	elapsed_cycles += delay_contention(address,elapsed_cycles); \
 }
 
-#define Z80_READ_WORD(address, x)                          \
-{                                                          \
-        (x) = ((CONTEXT*)context)->readword(address);      \
+#define Z80_READ_WORD(address, x)                                 \
+{                                                                 \
+	(x) = ((CONTEXT*)context)->readword(address);                 \
+	elapsed_cycles += delay_contention(address,elapsed_cycles);   \
+	elapsed_cycles += delay_contention(address+1,elapsed_cycles); \
 }
 
-#define Z80_WRITE_WORD(address, x)                         \
-{                                                          \
-        ((CONTEXT*)context)->writeword(address, x);        \
+#define Z80_WRITE_WORD(address, x)                                \
+{                                                                 \
+	((CONTEXT*)context)->writeword(address, x);                   \
+	elapsed_cycles += delay_contention(address,elapsed_cycles);   \
+	elapsed_cycles += delay_contention(address+1,elapsed_cycles); \
 }
 
 #define Z80_INPUT_BYTE(portLow, portHigh, x)               \
 {                                                          \
-        (x) = ((CONTEXT*)context)->input(portLow, portHigh); \
-																															\
+	(x) = ((CONTEXT*)context)->input(portLow, portHigh);   \
 }
 
 #define Z80_OUTPUT_BYTE(portLow, portHigh, x)              \
 {                                                          \
-        ((CONTEXT*)context)->output(portLow, portHigh, x); \
+	((CONTEXT*)context)->output(portLow, portHigh, x);     \
 }
 
 #define Z80_FETCH_BYTE(address, x)		Z80_READ_BYTE((address), (x))

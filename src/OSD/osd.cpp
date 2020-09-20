@@ -38,6 +38,64 @@ void drawOSD() {
     osdHome();
 }
 
+static void quickSave()
+{
+    osdCenteredMsg(OSD_QSNA_SAVING, LEVEL_INFO);
+    if (!save_ram_quick()) {
+        osdCenteredMsg(OSD_QSNA_SAVE_ERR, LEVEL_WARN);
+        delay(1000);
+        return;
+    }
+    osdCenteredMsg(OSD_QSNA_SAVED, LEVEL_INFO);
+    delay(200);
+}
+
+static void quickLoad()
+{
+    if (!is_quick_sna_available()) {
+        osdCenteredMsg(OSD_QSNA_NOT_AVAIL, LEVEL_INFO);
+        delay(1000);
+        return;
+    }
+    osdCenteredMsg(OSD_QSNA_LOADING, LEVEL_INFO);
+    if (!load_ram_quick()) {
+        osdCenteredMsg(OSD_QSNA_LOAD_ERR, LEVEL_WARN);
+        delay(1000);
+        return;
+    }
+    osdCenteredMsg(OSD_QSNA_LOADED, LEVEL_INFO);
+    delay(200);
+}
+
+static void persistSave()
+{
+    osdCenteredMsg(OSD_PSNA_SAVING, LEVEL_INFO);
+    if (!save_ram(DISK_PSNA_FILE)) {
+        osdCenteredMsg(OSD_PSNA_SAVE_ERR, LEVEL_WARN);
+        delay(1000);
+        return;
+    }
+    osdCenteredMsg(OSD_PSNA_SAVED, LEVEL_INFO);
+    delay(400);
+}
+
+static void persistLoad()
+{
+    if (!is_persist_sna_available()) {
+        osdCenteredMsg(OSD_PSNA_NOT_AVAIL, LEVEL_INFO);
+        delay(1000);
+        return;
+    }
+    osdCenteredMsg(OSD_PSNA_LOADING, LEVEL_INFO);
+    load_ram(DISK_PSNA_FILE);
+    // if (!load_ram(DISK_PSNA_FILE)) {
+    //     osdCenteredMsg(OSD_PSNA_LOAD_ERR, LEVEL_WARN);
+    //     delay(1000);
+    // }
+    osdCenteredMsg(OSD_PSNA_LOADED, LEVEL_INFO);
+    delay(400);
+}
+
 // OSD Main Loop
 void do_OSD() {
     static byte last_sna_row = 0;
@@ -45,17 +103,39 @@ void do_OSD() {
     boolean cycle_sna = false;
     if (checkAndCleanKey(KEY_F12)) {
         cycle_sna = true;
-    } else if (checkAndCleanKey(KEY_F2)) {
-        byte opt = menuRun(MENU_TEST);
-    } else if (checkAndCleanKey(KEY_PAUSE)) {
+    }
+    else if (checkAndCleanKey(KEY_PAUSE)) {
         osdCenteredMsg(OSD_PAUSE, LEVEL_INFO);
         while (!checkAndCleanKey(KEY_PAUSE)) {
             delay(5);
         }
-    } else if (checkAndCleanKey(KEY_F1)) {
+    }
+    else if (checkAndCleanKey(KEY_F2)) {
+        quickSave();
+    }
+    else if (checkAndCleanKey(KEY_F3)) {
+        quickLoad();
+    }
+    else if (checkAndCleanKey(KEY_F4)) {
+        persistSave();
+    }
+    else if (checkAndCleanKey(KEY_F5)) {
+        persistLoad();
+    }
+    else if (checkAndCleanKey(KEY_F1)) {
         // Main menu
         byte opt = menuRun(MENU_MAIN);
-        if (opt == 2) {
+        if (opt == 1) {
+            // Change RAM
+            unsigned short snanum = menuRun(cfg_sna_name_list);
+            if (snanum > 0) {
+                if (cfg_demo_mode_on) {
+                    setDemoMode(OFF, 0);
+                }
+                changeSna(rowGet(cfg_sna_file_list, snanum));
+            }
+        }
+        else if (opt == 2) {
             // Change ROM
             String arch_menu = getArchMenu();
             byte arch_num = menuRun(arch_menu);
@@ -73,16 +153,20 @@ void do_OSD() {
                     zx_reset();
                 }
             }
-        } else if (opt == 1) {
-            // Change RAM
-            unsigned short snanum = menuRun(cfg_sna_file_list);
-            if (snanum > 0) {
-                if (cfg_demo_mode_on) {
-                    setDemoMode(OFF, 0);
-                }
-                changeSna(rowGet(cfg_sna_file_list, snanum));
-            }
-        } else if (opt == 3) {
+        }
+        else if (opt == 3) {
+            quickSave();
+        }
+        else if (opt == 4) {
+            quickLoad();
+        }
+        else if (opt == 5) {
+            persistSave();
+        }
+        else if (opt == 6) {
+            persistLoad();
+        }
+        else if (opt == 7) {
             // Reset
             byte opt2 = menuRun(MENU_RESET);
             if (opt2 == 1) {
@@ -90,13 +174,20 @@ void do_OSD() {
                 zx_reset();
                 if (cfg_ram_file != (String)NO_RAM_FILE)
                     load_ram("/sna/" + cfg_ram_file);
-            } else if (opt2 == 2) {
+            }
+            else if (opt2 == 2) {
                 // Hard
                 cfg_ram_file = (String)NO_RAM_FILE;
                 config_save();
                 zx_reset();
+                ESP.restart();
             }
-        } else if (opt == 4) {
+            else if (opt2 == 3) {
+                // ESP host reset
+                ESP.restart();
+            }
+        }
+        else if (opt == 8) {
             // Help
             drawOSD();
             osdAt(2, 0);

@@ -1,0 +1,3 @@
+*               text=auto
+*.cfg		text eol=lf
+persist.txt text eol=lf

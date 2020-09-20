@@ -209,6 +209,7 @@ void updateWiimote2Keys()
 
 void updateWiimote2KeysOSD()
 {
+    vTaskDelay(1);
     wiimote.task();
     if (wiimote.available() > 0) {
         uint16_t button = wiimote.getButtonState();

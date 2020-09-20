@@ -11,6 +11,8 @@ boolean shift_presed = false;
 boolean symbol_pressed = false;
 byte rc = 0;
 
+// #define DEBUG_LOG_KEYSTROKES 1
+
 void IRAM_ATTR kb_interruptHandler(void) {
     static uint8_t bitcount = 0;
     static uint8_t incoming = 0;
@@ -49,6 +51,11 @@ void IRAM_ATTR kb_interruptHandler(void) {
             } else
                 keymap[incoming] = 0;
 
+#ifdef DEBUG_LOG_KEYSTROKES
+                Serial.printf("PS2Kbd[%s]: %02X\n",
+                    keyup ? " up " : "down", incoming);
+#endif
+
             if (incoming == 240)
                 keyup = true;
             else
@@ -59,7 +66,24 @@ void IRAM_ATTR kb_interruptHandler(void) {
     }
 }
 
-void kb_begin() {
+#define FIX_PERIBOARD_NOT_INITING
+#ifdef  FIX_PERIBOARD_NOT_INITING
+#include "PS2Boot/PS2KeyAdvanced.h"
+PS2KeyAdvanced ps2boot;
+#endif
+
+void kb_begin()
+{
+#ifdef  FIX_PERIBOARD_NOT_INITING
+    // Configure the keyboard library
+    ps2boot.begin( KEYBOARD_DATA, KEYBOARD_CLK );
+    ps2boot.echo( );              // ping keyboard to see if there
+    delay( 6 );
+    ps2boot.read( );
+    delay( 6 );
+    ps2boot.terminate();
+#endif
+
     pinMode(KEYBOARD_DATA, INPUT_PULLUP);
     pinMode(KEYBOARD_CLK, INPUT_PULLUP);
     digitalWrite(KEYBOARD_DATA, true);
@@ -68,7 +92,6 @@ void kb_begin() {
 
     memset(keymap, 1, sizeof(keymap));
     memset(oldKeymap, 1, sizeof(oldKeymap));
-    //}
 }
 
 // Check if keymatrix is changed

@@ -1,21 +1,26 @@
 # ZX-ESPectrum-Wiimote
 
-An emulation of the ZX-Spectrum computer on an ESP32 chip with VGA output based on bitluni's driver, using a Wiimote as input device, based on bigw00d's driver.
+An emulation of the ZX-Spectrum computer on an ESP32 chip with VGA output based on bitluni's driver, with PS/2 keyboard support, using a Wiimote as input device, based on bigw00d's driver.
 
 There are per-game customizable (through simple text files) correspondences from Wiimote keys to Spectrum keys.
 
+Please watch the [project video on YouTube](https://youtu.be/ROthljwC5OA) (spanish audio, english subtitles).
+
+If you have a LilyGo TTGo VGA32, please check the [lilygo-ttgo-vga32 branch](https://github.com/dcrespo3d/ZX-ESPectrum-Wiimote/tree/lilygo-ttgo-vga32).
+
 ## Features
 
-- VGA output, 8 or 16 bits.
+- VGA output, 3 bit (default), 6 bit, 14 bit.
 - Beeper digital output.
 - Accurate Z80 emulation.
 - Spectrum 16/48 achitecture emulation without PSRAM.
 - Spectrum 128/+2/+3 architecture emulation with PSRAM.
 - PS/2 Keyboard.
 - Wiimote support with per-game key assignments.
-- VGA OSD menu: Configuration, and architecture selection, ROM and SNA.
+- VGA OSD menu: Configuration, architecture, ROM and SNA selection.
 - Tape save and loading.
 - SNA snapshot loading.
+- Quick snapshot saving and loading.
 - Internal SPIFFS support.
 
 ## Work in progress
@@ -34,18 +39,8 @@ Windows, GNU/Linux and MacOS/X. This version has been developed using
 
 #### Install platformIO:
 
-- They have an extension for Atom and VSCode, and this is [the webpage](https://platformio.org/).
-- Select your board, I have used a Espressif ESP32-WROVER
-- Install Bitluni's ESP32Lib (use version 0.2.1, newer versions such as 0.3.3 will lead to compile errors)
-
-#### Softlink
-```bash
-ln -s platformio.ini.linux platformio.ini
-# or in osx
-ln -s platformio.ini.osx platformio.ini
-# or in windows
-mklink platformio.ini platformio.ini.windows
-```
+- There is an extension for Atom and VSCode, please check [this webpage](https://platformio.org/).
+- Select your board, I have used a Espressif ESP32-WROVER.
 
 #### Customize platformio.ini
 
@@ -53,12 +48,6 @@ Change upload_port to whatever you're using.
 - Linux: `uploadport = /dev/ttyUSB0` or similar.
 - Windows: `upload_port = COM1` or similar.
 - MacOSX: `upload_port = /dev/cu.SLAB_USBtoUART` or similar.
-
-#### Copy boot.cfg
-
-```bash
-cp data/boot.cfg.orig boot.cfg
-```
 
 #### Upload the data filesystem
 
@@ -134,6 +123,7 @@ I have NOT included Manic Miner `.sna` snapshot, but you can download it from [w
 - Idea from the work of Charles Peter Debenham Todd: [PaseVGA](https://github.com/retrogubbins/paseVGA).
 - VGA Driver from [ESP32Lib by BitLuni](https://github.com/bitluni/ESP32Lib).
 - PS/2 keyboard support based on [ps2kbdlib](https://github.com/michalhol/ps2kbdlib).
+- PS/2 boot for some keyboards from [PS2KeyAdvanced](https://github.com/techpaul/PS2KeyAdvanced).
 - Wiimote library from [ESP32Wiimote by bigw00d](https://github.com/bigw00d/Arduino-ESP32Wiimote).
 - Z80 Emulation derived from [z80emu](https://github.com/anotherlin/z80emu) authored by Lin Ke-Fong.
 - DivIDE ideas (work in progress) taken from the work of Dusan Gallo.
@@ -142,6 +132,7 @@ I have NOT included Manic Miner `.sna` snapshot, but you can download it from [w
 - [Nine Tiles Networs Ltd](http://www.worldofspectrum.org/sinclairbasic/index.html) for Sinclair BASIC.
 - Gary Lancaster for the [+3e ROM](http://www.worldofspectrum.org/zxplus3e/).
 - [Retroleum](http://blog.retroleum.co.uk/electronics-articles/a-diagnostic-rom-image-for-the-zx-spectrum/) for the diagnostics ROM.
+- Emil Vikström for his [ArduinoSort](https://github.com/emilv/ArduinoSort) library.
 
 ## And all the involved people from the golden age
 
