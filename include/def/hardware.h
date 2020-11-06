@@ -1,3 +1,25 @@
+#ifdef VGA32V14
+
+#define SPEAKER_PIN 25
+#define EAR_PIN 34
+#define MIC_PIN 39
+
+#define KEYBOARD_DATA 32
+#define KEYBOARD_CLK 33
+
+#define COLOUR_16
+
+// 16b pins
+#define RED_PINS 21, 21, 22, 22, 22
+#define GREEN_PINS 18, 18, 19, 19, 19
+#define BLUE_PINS 4, 4, 5, 5
+
+// VGA sync pins
+#define HSYNC_PIN 23
+#define VSYNC_PIN 15
+
+#else
+
 #define SPEAKER_PIN 5
 #define EAR_PIN 34
 #define MIC_PIN 0
@@ -21,6 +43,9 @@
 // VGA sync pins
 #define HSYNC_PIN 32
 #define VSYNC_PIN 33
+
+
+#endif
 
 #ifdef COLOUR_8
 #define BLACK 0x08
