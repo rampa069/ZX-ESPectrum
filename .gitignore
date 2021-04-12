@@ -8,6 +8,7 @@ platformio.ini
 /work
 .piolibdeps/
 .vscode
+.pio
 data/boot.cfg
 data/sna/**
 !data/sna/sppong.sna

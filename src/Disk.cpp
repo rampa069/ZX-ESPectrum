@@ -8,7 +8,12 @@
 #include "def/types.h"
 #include "osd.h"
 #include <FS.h>
+
+#ifdef VGA32V14
+#include <SD.h>
+#else
 #include <SPIFFS.h>
+#endif
 
 void errorHalt(String errormsg);
 void IRAM_ATTR kb_interruptHandler(void);
@@ -26,16 +31,32 @@ boolean cfg_wconn = false;
 String cfg_wssid = "none";
 String cfg_wpass = "none";
 
+static fs::FS* fileSystem;
+
+#ifdef VGA32V14
+void IRAM_ATTR mount_sd() {
+    SPI.begin(14, 2, 12);
+    if (!SD.begin(13)) 
+    {
+        errorHalt(ERR_MOUNT_FAIL);
+    }
+
+    fileSystem = &SD;
+    vTaskDelay(2);
+}
+#else
 void IRAM_ATTR mount_spiffs() {
     if (!SPIFFS.begin())
         errorHalt(ERR_MOUNT_FAIL);
 
+    fileSystem = &SPIFFS;
     vTaskDelay(2);
 }
+#endif
 
 String getAllFilesFrom(const String path) {
     KB_INT_STOP;
-    File root = SPIFFS.open("/");
+    File root = fileSystem->open("/");
     File file = root.openNextFile();
     String listing;
 
@@ -54,7 +75,7 @@ String getAllFilesFrom(const String path) {
 
 void listAllFiles() {
     KB_INT_STOP;
-    File root = SPIFFS.open("/");
+    File root = fileSystem->open("/");
     Serial.println("fs opened");
     File file = root.openNextFile();
     Serial.println("fs openednextfile");
@@ -74,11 +95,11 @@ File open_read_file(String filename) {
     filename.trim();
     if (cfg_slog_on)
         Serial.printf("%s '%s'\n", MSG_LOADING, filename.c_str());
-    if (!SPIFFS.exists(filename.c_str())) {
+    if (!fileSystem->exists(filename.c_str())) {
         KB_INT_START;
         errorHalt((String)ERR_READ_FILE + "\n" + filename);
     }
-    f = SPIFFS.open(filename.c_str(), FILE_READ);
+    f = fileSystem->open(filename.c_str(), FILE_READ);
     vTaskDelay(2);
 
     return f;
@@ -235,7 +256,7 @@ String getFileEntriesFromDir(String path) {
     KB_INT_STOP;
     Serial.printf("Getting entries from: '%s'\n", path.c_str());
     String filelist;
-    File root = SPIFFS.open(path.c_str());
+    File root = fileSystem->open(path.c_str());
     if (!root || !root.isDirectory()) {
         errorHalt((String)ERR_DIR_OPEN + "\n" + root);
     }
@@ -379,7 +400,7 @@ void config_read() {
 void config_save() {
     KB_INT_STOP;
     Serial.printf("Saving config file '%s':\n", DISK_BOOT_FILENAME);
-    File f = SPIFFS.open(DISK_BOOT_FILENAME, FILE_WRITE);
+    File f = fileSystem->open(DISK_BOOT_FILENAME, FILE_WRITE);
     // Architecture
     Serial.printf("  + arch:%s\n", cfg_arch.c_str());
     f.printf("arch:%s\n", cfg_arch.c_str());

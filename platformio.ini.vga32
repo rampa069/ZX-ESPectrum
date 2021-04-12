@@ -1,0 +1,11 @@
+# Use this configuration to build for VGA32 v1.4
+
+[env:pico32]
+platform = espressif32
+board = pico32
+framework = arduino
+board_build.partitions = noota_3g.csv
+lib_deps = bitluni/bitluni ESP32Lib@0.2.1
+build_flags =
+    -DVGA32V14
+

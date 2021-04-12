@@ -49,7 +49,12 @@ void setup_cpuspeed();
 void config_read();
 void do_OSD();
 void errorHalt(String);
+
+#ifdef VGA32V14
+void mount_sd();
+#else
 void mount_spiffs();
+#endif
 
 // GLOBALS
 volatile byte z80ports_in[128];
@@ -75,7 +80,6 @@ VGA3Bit vga;
 VGA14Bit vga;
 #endif
 
-
 void setup() {
     // Turn off peripherals to gain memory (?do they release properly)
     esp_bt_controller_deinit();
@@ -88,7 +92,12 @@ void setup() {
 
     Serial.printf("HEAP BEGIN %d\n", ESP.getFreeHeap());
 
+#ifdef VGA32V14
+    mount_sd();
+#else
     mount_spiffs();
+#endif
+
     config_read();
     // wifiConn();
     Serial.printf("HEAP AFTER WIFI %d\n", ESP.getFreeHeap());

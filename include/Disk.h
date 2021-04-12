@@ -21,7 +21,13 @@ extern String cfg_wssid;
 extern String cfg_wpass;
 
 // Declared methods
+
+#ifdef VGA32V14
+void IRAM_ATTR mount_sd();
+#else
 void IRAM_ATTR mount_spiffs();
+#endif
+
 String getAllFilesFrom(const String path);
 void listAllFiles();
 File IRAM_ATTR open_read_file(String filename);
