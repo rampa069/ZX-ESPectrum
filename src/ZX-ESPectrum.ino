@@ -309,56 +309,62 @@ unsigned int zxcolor(int c, int bright) {
 }
 
 /* Load zx keyboard lines from PS/2 */
+//http://www.breakintoprogram.co.uk/computers/zx-spectrum/keyboard
+//https://hackaday.io/project/166917-tek-v2/log/166595-encoding-examples
 void do_keyboard() {
     byte kempston = 0;
 
-    bitWrite(z80ports_in[0], 0, keymap[0x12]);
-    bitWrite(z80ports_in[0], 1, keymap[0x1a]);
-    bitWrite(z80ports_in[0], 2, keymap[0x22]);
-    bitWrite(z80ports_in[0], 3, keymap[0x21]);
-    bitWrite(z80ports_in[0], 4, keymap[0x2a]);
+    bitWrite(z80ports_in[0], 0, keymap[0x12]  & keymap[0x66]); //Caps Shift (CS)
+    bitWrite(z80ports_in[0], 1, keymap[0x1a] & (keymap[0x4C] | keymap[0x59])); //z
+    bitWrite(z80ports_in[0], 2, keymap[0x22]); //x
+    bitWrite(z80ports_in[0], 3, keymap[0x21] & (keymap[0x4A] |  keymap[0x59])); //c
+    bitWrite(z80ports_in[0], 4, keymap[0x2a] & (keymap[0x4A] | !keymap[0x59])); //v
 
-    bitWrite(z80ports_in[1], 0, keymap[0x1c]);
-    bitWrite(z80ports_in[1], 1, keymap[0x1b]);
-    bitWrite(z80ports_in[1], 2, keymap[0x23]);
-    bitWrite(z80ports_in[1], 3, keymap[0x2b]);
-    bitWrite(z80ports_in[1], 4, keymap[0x34]);
+    bitWrite(z80ports_in[1], 0, keymap[0x1c]); //a
+    bitWrite(z80ports_in[1], 1, keymap[0x1b] & (keymap[0x5D] | keymap[0x59])); //s
+    bitWrite(z80ports_in[1], 2, keymap[0x23] & (keymap[0x5D] | !keymap[0x59])); //d
+    bitWrite(z80ports_in[1], 3, keymap[0x2b] & (keymap[0x54] | keymap[0x59])); //f
+    bitWrite(z80ports_in[1], 4, keymap[0x34] & (keymap[0x5B] | keymap[0x59])); //g
 
-    bitWrite(z80ports_in[2], 0, keymap[0x15]);
-    bitWrite(z80ports_in[2], 1, keymap[0x1d]);
-    bitWrite(z80ports_in[2], 2, keymap[0x24]);
-    bitWrite(z80ports_in[2], 3, keymap[0x2d]);
-    bitWrite(z80ports_in[2], 4, keymap[0x2c]);
+    bitWrite(z80ports_in[2], 0, keymap[0x15]); //q
+    bitWrite(z80ports_in[2], 1, keymap[0x1d]); //w
+    bitWrite(z80ports_in[2], 2, keymap[0x24]); //e
+    bitWrite(z80ports_in[2], 3, keymap[0x2d] & (keymap[0x41] | keymap[0x59]) ); //r
+    bitWrite(z80ports_in[2], 4, keymap[0x2c] & (keymap[0x49] | keymap[0x59]) ); //t
 
-    bitWrite(z80ports_in[3], 0, keymap[0x16]);
-    bitWrite(z80ports_in[3], 1, keymap[0x1e]);
-    bitWrite(z80ports_in[3], 2, keymap[0x26]);
-    bitWrite(z80ports_in[3], 3, keymap[0x25]);
-    bitWrite(z80ports_in[3], 4, keymap[0x2e]);
+    bitWrite(z80ports_in[3], 0, keymap[0x16] ); //1
+    bitWrite(z80ports_in[3], 1, keymap[0x1e] ); //2
+    bitWrite(z80ports_in[3], 2, keymap[0x26] ); //3
+    bitWrite(z80ports_in[3], 3, keymap[0x25] ); //4
+    bitWrite(z80ports_in[3], 4, keymap[0x2e] ); //5
 
-    bitWrite(z80ports_in[4], 0, keymap[0x45]);
-    bitWrite(z80ports_in[4], 1, keymap[0x46]);
-    bitWrite(z80ports_in[4], 2, keymap[0x3e]);
-    bitWrite(z80ports_in[4], 3, keymap[0x3d]);
-    bitWrite(z80ports_in[4], 4, keymap[0x36]);
+    bitWrite(z80ports_in[4], 0, (keymap[0x45] | !keymap[0x59]) & (keymap[0x4E] | keymap[0x59]) & keymap[0x66] ); //0
+    bitWrite(z80ports_in[4], 1, (keymap[0x46] | !keymap[0x59]) & (keymap[0x45] | keymap[0x59]) ); //9
+    bitWrite(z80ports_in[4], 2, (keymap[0x3e] | !keymap[0x59]) & (keymap[0x46] | keymap[0x59]) ); //8
+    bitWrite(z80ports_in[4], 3, (keymap[0x3d] | !keymap[0x59]) & (keymap[0x52] | !keymap[0x59]) ); //7
+    bitWrite(z80ports_in[4], 4, (keymap[0x36] | !keymap[0x59]) & (keymap[0x3d] | keymap[0x59]) ); //6
 
-    bitWrite(z80ports_in[5], 0, keymap[0x4d]);
-    bitWrite(z80ports_in[5], 1, keymap[0x44]);
-    bitWrite(z80ports_in[5], 2, keymap[0x43]);
-    bitWrite(z80ports_in[5], 3, keymap[0x3c]);
-    bitWrite(z80ports_in[5], 4, keymap[0x35]);
+    bitWrite(z80ports_in[5], 0, (keymap[0x4d] | !keymap[0x59]) & (keymap[0x52] | keymap[0x59]) ); //p
+    bitWrite(z80ports_in[5], 1, keymap[0x44]  & (keymap[0x4c] | !keymap[0x59]) ); //o
+    bitWrite(z80ports_in[5], 2, keymap[0x43]); //i
+    bitWrite(z80ports_in[5], 3, keymap[0x3c]  & (keymap[0x5B] | !keymap[0x59] )); //u
+    bitWrite(z80ports_in[5], 4, keymap[0x35]  & (keymap[0x54] | !keymap[0x59]) ); //y
 
-    bitWrite(z80ports_in[6], 0, keymap[0x5a]);
-    bitWrite(z80ports_in[6], 1, keymap[0x4b]);
-    bitWrite(z80ports_in[6], 2, keymap[0x42]);
-    bitWrite(z80ports_in[6], 3, keymap[0x3b]);
-    bitWrite(z80ports_in[6], 4, keymap[0x33]);
+    bitWrite(z80ports_in[6], 0, keymap[0x5a]); //ENTER
+    bitWrite(z80ports_in[6], 1, keymap[0x4b] & (keymap[0x55] | !keymap[0x59])  ); //L
+    bitWrite(z80ports_in[6], 2, keymap[0x42] & (keymap[0x55] |  keymap[0x59])  ); //k
+    bitWrite(z80ports_in[6], 3, keymap[0x3b] & (keymap[0x4E] | !keymap[0x59])  ); //j
+    bitWrite(z80ports_in[6], 4, keymap[0x33] & (keymap[0x36] | keymap[0x59]) ); //h
 
-    bitWrite(z80ports_in[7], 0, keymap[0x29]);
-    bitWrite(z80ports_in[7], 1, keymap[0x14]);
-    bitWrite(z80ports_in[7], 2, keymap[0x3a]);
-    bitWrite(z80ports_in[7], 3, keymap[0x31]);
-    bitWrite(z80ports_in[7], 4, keymap[0x32]);
+    bitWrite(z80ports_in[7], 0, keymap[0x29]); //SPACE (SP)
+    bitWrite(z80ports_in[7], 1, keymap[0x14] 
+        & keymap[0x55] & keymap[0x4E] & keymap[0x41] & keymap[0x49] & keymap[0x4A] 
+        & keymap[0x4C] & keymap[0x52] & keymap[0x54] & keymap[0x5B] & keymap[0x5D] 
+        & ( (keymap[0x16] & keymap[0x1e] & keymap[0x26] & keymap[0x25] & keymap[0x2e]) | keymap[0x59]) 
+        & ( (keymap[0x36] & keymap[0x3D] & keymap[0x3E] & keymap[0x46] & keymap[0x45]) | keymap[0x59])   ) ; //SYMBOL Shift (SS)
+    bitWrite(z80ports_in[7], 2, keymap[0x3a] & (keymap[0x49] | !keymap[0x59]) ); //m
+    bitWrite(z80ports_in[7], 3, keymap[0x31] & (keymap[0x41] | !keymap[0x59]) ); //n
+    bitWrite(z80ports_in[7], 4, keymap[0x32] & (keymap[0x3e] | keymap[0x59]) ); //b
 
     // Kempston joystick
     z80ports_in[0x1f] = 0;
