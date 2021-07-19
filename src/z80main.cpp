@@ -271,8 +271,7 @@ extern "C" void output(uint8_t portLow, uint8_t portHigh, uint8_t data) {
                 // rom_in_use=0;
                 bitWrite(rom_in_use, 1, sp3_rom);
                 bitWrite(rom_in_use, 0, rom_latch);
-                // Serial.printf("7FFD data: %x ROM latch: %x Video Latch: %x bank latch: %x page lock:
-                // %x\n",tmp_data,rom_latch,video_latch,bank_latch,paging_lock);
+                //Serial.printf("7FFD data: %x ROM latch: %x Video Latch: %x bank latch: %x page lock: %x\n",tmp_data,rom_latch,video_latch,bank_latch,paging_lock);
             }
             break;
 
