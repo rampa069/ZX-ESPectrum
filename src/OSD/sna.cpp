@@ -15,6 +15,13 @@ void changeSna(String sna_filename) {
     config_save();
 }
 
+void loadZ80(String z80_filename){
+    osdCenteredMsg((String)MSG_LOADING + ": " + z80_filename, LEVEL_INFO);
+    zx_reset();
+    Serial.printf("Loading z80: %s\n", z80_filename.c_str());
+    load_z80((String)DISK_Z80_DIR + "/" + z80_filename);
+}
+
 // Demo mode on off
 void setDemoMode(boolean on, unsigned short every) {
     cfg_demo_mode_on = on;

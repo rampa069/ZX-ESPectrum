@@ -82,6 +82,15 @@ void do_OSD() {
                 changeSna(rowGet(cfg_sna_file_list, snanum));
             }
         } else if (opt == 3) {
+            //load Z80 files
+            unsigned short snanum = menuRun(cfg_z80_file_list);
+            if (snanum > 0) {
+                if (cfg_demo_mode_on) {
+                    setDemoMode(OFF, 0);
+                }
+                loadZ80(rowGet(cfg_z80_file_list, snanum));
+            }
+        } else if (opt == 4) {
             // Reset
             byte opt2 = menuRun(MENU_RESET);
             if (opt2 == 1) {
@@ -95,7 +104,7 @@ void do_OSD() {
                 config_save();
                 zx_reset();
             }
-        } else if (opt == 4) {
+        } else if (opt == 5) {
             // Demo mode
             byte opt2 = menuRun(MENU_DEMO);
             if (opt2 == 1) {
@@ -124,7 +133,7 @@ void do_OSD() {
                 }
             }
             vTaskDelay(500);
-        } else if (opt == 5) {
+        } else if (opt == 6) {
             // Help
             drawOSD();
             osdAt(2, 0);
