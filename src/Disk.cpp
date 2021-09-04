@@ -26,6 +26,7 @@ String cfg_arch = "128K";
 String cfg_ram_file = NO_RAM_FILE;
 String cfg_rom_set = "SINCLAIR";
 String cfg_sna_file_list;
+String cfg_z80_file_list;
 boolean cfg_slog_on = true;
 boolean cfg_wconn = false;
 String cfg_wssid = "none";
@@ -252,6 +253,54 @@ void load_ram(String sna_file) {
     KB_INT_START;
 }
 
+
+extern int load_z80_file(File *file);
+
+void load_z80(String z80_file){
+    File lhandle;
+    uint16_t size_read;
+    byte sp_h, sp_l;
+    uint16_t retaddr;
+    int sna_size;
+    zx_reset();
+
+    Serial.printf("%s Z80: %ub\n", MSG_FREE_HEAP_BEFORE, ESP.getFreeHeap());
+
+    KB_INT_STOP;
+
+    lhandle = open_read_file(z80_file);
+    sna_size = lhandle.size();
+
+    if (cfg_arch == "48K") {
+        rom_latch = 0;
+        rom_in_use = 0;
+        bank_latch = 0;
+        paging_lock = 1;
+    }
+    if (sna_size < 50000 && cfg_arch != "48K") {
+        rom_in_use = 1;
+        rom_latch = 1;
+        paging_lock = 1;
+        bank_latch = 0;
+        video_latch = 0;
+        paging_lock = 1;
+        bank_latch = 0;
+        video_latch = 0;
+    }
+    size_read = 0;
+
+    int ret = load_z80_file(&lhandle);
+
+    lhandle.close();
+
+   
+    Serial.printf("%s SNA: %u\n", MSG_FREE_HEAP_AFTER, ESP.getFreeHeap());
+    Serial.printf("Ret address: %x Stack: %x AF: %x Border: %x sna_size: %d rom: %d bank: %x\n", _zxCpu.pc,
+                  _zxCpu.registers.word[Z80_SP], _zxCpu.registers.word[Z80_AF], borderTemp, sna_size, rom_in_use,
+                  bank_latch);
+    KB_INT_START;
+}
+
 String getFileEntriesFromDir(String path) {
     KB_INT_STOP;
     Serial.printf("Getting entries from: '%s'\n", path.c_str());
@@ -340,6 +389,8 @@ void load_rom(String arch, String romset) {
 // Get all sna files
 String getSnaFileList() { return getFileEntriesFromDir(DISK_SNA_DIR); }
 
+String getz80FileList() { return getFileEntriesFromDir(DISK_Z80_DIR); }
+
 // Read config from FS
 void config_read() {
     KB_INT_STOP;
@@ -393,6 +444,7 @@ void config_read() {
     cfg_f.close();
     Serial.println("Config file loaded OK");
     cfg_sna_file_list = (String)MENU_SNA_TITLE + "\n" + getSnaFileList();
+    cfg_z80_file_list = (String)MENU_Z80_TITLE+"\n"+getz80FileList();
     KB_INT_START;
 }
 
