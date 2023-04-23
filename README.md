@@ -4,7 +4,7 @@ Greetings fellow retro gaming enthusiasts!
 
 We have some exciting news to share - our beloved emulator has packed its bags and moved to a new home at [EremusOne/ZX-ESPectrum-IDF](https://github.com/EremusOne/ZX-ESPectrum-IDF). (**IDF** - Incredible Digital Fun for ZX Spectrum!)
 
-We know it's a little sad to say goodbye to the old repository, but trust us, the new one is so much better. It's like upgrading from a rubber-keyed Spectrum to a +3, but without the disappointment of finding out you still can't load anything on tape.
+We know it's a little sad to say goodbye to the old repository, but trust us, the new one is so much better. It's like upgrading from a rubber-keyed Spectrum to a 128k, but without the disappointment of finding out you still can't load anything on tape.
 
 We've added some great new features and improved performance, so you can spend less time waiting for games to load and more time actually playing them. And, of course, we've kept all the classic features that you know and love.
 
