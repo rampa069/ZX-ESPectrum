@@ -1,4 +1,26 @@
-# ZX-ESPectrum
+# We've Moved! Our Emulator has a New Home
+
+Greetings fellow retro gaming enthusiasts!
+
+We have some exciting news to share - our beloved emulator has packed its bags and moved to a new home at [EremusOne/ZX-ESPectrum-IDF](https://github.com/EremusOne/ZX-ESPectrum-IDF). (**IDF** - Incredible Digital Fun for ZX Spectrum!)
+
+We know it's a little sad to say goodbye to the old repository, but trust us, the new one is so much better. It's like upgrading from a rubber-keyed Spectrum to a +3, but without the disappointment of finding out you still can't load anything on tape.
+
+We've added some great new features and improved performance, so you can spend less time waiting for games to load and more time actually playing them. And, of course, we've kept all the classic features that you know and love.
+
+So, what are you waiting for? Come join us in our new home at EremusOne/ZX-ESPectrum-IDF, and experience the joy of retro gaming like never before.
+
+Thanks for all the good times, rampa069/ZX-ESPectrum repository. You were a faithful companion during many late-night gaming sessions, but it's time to move on to bigger and better things.
+
+See you at the new repository!
+
+Yours in retro gaming,
+
+The Dev Team
+
+---
+
+# ZX-ESPectrum (old readme for the history)
 
 An emulation of the ZX-Spectrum computer on an ESP32 chip with VGA output based on bitluni's driver.
 
